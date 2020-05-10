@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const mysql = require('mysql');
 const path = require('path');
 const app = express();
+const i18n = require('banana-i18n');
 
 const {getHomePage} = require('./routes/index');
 const {addMitgliedPage, addMitglied, deleteMitglied, editMitglied, editMitgliedPage} = require('./routes/mitglied');
@@ -11,12 +12,9 @@ const port = 3001;
 
 // create connection to database
 // the mysql.createConnection function takes in a configuration object which contains host, user, password and the database name.
-const db = mysql.createConnection ({
-    host: 'localhost',
-    user: 'webuser',
-    password: 'Yogi-298294',
-    database: 'amcmitglieder'
-});
+
+const config = require('./config');
+const db = mysql.createConnection (config);
 
 // connect to database
 db.connect((err) => {
