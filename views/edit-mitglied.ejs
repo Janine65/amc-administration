@@ -1,0 +1,43 @@
+<%- include ('partials/header.ejs') -%>
+<div class="container">
+    <% if (message) { %>
+        <p class="text-center text-danger"><%= message %></p>
+    <% } %>
+
+    <% if (mitglied) { %>
+        <form class="add-mitglied-form" action="" method="post" enctype="multipart/form-data">
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    <label for="anrede">Anrede</label>
+                    <select id="anrede" name="anrede" class="form-control" required>
+                        <option selected><%= mitglied.anrede %></option>
+                        <option>Frau</option>
+                        <option>Herr</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="vorname">Vorname</label>
+                    <input type="text" class="form-control" name="vorname" id="vorname" value="<%= mitglied.vorname %>" required>
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="n ame">Nachname</label>
+                    <input type="text" class="form-control" name="name" id="name" value="<%= mitglied.name %>" required>
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="MNR">MNR</label>
+                    <input type="hidden" class="form-control" name="MNR" id="MNR" value="<%= mitglied.MNR %>">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    <label for="mnr_sam">SAM Mitgleidsnummer</label>
+                    <input type="number" class="form-control" name="mnr_sam" id="mnr_sam" value="<%= mitglied.mnr_sam %>">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success float-right">Speichern</button>
+        </form>
+    <% } else { %>
+        <p class="text-center">Mitglied nicht gefunden.</p>
+    <% } %>
+</div>
+<%- include ('partials/footer.ejs') -%> 
