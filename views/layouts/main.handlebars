@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="de">
+	<head>
+		<title>Auto-Moto-Club Swissair Administration</title>
+		<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" rel="stylesheet">
+		<link rel="stylesheet" type="text/css" href="/assets/styles.css">
+
+		<script type="text/javascript" src="//cdn.webix.com/edge/webix.js"></script>
+		<link rel="stylesheet" type="text/css" href="/assets/webix.css">
+	</head>
+	<body>
+		<h1 class='header'>
+			<a href="/">
+			<div class="logo"></div>
+			Auto-Moto-Club Swissair Administration</a>
+			<a class='docs' href='http://www.automoto-sr.info' target="_blank">Homepage
+			</a>
+		</h1>
+		<div class='mainarea'>
+			<ul class='left'>
+{{#each menu}}
+<li><span>{{value}}</span><ul>
+	{{#each data}}
+	<li class='{{css}}'><a href='{{href}}'>{{value}}</a></li>
+	{{/each}}
+</ul></li>
+{{/each}}
+			</ul>
+			<content class="right">{{{body}}}</content>
+		</div>
+	</body>
+</html>
