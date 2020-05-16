@@ -43,5 +43,6 @@ module.exports = {
 				adresse.update(data))
 			.then(() =>
 				res.json({}));
-	}
+	},
+
 };

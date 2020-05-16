@@ -1,14 +1,45 @@
-<h2>Mitgliederliste </h2>
+<h3>Mitgliederliste </h3>
 <div id='grid-container'></div>
 <script>
 
+function mark_sam_mitglied (value, config) {
+	return mark_boolean(value.sam_mitglied);
+};
 
+function mark_ehrenmitglied (value, config) {
+	return mark_boolean(value.ehrenmitglied);
+};
 
-function mark_boolean (value, config) {
-	if (value.sam_mitglied == 1) {
-		return "<span class='webix_icon wxi-check'></span>";
+function mark_vorstand (value, config) {
+	return mark_boolean(value.vorstand);
+};
+
+function mark_revisor (value, config) {
+	return mark_boolean(value.revisor);
+};
+
+function mark_allianz (value, config) {
+	return mark_boolean(value.allianz);
+};
+
+function mark_boolean (value) {
+	if (value == 1) {
+		return "<span class='webix_icon mdi mdi-checkbox-marked'></span>";
 	} else {
-		return "<span></span>";
+		return "<span class='webix_icon mdi mdi-checkbox-blank-outline'></span>";
+	}
+};
+
+function save_form (id) {
+	var form = $$(id).getFormView();
+	var values = form.getValues();
+	console.info(values);
+	if (values.id == "") {
+		$$('adressen-grid').add(values);
+		$$('adresse-win').hide();
+	} else {
+		$$('adressen-grid').updateItem(values.id, values);
+		$$('adresse-win').hide();
 	}
 };
 
@@ -23,17 +54,74 @@ var toolbar = {
 		}},
 		{ view:"button", value:"Delete Row", width:120, click:function(){}},
 		{ view:"button", value:"Edit Row", width:120, click:function(){
-			//$$('adresse-form').save();
+			$$('adresse-win').show();
+			$$("adresse-form").elements.name.focus();
 		}}
 	]
 };
 
+webix.ui({
+	view:"window", id:"adresse-win",
+	width:500,
+	height:700, autofit:false,
+	resize:true,
+	move:true,
+	close:true,
+	position:"center",
+	modal:true,
+	head:"Mitglied ändern",
+	body:{
+		view:"form", id:"adresse-form",
+		elements:[
+			{cols:[
+				{ rows:[{ readonly:true, view:"text", name:"id", label:"MNR" },
+						{ view:"combo", 
+						options:[{ id:"1", value:"Herr" }, { id:"2", value:"Frau" }], 
+						name:"anrede_id", label:"Anrede" }] },
+				{ rows:[{ view:"text", name:"name", label:"Name" },
+						{ view:"text", name:"vorname", label:"Vorname" }]}
+			]},
+			{ view:"text", name:"adresse", label:"Adresse" },
+			{cols:[
+			{ view:"text", width:"200", type:"number", name:"plz", label:"PLZ" },
+			{ view:"text", name:"ort", label:"Ort" }
+			]},
+			{ view:"text", name:"telefon_p", label:"Telefon" },
+			{ view:"text", name:"mobile", label:"Mobile" },
+			{ view:"text", name:"email", label:"Email" },
+			{ view:"textarea", name:"notes", label:"Notizen" },
+			{cols:[
+			{ view:"text", type:"number", name:"mnr_sam", label:"SAM Nr." },
+			{ view:"checkbox", name:"sam_mitglied", label:"SAM Mitglied" },
+			{ view:"checkbox", name:"ehrenmitglied", label:"Ehrenmitglied" }
+			]},
+			{cols:[
+			{ view:"checkbox", name:"vorstand", label:"Vorstand" },
+			{ view:"checkbox", name:"revisor", label:"Revisor" }
+			]},
+			{cols:[
+			{ view:"datepicker", format:webix.Date.dateToStr("%d.%m.%Y"), name:"eintritt", label:"Eintritt" },
+			{ view:"datepicker", format:webix.Date.dateToStr("%d.%m.%Y"), name:"austritt", label:"Austritt" }
+			]},
+			{margin:5,cols:[
+				{view:"button", value:"Sichern", css:"webix_primary", click:save_form},
+				{view:"button", value:"Abbrechen", click:function(id) {
+					$$('adresse-win').hide();
+					}
+				}
+			]}
+		]
+	}
+});
+
+
 var grid = {
 	view:"datatable", id:"adressen-grid", 
 	css:"webix_header_border webix_data_border", 
-	select:true,
+	select:true, 
+	resizeColumn: { headerOnly:true},
 	height:800, scroll:true, 
-	editable:false, 
+	editable:true, 
 	columns:[
 		{ id:"id", css:{'text-align':'right'}, header:[{text:"MNR"},{content:"numberFilter"}], sort:"int", adjust:true},
 		{ id:"anrede_id", header:"Anrede", options:[
@@ -48,13 +136,14 @@ var grid = {
 		{ id:"mobile", header:"Mobile"},
 		{ id:"email", header:"Email"},
 		{ id:"notes", header:"Notizen"},
-		{ id:"mnr_sam", header:[{text:"SAM Nr."},{content:"textFilter"}]},
-		{ id:"sam_mitglied", header:[{text:"SAM Mitglied"},{content:"selectFilter"}], template:mark_boolean},		
-		{ id:"vorstand", header:[{text:"Vorstand"},{content:"selectFilter"}], template:"{common.checkbox()}"},		
-		{ id:"ehrenmitglied", header:[{text:"Ehrenmitglied"},{content:"selectFilter"}], template:"{common.checkbox()}"},		
-		{ id:"revisor", header:[{text:"Revisor"},{content:"selectFilter"}], template:"{common.checkbox()}"},		
-		{ id:"eintritt", header:[{text:"Eintritt"},{content:"dateFilter"}], sort:"date", format:webix.Date.dateToStr("%d.%m.%Y")},
-		{ id:"austritt", header:[{text:"Austritt"},{content:"dateFilter"}], sort:"date", format:webix.Date.dateToStr("%d.%m.%Y")}
+		{ id:"mnr_sam", header:[{text:"SAM Nr."},{content:"textFilter"}], adjust:true},
+		{ id:"sam_mitglied", header:[{text:"SAM Mitglied"},{content:"selectFilter"}], template:mark_sam_mitglied},		
+		{ id:"ehrenmitglied", header:[{text:"Ehrenmitglied"},{content:"selectFilter"}], template:mark_ehrenmitglied},		
+		{ id:"vorstand", header:[{text:"Vorstand"},{content:"selectFilter"}], template:mark_vorstand},		
+		{ id:"revisor", header:[{text:"Revisor"},{content:"selectFilter"}], template:mark_revisor},		
+		{ id:"allianz", header:[{text:"Allianz"},{content:"selectFilter"}], template:mark_allianz},		
+		{ id:"eintritt", header:[{text:"Eintritt"},{content:"dateFilter"}], sort:"date", format:webix.Date.dateToStr("%d.%m.%Y"), adjust:true},
+		{ id:"austritt", header:[{text:"Austritt"},{content:"dateFilter"}], sort:"date", format:webix.Date.dateToStr("%d.%m.%Y"), adjust:true}
 	],
 	hover: "hoverline",
 	sort:"multi",
@@ -65,7 +154,8 @@ var grid = {
       this.markSorting("name", "asc", true);
       this.markSorting("vorname", "asc", true);
     },
-  url:"/grid/data"
+  url:"/grid/data",
+  save:"/grid/data"
 };
 
 
@@ -78,5 +168,6 @@ webix.ui({
 	]
 });
 
+$$('adresse-form').bind($$('adressen-grid'));
 
 </script>
