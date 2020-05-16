@@ -21,8 +21,8 @@ app.get('/grid', (req, res) => res.render('grid', menu(req) ));
 
 var grid = require("./controllers/grid");
 app.get('/grid/data', grid.getData);
-app.post('/grid/data', grid.addData);
-app.put('/grid/data/:id', grid.updateData);
-app.delete('/grid/data/:id', grid.removeData);
+app.post('/grid/insert', grid.addData);
+app.put('/grid/update', grid.updateData);
+app.delete('/grid/delete', grid.removeData);
 
 app.listen(3050);

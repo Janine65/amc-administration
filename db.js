@@ -28,7 +28,7 @@ class Adressen extends Model {
   }
 }
 Adressen.init({
-  id: {type: Sequelize.INTEGER, allowNull: false, primaryKey: true},
+  id: {type: Sequelize.INTEGER, allowNull: false, primaryKey: true, autoIncrement: true},
   anrede_id: {
     type: Sequelize.INTEGER,
     default: 1,

@@ -13,14 +13,15 @@ module.exports = {
 
 	removeData: function (req, res) {
 		const data = req.body;
+		console.info('removeDate:',data);
 		db.Adressen.findByPk(req.params.id)
 			.then((data) =>
-				data.austritt = Serialize.NOW)
+				data.austritt = new Date())
 			.then((adresse) =>
 				//adresse.destroy()
 				adresse.update(data))
 			.then(() =>
-				res.json({}));
+				res.json(data));
 	},
 
 	addData: function (req, res) {
@@ -29,6 +30,7 @@ module.exports = {
 		if (!data.anrede)
 			data.anrede = 1;
 
+		console.info('addDate:',data);
 		db.Adressen.create(req.body).then((obj) =>
 			res.json({ id: obj.id }));
 	},
@@ -38,11 +40,12 @@ module.exports = {
 		if (!data.anrede_id)
 			data.anrede_id = 1;
 
+		console.info('updateDate:',data);
 		db.Adressen.findByPk(req.params.id)
-			.then((adresse) =>
-				adresse.update(data))
-			.then(() =>
-				res.json({}));
+		.then((adresse) =>
+			adresse.update(data))
+		.then(() =>
+			res.json({}));
 	},
 
 };
