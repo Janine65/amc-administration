@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:janine65/amc-administration.git"
+    "url": "git@github.com:Janine65/amc-administration.git"
   },
   "keywords": [
     "webix",
@@ -19,9 +19,9 @@
   "author": "Janine Franken",
   "license": "GNU",
   "bugs": {
-    "url": "https://github.com/janine65/amc-administration/issues"
+    "url": "https://github.com/Janine65/amc-administration/issues"
   },
-  "homepage": "https://github.com/janine65/amc-administration",
+  "homepage": "https://github.com/Janine65/amc-administration",
   "dependencies": {
     "@mdi/font": "^5.2.45",
     "body-parser": "^1.19.0",

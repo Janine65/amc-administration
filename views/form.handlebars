@@ -19,21 +19,39 @@ var list = {
 };
 
 var form = {
-	view:"form", id:"adrform",
-	rows:[
-		{ view:"text", name:"name", label:"Name" },
-		{ view:"text", name:"vorname", label:"Vorname" },
-		{ view:"date", name:"austritt", label:"Austritt" },
-		{ view:"text", name:"email", label:"Email" },
-		{ view:"richselect", name:"anrede_id", label:"Anrede", options:"/form/options" },
-		{ view:"button", value:"Save", click:function(){
-			var data = this.getFormView().getValues();
-			//send data to server
-			webix.ajax().post("/form/data", data).then(() => webix.message("Saved."));
-			//update related client-side UI
-			$$("adrlist").updateItem(data.id, data);
-		}}
-	]
+  view:"form", id:"adresse-form", scroll:true,
+  elements:[
+	{cols:[
+		{ rows:[{ readonly:true, view:"text", name:"id", label:"MNR" },
+    			{ view:"combo", 
+				options:[{ id:"1", value:"Herr" }, { id:"2", value:"Frau" }], 
+				name:"anrede_id", label:"Anrede" }] },
+		{ rows:[{ view:"text", name:"name", label:"Name" },
+    			{ view:"text", name:"vorname", label:"Vorname" }]}
+	]},
+    { view:"text", name:"adresse", label:"Adresse" },
+	{cols:[
+    { view:"text", width:"200", type:"number", name:"plz", label:"PLZ" },
+    { view:"text", name:"ort", label:"Ort" }
+	]},
+    { view:"text", name:"telefon_p", label:"Telefon" },
+    { view:"text", name:"mobile", label:"Mobile" },
+    { view:"text", name:"email", label:"Email" },
+    { view:"textarea", name:"notes", label:"Notizen" },
+	{cols:[
+    { view:"text", type:"number", name:"mnr_sam", label:"SAM Nr." },
+    { view:"checkbox", name:"sam_mitglied", label:"SAM Mitglied" },
+    { view:"checkbox", name:"ehrenmitglied", label:"Ehrenmitglied" }
+	]},
+	{cols:[
+    { view:"checkbox", name:"vorstand", label:"Vorstand" },
+    { view:"checkbox", name:"revisor", label:"Revisor" }
+	]},
+	{cols:[
+    { view:"datepicker", format:webix.Date.dateToStr("%d.%m.%Y"), name:"eintritt", label:"Eintritt" },
+    { view:"datepicker", format:webix.Date.dateToStr("%d.%m.%Y"), name:"austritt", label:"Austritt" }
+	]}
+  ]
 };
 
 var form = webix.ui({
