@@ -9,43 +9,40 @@ module.exports = {
 			{austritt: { [Op.gte]: new Date() }}]
 			 }}).then(data => res.json(data));
 	},
-
-
 	removeData: function (req, res) {
 		const data = req.body;
-		console.info('removeDate:',data);
+		console.info('delete: ',data);
+		let endDate = new Date();
+		endDate.setMonth(11);
+		endDate.setDate(31);
 		db.Adressen.findByPk(req.params.id)
-			.then((data) =>
-				data.austritt = new Date())
-			.then((adresse) =>
-				//adresse.destroy()
-				adresse.update(data))
-			.then(() =>
-				res.json(data));
-	},
+		.then((adresse) =>
+			//adresse.destroy()
+			adresse.update({austritt: endDate}))
+		.then(() =>
+			res.json({}));
+},
 
 	addData: function (req, res) {
 		const data = req.body;
+		console.info('insert: ',data);
 		// force null values
 		if (!data.anrede)
 			data.anrede = 1;
 
-		console.info('addDate:',data);
-		db.Adressen.create(req.body).then((obj) =>
+		db.Adressen.create(data).then((obj) =>
 			res.json({ id: obj.id }));
 	},
+	
 	updateData: function (req, res) {
 		const data = req.body;
-		// force null values
-		if (!data.anrede_id)
-			data.anrede_id = 1;
-
-		console.info('updateDate:',data);
+		console.info('update: ',data);
 		db.Adressen.findByPk(req.params.id)
-		.then((adresse) =>
-			adresse.update(data))
-		.then(() =>
-			res.json({}));
+			.then((adresse) => {
+				console.info('adresse: ',adresse);
+				if (adresse.update(data))
+					res.json({});
+		});
 	},
 
 };

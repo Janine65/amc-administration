@@ -18,13 +18,13 @@ module.exports = {
 		if (!req.query.parent)
 			return db.Adressen.findAll()
 				.then(data => {
-					res.json(data.map(user => {
-						return {id: "u_"+user.id, webix_kids:true, name: user.name }
+					res.json(data.map(adresse => {
+						return {id: "u_"+adresse.id, webix_kids:true, name: adresse.name }
 					}));
 				});
 		else
 			return db.Document.findAll({ 
-				where:{ userId: req.query.parent.replace("u_","") }, attributes:["name"]
+				where:{ id: req.query.parent.replace("u_","") }, attributes:["name"]
 			}).then(data => res.json({ parent: req.query.parent, data }));
 	}
 };

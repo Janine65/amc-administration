@@ -48,7 +48,11 @@ function save_form (id) {
 };
 
 webix.i18n.parseFormat = "%c";
-webix.i18n.setLocale();
+const deLocale = webix.i18n.locales["de-DE"];
+deLocale.dateFormat = "%d.%m.%Y";
+webix.i18n.locales["de-DE"] = deLocale;
+webix.i18n.setLocale("de-DE");
+
 
 var toolbar = {
 	view:"toolbar", id:"adressen-toolbar",
@@ -75,7 +79,8 @@ var toolbar = {
 webix.ui({
 	view:"window", id:"adresse-win",
 	width:500,
-	height:700, autofit:false,
+	//height:700, 
+	autofit:true,
 	resize:true,
 	move:true,
 	close:true,
@@ -115,8 +120,8 @@ webix.ui({
 			{ view:"checkbox", name:"ehrenmitglied", label:"Ehrenmitglied" }
 			]},
 			{margin:5,cols:[
-			{ view:"datepicker", format:webix.Date.dateToStr("%d.%m.%Y"), name:"eintritt", label:"Eintritt" },
-			{ view:"datepicker", format:webix.Date.dateToStr("%d.%m.%Y"), name:"austritt", label:"Austritt" }
+			{ view:"datepicker", name:"eintritt", label:"Eintritt" },
+			{ view:"datepicker", name:"austritt", label:"Austritt" }
 			]},
 			{margin:5,cols:[
 				{view:"button", value:"Sichern", css:"webix_primary", click:save_form},
@@ -143,9 +148,9 @@ webix.ui({
 var grid = {
 	view:"datatable", id:"adressen-grid", 
 	css:"webix_header_border webix_data_border", 
-	select:true, 
+	select:true, autofit:true,
 	resizeColumn: { headerOnly:true},
-	height:800, scroll:true, 
+	scroll:true, 
 	editable:true, 
 	columns:[
 		{ id:"id", css:{'text-align':'right'}, header:[{text:"MNR"},{content:"numberFilter"}], sort:"int", adjust:true},
@@ -167,8 +172,8 @@ var grid = {
 		{ id:"vorstand", header:[{text:"Vorstand"},{content:"selectFilter"}], template:mark_vorstand},		
 		{ id:"revisor", header:[{text:"Revisor"},{content:"selectFilter"}], template:mark_revisor},		
 		{ id:"allianz", header:[{text:"Allianz"},{content:"selectFilter"}], template:mark_allianz},		
-		{ id:"eintritt", header:[{text:"Eintritt"},{content:"dateFilter"}], sort:"date", format:webix.Date.dateToStr("%d.%m.%Y"), adjust:true},
-		{ id:"austritt", header:[{text:"Austritt"},{content:"dateFilter"}], sort:"date", format:webix.Date.dateToStr("%d.%m.%Y"), adjust:true}
+		{ id:"eintritt", header:[{text:"Eintritt"},{content:"dateFilter"}], sort:"date", adjust:true},
+		{ id:"austritt", header:[{text:"Austritt"},{content:"dateFilter"}], sort:"date", adjust:true}
 	],
 	hover: "hoverline",
 	sort:"multi",
@@ -190,17 +195,15 @@ var grid = {
     }
   },
   url:"/grid/data",
-  save:{
-    "insert":"/grid/insert",
-    "update":"/grid/update",
-    "delete":"/grid/delete"
-  }
+  save:"rest->/grid/data"
+  
 };
 
 
-webix.ui({
-	width:1200, 
+const dataarea = webix.ui({	 
 	container:"grid-container",
+	autofit:true,
+	width:1200, height:550,
 	rows:[ 
 		toolbar,	
       	grid
@@ -208,5 +211,7 @@ webix.ui({
 });
 
 $$('adresse-form').bind($$('adressen-grid'));
+
+webix.event(window, "resize", function(){dataarea.adjust()});
 
 </script>

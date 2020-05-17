@@ -32,16 +32,17 @@ Adressen.init({
   anrede_id: {
     type: Sequelize.INTEGER,
     default: 1,
+    allowNull: false,
     references: {
       model: Anrede,
       key: 'id',
     }
   },
-  name: Sequelize.STRING,
-  vorname: Sequelize.STRING,
-  adresse: Sequelize.STRING,
-  plz: Sequelize.INTEGER,
-  ort: Sequelize.STRING,
+  name: {type: Sequelize.STRING, allowNull: false},
+  vorname: {type: Sequelize.STRING, allowNull: false},
+  adresse: {type: Sequelize.STRING, allowNull: false},
+  plz: {type: Sequelize.INTEGER, allowNull: false},
+  ort: {type: Sequelize.STRING, allowNull: false},
   telefon_p: Sequelize.STRING,
   telefon_g: Sequelize.STRING,
   mobile: Sequelize.STRING,
@@ -52,8 +53,9 @@ Adressen.init({
   },
   sam_mitglied: { 
     type:Sequelize.TINYINT,
+    allowNull: false,
     defaultValue: 1},
-  jahresbeitrag: Sequelize.DECIMAL(19,4),
+  jahresbeitrag: Sequelize.DECIMAL(19,2),
   mnr_sam: Sequelize.INTEGER,
   vorstand: { 
     type:Sequelize.TINYINT,
@@ -64,7 +66,9 @@ Adressen.init({
   revisor: { 
     type:Sequelize.TINYINT,
     defaultValue: 0},
-  austritt: Sequelize.DATEONLY,
+  austritt: {
+    type: Sequelize.DATEONLY
+  },
   austritt_mail: { 
     type:Sequelize.TINYINT,
     defaultValue: 0},
