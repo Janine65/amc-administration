@@ -34,8 +34,8 @@ function save_form (id) {
 	var form = $$(id).getFormView();
 	if (form.validate()) {
 		var values = form.getValues();
-		console.info(values);
-		if (values.id == "") {
+		console.info('save_form ',values);
+		if (values.isNewRecord) {
 			$$('adressen-grid').add(values);
 			$$('adresse-win').hide();
 		} else {
@@ -111,7 +111,7 @@ webix.ui({
 			{ view:"text", name:"email", label:"Email(s) <span class='webix_icon mdi mdi-star-outline'></span>" },
 			{ view:"textarea", name:"notes", label:"Notizen" },
 			{margin:5,cols:[
-			{ view:"text", type:"number", name:"mnr_sam", label:"SAM Nr." },
+			{ view:"text", type:"number", name:"mnr_sam", label:"SAM Nr.", format:"11111" },
 			{ view:"checkbox", name:"sam_mitglied", label:"SAM Mitglied" }
 			]},
 			{margin:5,cols:[
@@ -166,12 +166,12 @@ var grid = {
 		{ id:"mobile", header:"Mobile"},
 		{ id:"email", header:"Email"},
 		{ id:"notes", header:"Notizen"},
-		{ id:"mnr_sam", header:[{text:"SAM Nr."},{content:"textFilter"}], adjust:true},
-		{ id:"sam_mitglied", header:[{text:"SAM Mitglied"},{content:"selectFilter"}], template:mark_sam_mitglied},		
-		{ id:"ehrenmitglied", header:[{text:"Ehrenmitglied"},{content:"selectFilter"}], template:mark_ehrenmitglied},		
-		{ id:"vorstand", header:[{text:"Vorstand"},{content:"selectFilter"}], template:mark_vorstand},		
-		{ id:"revisor", header:[{text:"Revisor"},{content:"selectFilter"}], template:mark_revisor},		
-		{ id:"allianz", header:[{text:"Allianz"},{content:"selectFilter"}], template:mark_allianz},		
+		{ id:"mnr_sam", css:{'text-align':'right'}, header:[{text:"SAM Nr."},{content:"numberFilter"}], sort:"int", adjust:true},
+		{ id:"sam_mitglied", css:{'text-align':'center'}, header:[{text:"SAM Mitglied"},{content:"selectFilter"}], template:mark_sam_mitglied},		
+		{ id:"ehrenmitglied", css:{'text-align':'center'},header:[{text:"Ehrenmitglied"},{content:"selectFilter"}], template:mark_ehrenmitglied},		
+		{ id:"vorstand", css:{'text-align':'center'},header:[{text:"Vorstand"},{content:"selectFilter"}], template:mark_vorstand},		
+		{ id:"revisor", css:{'text-align':'center'},header:[{text:"Revisor"},{content:"selectFilter"}], template:mark_revisor},		
+		{ id:"allianz", css:{'text-align':'center'},header:[{text:"Allianz"},{content:"selectFilter"}], template:mark_allianz},		
 		{ id:"eintritt", header:[{text:"Eintritt"},{content:"dateFilter"}], sort:"date", adjust:true},
 		{ id:"austritt", header:[{text:"Austritt"},{content:"dateFilter"}], sort:"date", adjust:true}
 	],

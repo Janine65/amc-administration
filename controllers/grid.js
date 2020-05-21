@@ -3,6 +3,7 @@ const { Op, Serialize } = require("sequelize");
 
 module.exports = {
 	getData: function (req, res) {
+		//findAndCountAll
 		db.Adressen.findAll({ where: { 
 			[Op.or]: [ 
 			{austritt: { [Op.eq]: null } },
@@ -39,7 +40,13 @@ module.exports = {
 		console.info('update: ',data);
 		db.Adressen.findByPk(req.params.id)
 			.then((adresse) => {
-				console.info('adresse: ',adresse);
+				console.info('update - adresse: ',adresse);
+				//TODO
+				if (data.mnr_sam = "") data.mnr_sam = null;				
+				//if (adresse.name != data.name) adresse.name = data.name;
+				//if (adresse.vorname != data.vorname) adresse.vorname = data.vorname;
+				console.info('update2: ',data);
+
 				if (adresse.update(data))
 					res.json({});
 		});
