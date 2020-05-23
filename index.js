@@ -25,4 +25,8 @@ app.post('/grid/data', grid.addData);
 app.put('/grid/data/:id', grid.updateData);
 app.delete('/grid/data/:id', grid.removeData);
 
+app.get('/data/getFkData', grid.getFKData);
+
+app.get('/grid/data/:id', grid.getOneData);
+
 app.listen(3050);

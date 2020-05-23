@@ -29,7 +29,7 @@ class Adressen extends Model {
 }
 Adressen.init({
   id: {type: Sequelize.INTEGER, allowNull: false, primaryKey: true, autoIncrement: true},
-  anrede_id: {
+  anredeId: {
     type: Sequelize.INTEGER,
     default: 1,
     allowNull: false,
@@ -56,7 +56,9 @@ Adressen.init({
     allowNull: false,
     defaultValue: 1},
   jahresbeitrag: Sequelize.DECIMAL(19,2),
-  mnr_sam: Sequelize.INTEGER,
+  mnr_sam: {
+    type: Sequelize.INTEGER,
+    defaultValue: null},
   vorstand: { 
     type:Sequelize.TINYINT,
     defaultValue: 0},
@@ -72,7 +74,7 @@ Adressen.init({
   austritt_mail: { 
     type:Sequelize.TINYINT,
     defaultValue: 0},
-  geworben_von: { 
+  adressenId: { 
     type: Sequelize.INTEGER,
     references: {
       model: Adressen,
@@ -81,7 +83,7 @@ Adressen.init({
   },
   allianz: { 
     type:Sequelize.TINYINT,
-    defaultValue: '0'},
+    defaultValue: 0},
   notes: Sequelize.BLOB
 }, {
   sequelize,
@@ -90,8 +92,11 @@ Adressen.init({
   indexes: [{ unique: true, fields: ['name','vorname','ort'] }]  
 });
 
-//Anrede.hasMany(Adressen);
+Adressen.belongsTo(Anrede);
+Anrede.hasMany(Adressen);
 
+Adressen.belongsTo(Adressen);
+Adressen.hasMany(Adressen);
 
 module.exports = {
   Adressen, Anrede
