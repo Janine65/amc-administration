@@ -5,6 +5,8 @@ const sequelize = new Sequelize('amcmitglieder', 'webuser', 'Yogi-298294', {
   dialect:"mysql"
 });
 
+global.sequelize = sequelize; 
+
 try {
   sequelize.authenticate();
   console.log("Connecion has been established successfully.");
@@ -28,7 +30,7 @@ class Adressen extends Model {
   }
 }
 Adressen.init({
-  id: {type: Sequelize.INTEGER, allowNull: false, primaryKey: true, autoIncrement: true},
+  mnr: {type: Sequelize.INTEGER, allowNull: false},
   anredeId: {
     type: Sequelize.INTEGER,
     default: 1,

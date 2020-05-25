@@ -1,17 +1,35 @@
 var db = require("../db");
-const { Op, Serialize } = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 
 module.exports = {
 	getData: function (req, res) {		
-		db.Adressen.findAll({ where: { 
-			[Op.or]: [ 
-			{austritt: { [Op.eq]: null } },
-			{austritt: { [Op.gte]: new Date() }}]
+		db.Adressen.findAll({ where: { 			
+			austritt: { [Op.gte]: new Date() }
 			 }}).then(data => res.json(data));		
 	},
+
 	getOneData: function (req, res) {
 		db.Adressen.findByPk(req.param.id).then(data => res.json(data));
 	},
+
+	getFKData: function(req, res) {
+		var qrySelect = "SELECT `id`, CONCAT(`vorname`, ' ', `name`) as value FROM `Adressen` WHERE `austritt` > NOW()" ;
+		if (req.query.filter != null) {
+			var qfield = '%' + req.query.filter.value + '%';
+			qrySelect = qrySelect + " AND lower(CONCAT(`vorname`, ' ', `name`)) like '" + qfield + "'";
+		}
+		qrySelect = qrySelect + " ORDER BY 2";
+		
+		sequelize.query(qrySelect, 
+			{ 
+				type: Sequelize.QueryTypes.SELECT,
+				plain: false,
+				logging: console.log,
+				raw: false
+			}
+		).then(data => res.json(data));					
+		},
+
 	removeData: function (req, res) {
 		const data = req.body;
 		console.info('delete: ',data);
@@ -35,14 +53,9 @@ module.exports = {
 			res.json({ id: obj.id }));
 	},
 	
-	getFKData: function(req, res) {
-		db.Adressen.findAll({attributes: ['id', 'vorname' || ' ' || 'name' ]},{ where: {austritt: { [Op.eq]: null }}},{order: ['2']}
-			 ).then(data => res.json(data));		
-	},
-
 	updateData: function (req, res) {
 		const data = req.body;
-		console.info('update: ',data);
+		console.info('update: ',res, req);
 		// getDirtyValues
 		db.Adressen.findByPk(req.params.id)
 			.then((adresse) => {

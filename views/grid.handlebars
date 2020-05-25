@@ -39,18 +39,23 @@ function show_geworben (value, config) {
 
 function save_form (id) {
 	var form = $$(id).getFormView();
-	if (form.validate()) {
-		var values = form.getValues();
-		console.info('save_form ',values);
-		if (values.isNewRecord) {
-			$$('adressen-grid').add(values);
-			$$('adresse-win').hide();
+	if (form.isDirty()) {
+		if (form.validate()) {
+			var values = form.getValues();
+			console.info('save_form ',values);
+			if (values.id == "") {
+				$$('adressen-grid').add(values);
+				$$('adresse-win').hide();
+			} else {
+				$$('adressen-grid').updateItem(values.id, values);
+				$$('adresse-win').hide();
+			}
 		} else {
-			$$('adressen-grid').updateItem(values.id, values);
-			$$('adresse-win').hide();
+			webix.message({type:"error", text:"Nicht alle Mussfelder sind ausgefüllt"});
 		}
 	} else {
-		webix.message({type:"error", text:"Nicht alle Mussfelder sind ausgefüllt"});
+		$$('adresse-win').hide();
+		webix.message({type:"info", text:"Keine Änderungen vorgenommen"});
 	}
 };
 
@@ -65,6 +70,7 @@ var toolbar = {
 	view:"toolbar", id:"adressen-toolbar",
 	cols:[
 		{ view:"button", value:"Add Row", width:120, click:function(){
+			$$("adressen-grid").clearSelection();
 			$$("adresse-win").show();
 			$$("adresse-form").elements.name.focus();
 		}},
@@ -97,7 +103,7 @@ webix.ui({
 	body:{
 		view:"form", id:"adresse-form",
 		elements:[
-			{ readonly:true, view:"text", name:"id", label:"MNR", hidden:true },
+			{ readonly:true, view:"text", name:"mnr", label:"MNR", hidden:true },
 			{margin:5,cols:[
 				{ view:"combo", 
 						options:[{ id:"1", value:"Herr" }, { id:"2", value:"Frau" }], 
@@ -129,7 +135,7 @@ webix.ui({
 			{ view:"datepicker", name:"eintritt", label:"Eintritt" },
 			{ view:"datepicker", name:"austritt", label:"Austritt" }
 			]},
-			{ view:"richselect", options:"/data/getFkData", name:"adressenId", label:"Geworben von" },
+			{ view:"combo", suggest:"/data/getFkData", name:"adressenId", label:"Geworben von" },
 			{margin:5,cols:[
 				{view:"button", value:"Sichern", css:"webix_primary", click:save_form},
 				{view:"button", value:"Abbrechen", click:function(id) {
@@ -160,7 +166,7 @@ var grid = {
 	scroll:true, 
 	editable:true, 
 	columns:[
-		{ id:"id", css:{'text-align':'right'}, header:[{text:"MNR"},{content:"numberFilter"}], sort:"int", adjust:true},
+		{ id:"mnr", css:{'text-align':'right'}, header:[{text:"MNR"},{content:"numberFilter"}], sort:"int", adjust:true},
 		{ id:"anredeId", header:"Anrede", options:[
             { id:"1", value:"Herr" },
             { id:"2", value:"Frau" }], adjust:true},
