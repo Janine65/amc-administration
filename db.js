@@ -30,14 +30,37 @@ class Adressen extends Model {
   }
 }
 Adressen.init({
-  mnr: {type: Sequelize.INTEGER, allowNull: false},
+  id: {
+    type: Sequelize.INTEGER, 
+    allowNull: true,
+    autoIncrement: true,
+    primaryKey: true,
+    defaultValue: 1
+  },
+  mnr: {
+    type: Sequelize.INTEGER, 
+    allowNull: true,
+    set(value) {
+      // einen empty String zu Null konvertieren
+      if (value == "") 
+        this.setDataValue('mnr', null);
+      else
+        this.setDataValue('mnr', value);
+    }},
   anredeId: {
     type: Sequelize.INTEGER,
-    default: 1,
+    defaultValue: 1,
     allowNull: false,
     references: {
       model: Anrede,
       key: 'id',
+    },
+    set(value) {
+      // einen empty String zu Null konvertieren
+      if (value == "") 
+        this.setDataValue('anredeId', 1);
+      else
+        this.setDataValue('anredeId', value);
     }
   },
   name: {type: Sequelize.STRING, allowNull: false},
@@ -45,6 +68,7 @@ Adressen.init({
   adresse: {type: Sequelize.STRING, allowNull: false},
   plz: {type: Sequelize.INTEGER, allowNull: false},
   ort: {type: Sequelize.STRING, allowNull: false},
+  land: {type: Sequelize.STRING, allowNull: false, defaultValue: "CH"},
   telefon_p: Sequelize.STRING,
   telefon_g: Sequelize.STRING,
   mobile: Sequelize.STRING,
@@ -60,7 +84,14 @@ Adressen.init({
   jahresbeitrag: Sequelize.DECIMAL(19,2),
   mnr_sam: {
     type: Sequelize.INTEGER,
-    defaultValue: null},
+    defaultValue: null,
+    set(value) {
+      // einen empty String zu Null konvertieren
+      if (value == "") 
+        this.setDataValue('mnr_sam', null);
+      else
+        this.setDataValue('mnr_sam', value);
+    }},
   vorstand: { 
     type:Sequelize.TINYINT,
     defaultValue: 0},
@@ -81,6 +112,14 @@ Adressen.init({
     references: {
       model: Adressen,
       key: 'id'
+    },
+    defaultValue: null,
+    set(value) {
+      // einen empty String zu Null konvertieren
+      if (value == "") 
+        this.setDataValue('adressenId', null);
+      else
+        this.setDataValue('adressenId', value);
     }
   },
   allianz: { 

@@ -47,8 +47,8 @@ module.exports = {
 	addData: function (req, res) {
 		const data = req.body;
 		console.info('insert: ',data);
-		// force null values
-			
+		//data.id = db.Adressen.increment('id');
+		//console.info('insert2: ',data);
 		db.Adressen.create(data).then((obj) =>
 			res.json({ id: obj.id }));
 	},
@@ -56,16 +56,10 @@ module.exports = {
 	updateData: function (req, res) {
 		const data = req.body;
 		console.info('update: ',res, req);
-		// getDirtyValues
+		
 		db.Adressen.findByPk(req.params.id)
 			.then((adresse) => {
-				console.info('update - adresse: ',adresse);
-				//TODO
-				//if (data.mnr_sam = "") data.mnr_sam = null;				
-				//if (adresse.name != data.name) adresse.name = data.name;
-				//if (adresse.vorname != data.vorname) adresse.vorname = data.vorname;
-				console.info('update2: ',data);
-
+				console.info('update - adresse: ',adresse);				
 				if (adresse.update(data))
 					res.json({});
 		});
