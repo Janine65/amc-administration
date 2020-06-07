@@ -13,10 +13,10 @@ module.exports = {
 	},
 
 	getFKData: function(req, res) {
-		var qrySelect = "SELECT `id`, CONCAT(`vorname`, ' ', `name`) as value FROM `Adressen` WHERE `austritt` > NOW()" ;
+		var qrySelect = "SELECT `id`, `fullname` as value FROM `Adressen` WHERE `austritt` > NOW()" ;
 		if (req.query.filter != null) {
 			var qfield = '%' + req.query.filter.value + '%';
-			qrySelect = qrySelect + " AND lower(CONCAT(`vorname`, ' ', `name`)) like '" + qfield + "'";
+			qrySelect = qrySelect + " AND lower(`fullname`) like '" + qfield + "'";
 		}
 		qrySelect = qrySelect + " ORDER BY 2";
 		
@@ -45,7 +45,13 @@ module.exports = {
 },
 
 	addData: function (req, res) {
-		const data = req.body;
+		var data = req.body;
+		if (data.austritt == "" || data.austritt == null) {
+			data.austritt = "3000-01-01T00:00:00";
+		}
+		if (data.eintritt == "" || data.eintritt == null) {
+			data.eintritt = new Date().toISOString();
+		}
 		console.info('insert: ',data);
 		//data.id = db.Adressen.increment('id');
 		//console.info('insert2: ',data);
@@ -54,7 +60,10 @@ module.exports = {
 	},
 	
 	updateData: function (req, res) {
-		const data = req.body;
+		var data = req.body;
+		if (data.austritt == "" || data.austritt == null) {
+			data.austritt = "3000-01-01T00:00:00";
+		}
 		console.info('update: ',res, req);
 		
 		db.Adressen.findByPk(req.params.id)

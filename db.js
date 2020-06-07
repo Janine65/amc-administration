@@ -14,15 +14,6 @@ try {
   console.error("Unable to connect to the database.", errro);
 }
 
-class Anrede extends Model {}
-Anrede.init( {
-  anrede: Sequelize.STRING
-}, {
-  sequelize,
-  tableName: 'Anrede',
-  modelName: 'anrede'
-});
-
 
 class Adressen extends Model {
   getFullname() {
@@ -35,32 +26,29 @@ Adressen.init({
     allowNull: true,
     autoIncrement: true,
     primaryKey: true,
-    defaultValue: 1
+    defaultValue: 0
   },
   mnr: {
     type: Sequelize.INTEGER, 
     allowNull: true,
     set(value) {
       // einen empty String zu Null konvertieren
-      if (value == "") 
-        this.setDataValue('mnr', null);
-      else
+      if (value == "") {
+        this.setDataValue('mnr', null);        
+      } else {
         this.setDataValue('mnr', value);
+      }
     }},
-  anredeId: {
+  geschlecht: {
     type: Sequelize.INTEGER,
     defaultValue: 1,
     allowNull: false,
-    references: {
-      model: Anrede,
-      key: 'id',
-    },
     set(value) {
       // einen empty String zu Null konvertieren
       if (value == "") 
-        this.setDataValue('anredeId', 1);
+        this.setDataValue('geschlecht', 1);
       else
-        this.setDataValue('anredeId', value);
+        this.setDataValue('geschlecht', value);
     }
   },
   name: {type: Sequelize.STRING, allowNull: false},
@@ -102,11 +90,11 @@ Adressen.init({
     type:Sequelize.TINYINT,
     defaultValue: 0},
   austritt: {
-    type: Sequelize.DATEONLY
+    type: Sequelize.DATEONLY,
+    defaultValue: new Date("01.01.3000")
   },
   austritt_mail: { 
-    type:Sequelize.TINYINT,
-    defaultValue: 0},
+    type:Sequelize.TINYINT},
   adressenId: { 
     type: Sequelize.INTEGER,
     references: {
@@ -133,12 +121,10 @@ Adressen.init({
   indexes: [{ unique: true, fields: ['name','vorname','ort'] }]  
 });
 
-Adressen.belongsTo(Anrede);
-Anrede.hasMany(Adressen);
 
 Adressen.belongsTo(Adressen);
 Adressen.hasMany(Adressen);
 
 module.exports = {
-  Adressen, Anrede
+  Adressen
 };
