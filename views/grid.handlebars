@@ -1,4 +1,4 @@
-<h3>Mitgliederliste </h3>
+<h3>Mitglieder verwalten </h3>
 <div id='grid-container'></div>
 <script>
 
@@ -61,6 +61,20 @@ function save_form (id) {
 	}
 };
 
+function reloadGrid(){
+	var state = $$("adressen-grid").getState();
+	var sort = state.sort
+	if (sort == null) {
+		sort = [{by:"name", dir:"asc"},{by:"vorname", dir:"asc"}];
+	}
+	console.info("reloadGrid: ", sort);
+	$$("adressen-grid").clearAll();
+	$$("adressen-grid").load($$("adressen-grid").config.url);
+	$$("adressen-grid").sort(sort);
+};
+
+
+
 const deLocale = webix.i18n.locales["de-DE"];
 deLocale.dateFormat = "%d.%m.%Y";
 deLocale.parseFormat = "%c";
@@ -69,27 +83,16 @@ webix.i18n.setLocale("de-DE");
 
 
 var toolbar = {
-	view:"toolbar", id:"adressen-toolbar",
+	view:"toolbar", id:"adressen-toolbar", autowidth: true,
 	cols:[
-		{ view:"button", value:"Add Row", width:120, click:function(){
+		{ view:"button", value:"Neues Mitglied", click:function(){
 			$$("adressen-grid").unselectAll();			
 			$$("labelhead").define("label","Neues Mitglied hinzufügen");
 			$$("labelhead").refresh();
 			$$("adresse-win").show();
 			$$("adresse-form").elements.name.focus();
 		}},
-		{ view:"button", value:"Delete Row", width:120, click:function(){
-			var values = $$('adressen-grid').getSelectedItem();
-			if (values == null) {
-				webix.message({type:"error", text:"Keine Zeile ausgewählt zum Löschen"});
-				return;
-			}
-			$$('adressen-grid').remove(values.id, values);
-			$$("adressen-grid").clearAll(true);
-			$$("adressen-grid").load("/grid/data");
-
-		}},
-		{ view:"button", value:"Edit Row", width:120, click:function(){
+		{ view:"button", value:"Mitglied mutieren", click:function(){
 			var data = $$('adressen-grid').getSelectedItem();
 			if (data == null) {
 				webix.message({type:"error", text:"Keine Zeile ausgewählt zum Ändern"});
@@ -100,10 +103,17 @@ var toolbar = {
 			$$('adresse-win').show();
 			$$("adresse-form").elements.name.focus();
 		}},
-		{ view:"button", id:"count_adr", value:"Anzahl ", width:120, click:function() { 
-			$$('adressen-grid').clearSelection();
-			$$("adressen-grid").clearAll(true);
-			$$("adressen-grid").load("/grid/data");
+		{ view:"button", value:"Mitglidschaft beenden", click:function(){
+			var values = $$('adressen-grid').getSelectedItem();
+			if (values == null) {
+				webix.message({type:"error", text:"Keine Zeile ausgewählt zum Löschen"});
+				return;
+			}
+			$$('adressen-grid').remove(values.id, values);
+			reloadGrid();
+		}},
+		{ view:"button", id:"count_adr", value:"Anzahl ", click:function() { 
+			reloadGrid();
 		}}
 	]
 };
@@ -189,8 +199,8 @@ var grid = {
 	select:true, autofit:true,
 	resizeColumn: { headerOnly:true},
 	scroll:true, 
-	editable:true, 
-	defaultData: {geschlecht: "1", land: "CH", sam_mitglied:"1"},
+	editable:false, 
+	defaultData: {geschlecht: "1", land: "CH", sam_mitglied:"1"},	
 	columns:[
 		{ id:"mnr", css:{'text-align':'right'}, header:[{text:"MNR"},{content:"numberFilter"}], sort:"int", adjust:true},
 		{ id:"geschlecht", header:[{text:"Geschlecht"}], options:[
@@ -207,31 +217,34 @@ var grid = {
 		{ id:"email", header:"Email"},
 		{ id:"notes", header:"Notizen"},
 		{ id:"mnr_sam", css:{'text-align':'right'}, header:[{text:"SAM Nr."},{content:"numberFilter"}], sort:"int", adjust:true},
-		{ id:"sam_mitglied", css:{'text-align':'center'}, header:[{text:"SAM Mitglied"},{content:"selectFilter"}], template:mark_sam_mitglied},		
-		{ id:"ehrenmitglied", css:{'text-align':'center'},header:[{text:"Ehrenmitglied"},{content:"selectFilter"}], template:mark_ehrenmitglied},		
-		{ id:"vorstand", css:{'text-align':'center'},header:[{text:"Vorstand"},{content:"selectFilter"}], template:mark_vorstand},		
-		{ id:"revisor", css:{'text-align':'center'},header:[{text:"Revisor"},{content:"selectFilter"}], template:mark_revisor},		
-		{ id:"allianz", css:{'text-align':'center'},header:[{text:"Allianz"},{content:"selectFilter"}], template:mark_allianz},		
+		{ id:"sam_mitglied", css:{'text-align':'center'}, header:[{text:"SAM Mitglied"},{content:"selectFilter"}], sort:"text", template:mark_sam_mitglied},		
+		{ id:"ehrenmitglied", css:{'text-align':'center'},header:[{text:"Ehrenmitglied"},{content:"selectFilter"}], sort:"text", template:mark_ehrenmitglied},		
+		{ id:"vorstand", css:{'text-align':'center'},header:[{text:"Vorstand"},{content:"selectFilter"}], sort:"text", template:mark_vorstand},		
+		{ id:"revisor", css:{'text-align':'center'},header:[{text:"Revisor"},{content:"selectFilter"}], sort:"text", template:mark_revisor},		
+		{ id:"allianz", css:{'text-align':'center'},header:[{text:"Allianz"},{content:"selectFilter"}], sort:"text", template:mark_allianz},		
 		{ id:"eintritt", header:[{text:"Eintritt"},{content:"textFilter"}], sort:"string", adjust:true, template:function(obj){return new Date(obj.eintritt).getFullYear();}},
 		{ id:"austritt", header:[{text:"Austritt"},{content:"textFilter"}], sort:"string", adjust:true, template:function(obj){return new Date(obj.austritt).getFullYear();}},
 		{ id:"adressenId", header:[{text:"Geworben von"},{content:"selectFilter"}], sort:"text", adjust:"header", template:show_geworben}
 	],
 	hover: "hoverline",
 	sort:"multi",
-	ready:function(){ 
-      // apply sorting
-      this.sort([{by:"name", dir:"asc"}, {by:"vorname", dir:"asc"}]);
-      // mark columns
-      this.markSorting("name", "asc", true);
-      this.markSorting("vorname", "asc", true);
-    },
+	autoConfig:true,
+	headermenu:true,
+	ready:function(){
+		this.sort([
+			{ by:"name", dir:"asc" }, 
+			{ by:"vorname", dir:"asc" }
+			]);
+		this.markSorting("name", "asc");
+		this.markSorting("vorname", "asc", true);
+	},
   on:{
     onBeforeLoad:function(){
       this.showOverlay("Loading...");
     },
     onAfterLoad:function(){
       this.hideOverlay();
-	  console.info(Adressen);
+	  console.info(Adressen.count());
 	  toolbar.elements.count_adr.value = "Anzahl " + Adressen.count();
     }
   },
@@ -240,15 +253,55 @@ var grid = {
   
 };
 
+var topmenu = {
+	view:"menu",
+	id:"topmenu",
+	autowidth:true,
+	data:[
+		{id:"1", value:"Mitglieder", icon:"webix_icon mdi mdi-account", submenu:[
+		{id:"11",value:"Mitglieder verwalten", href:"/grid"},
+		{id:"12", value:"Mitglieder exportieren", href:""}
+		]},
+		{id:"2", value:"Anlässe", icon:"webix_icon mdi mdi-timetable", submenu:[
+		{id:"21",value:"Anlässe buchen", href:""},
+		{id:"22",value:"Anlässe verwalten", href:""}
+		]},
+		{id:"3", value:"Info", icon:"webix_icon mdi mdi-information-variant" }
+	],
+	on:{
+		onMenuItemClick:function(id){
+			webix.message("Click "+this.getMenuItem(id).value);
+		}
+	},
+	type:{ subsign:true}
+};
+
 const dataarea = webix.ui({	 
 	container:"grid-container",
 	autofit:true,
-	width:1200, height:550,
-	rows:[ 
-		toolbar,	
+	width:1200, height:1000,
+	rows:[ {type:"clean", cols:[topmenu, toolbar]},
       	grid
 	]
 });
+
+var contextmenu = webix.ui({
+  view:"contextmenu",
+  id:"cmenu", autowidth: true,
+  data:[{id:"add", value:"Neues Mitglied"},{id:"mut", value:"Mitglied bearbeiten"},{id:"del", value:"Mitgliedschaft beenden"}],
+  on:{
+    onItemClick:function(id){
+      var context = this.getContext();	  
+      var list = context.obj;
+      var listId = context.id.row;
+	  var listItem = list.getItem(listId);
+	  
+      webix.message("List item: <i>"+listItem.name+"</i> <br/>Context menu item: <i>"+this.getItem(id).value+"</i>");
+    }
+  }
+});
+
+$$("cmenu").attachTo($$("adressen-grid"));
 
 $$('adresse-form').bind($$('adressen-grid'));
 

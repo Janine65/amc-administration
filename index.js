@@ -14,10 +14,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(require("path").join(__dirname, 'public')));
 
 //static pages
-var menu = require("./menu");
-app.get('/', 	 (req, res) => res.render('home', menu(req) ));
-app.get('/tree', (req, res) => res.render('tree', menu(req) ));
-app.get('/grid', (req, res) => res.render('grid', menu(req) ));
+app.get('/', 	 (req, res) => res.render('home' ));
+app.get('/grid', (req, res) => res.render('grid' ));
 
 var grid = require("./controllers/grid");
 app.get('/grid/data', grid.getData);
