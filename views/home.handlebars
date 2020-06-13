@@ -1,6 +1,17 @@
-<h3>Hallo</h3>
+<script>
+    const hometext = "<p>Hier kannst Du die Daten von Auto-Moto-Club Swissair administrieren.</p>" +
+"<br><br>";
 
-<p>Hier kannst Du die Daten von Auto-Moto-Club Swissair administrieren.</p>
+const dataarea = webix.ui({
+	type:"wide",
+    rows: [ top_toolbar,
+            {cols: [ firstCol,
+                    { template:hometext}                     
+	        ]}
+	]
+});
 
-<br><br><hr>
-@ Janine Franken 2020, GNU license.
+$$("top_label").setValue("AMC Verwaltung");
+$$("sidebar").select("home");
+
+</script>

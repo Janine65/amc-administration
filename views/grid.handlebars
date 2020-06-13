@@ -1,5 +1,4 @@
-<h3>Mitglieder verwalten </h3>
-<div id='grid-container'></div>
+
 <script>
 
 function mark_sam_mitglied (value, config) {
@@ -271,37 +270,19 @@ var grid = {
   
 };
 
-var topmenu = {
-	view:"menu",
-	id:"topmenu",
-	autowidth:true,
-	data:[
-		{id:"1", value:"Mitglieder", icon:"webix_icon mdi mdi-account", submenu:[
-		{id:"11",value:"Mitglieder verwalten", href:"/grid"},
-		{id:"12", value:"Mitglieder exportieren", href:""}
-		]},
-		{id:"2", value:"Anlässe", icon:"webix_icon mdi mdi-timetable", submenu:[
-		{id:"21",value:"Anlässe buchen", href:""},
-		{id:"22",value:"Anlässe verwalten", href:""}
-		]},
-		{id:"3", value:"Info", icon:"webix_icon mdi mdi-information-variant" }
-	],
-	on:{
-		onMenuItemClick:function(id){
-			webix.message("Click "+this.getMenuItem(id).value);
-		}
-	},
-	type:{ subsign:true}
-};
-
-const dataarea = webix.ui({	 
-	container:"grid-container",
-	autofit:true,
-	width:1200, height:1000,
-	rows:[ {type:"clean", cols:[topmenu, toolbar]},
-      	grid
+const dataarea = webix.ui({
+	type:"wide",
+    rows: [ top_toolbar,
+        {cols: [ firstCol,
+			{id:"detail", rows: [ toolbar, grid	] }
+		]}
 	]
 });
+
+$$("top_label").setValue("Mitglieder verwalten");
+$$("sidebar").open("1");
+$$("sidebar").select("11");
+$$("sidebar").collapse();
 
 var contextmenu = webix.ui({
   view:"contextmenu",

@@ -7,7 +7,49 @@
 		<script type="text/javascript" src="//cdn.webix.com/edge/webix.js"></script>
 		<link rel="stylesheet" type="text/css" href="//cdn.webix.com/edge/skins/compact.css">
 		<link rel="stylesheet" href="https://cdn.materialdesignicons.com/2.7.94/css/materialdesignicons.css" type="text/css" charset="utf-8">
-	</head>
+		<link rel="stylesheet" href="//cdn.webix.com/components/sidebar/sidebar.css" type="text/css" media="screen" charset="utf-8">
+		<script src="//cdn.webix.com/components/sidebar/sidebar.js" type="text/javascript" charset="utf-8"></script>
+		<script>
+// set all the necessary elements global
+
+
+const topmenu_data = [
+        {id:"home", value:"Home", icon:"webix_icon mdi mdi-home"},
+        {id:"1", value:"Mitglieder", icon:"webix_icon mdi mdi-account", 
+            data:[
+                {id:"11",value:"Mitglieder verwalten", href:"/grid"},
+                {id:"12", value:"Mitglieder exportieren", href:""}
+        ]},
+        {id:"2", value:"Anlässe", icon:"webix_icon mdi mdi-timetable", 
+            data:[
+                {id:"21",value:"Anlässe buchen", href:""},
+                {id:"22",value:"Anlässe verwalten", href:""}
+        ]},
+        {id:"3", value:"Info", icon:"webix_icon mdi mdi-information-variant" }
+    ];
+
+const footer_data = "@ Janine Franken 2020, GNU license.";
+
+const top_toolbar = { view: "toolbar", padding:3, elements: [
+    { view: "button", type: "icon", icon: "mdi mdi-menu",
+        width: 37, align: "left", css: "app_button", click: function(){
+            $$("sidebar").toggle();
+        }
+    },
+	{ id: "top_label", view: "label", label: "AMC"},
+	{ id: "copyright", view: "label", label: footer_data, css:"webix_label_right"}
+    ]};
+
+const firstCol = 
+        {
+        cols: [ {
+            view:"sidebar", id:"sidebar", data:topmenu_data, collapsed:false
+            }
+        ]
+        };
+
+		</script>
+   	</head>
 	<body>
 		<h1 class='header'>
 			<a href="/">
@@ -16,16 +58,7 @@
 			<a class='docs' href='http://www.automoto-sr.info' target="_blank">Homepage
 			</a>
 		</h1>
-		<div class='mainarea'>
-			{{!-- <ul class='left'>
-{{#each menu}}
-<li><span>{{value}}</span><ul>
-	{{#each data}}
-	<li class='{{css}}'><a href='{{href}}'>{{value}}</a></li>
-	{{/each}}
-</ul></li>
-{{/each}}
-			</ul> --}}
+		<div class='webix_full_screen_webixapp'>
 			<content class="center">{{{body}}}</content>
 		</div>
 	</body>

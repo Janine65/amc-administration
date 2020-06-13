@@ -11,9 +11,9 @@ const config = require('./config/config.js');
 
 var app = express();
 
-app.get('/', (req, res) => {
-    res.json(global.gConfig);
-});
+// app.get('/', (req, res) => {
+//     res.json(global.gConfig);
+// });
 
 var bars = exphbs({ 
 	defaultLayout: 'main'
