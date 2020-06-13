@@ -14,6 +14,7 @@
     "production": {
         "config_id": "production",
         "node_port": 3050,
+        "database": "amcadmin",
         "user": "webuser",
         "pwd": "MGKlMb-MShwOeSN7u",
         "port": "3307",

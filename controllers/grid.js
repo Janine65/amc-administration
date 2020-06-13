@@ -13,7 +13,7 @@ module.exports = {
 	},
 
 	getFKData: function(req, res) {
-		var qrySelect = "SELECT `id`, `fullname` as value FROM `Adressen` WHERE `austritt` > NOW()" ;
+		var qrySelect = "SELECT `id`, `fullname` as value FROM `adressen` WHERE `austritt` > NOW()" ;
 		if (req.query.filter != null) {
 			var qfield = '%' + req.query.filter.value + '%';
 			qrySelect = qrySelect + " AND lower(`fullname`) like '" + qfield + "'";
