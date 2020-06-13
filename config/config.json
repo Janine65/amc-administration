@@ -15,7 +15,7 @@
         "config_id": "production",
         "node_port": 3050,
         "user": "webuser",
-        "pwd": "Yogi-2982",
+        "pwd": "MGKlMb-MShwOeSN7u",
         "port": "3307",
         "dbtype": "mariadb"
     }
