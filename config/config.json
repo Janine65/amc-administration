@@ -1,0 +1,22 @@
+{
+    "development": {
+        "config_id": "development",
+        "app_name": "amc-administration",
+        "app_desc": "AMC Administration",
+        "node_port": 3050,
+        "json_indentation": 4,
+        "database": "amcmitglieder",
+        "user": "webuser",
+        "pwd": "yogi298294",
+        "port": "3306",
+        "dbtype": "mysql"
+    },
+    "production": {
+        "config_id": "production",
+        "node_port": 3050,
+        "user": "webuser",
+        "pwd": "Yogi-2982",
+        "port": "3307",
+        "dbtype": "mariadb"
+    }
+}

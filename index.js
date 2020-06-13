@@ -2,7 +2,19 @@ var express = require('express');
 var exphbs  = require('express-handlebars');
 var bodyParser = require('body-parser');
 
+// environment variables
+if (process.env.NODE_ENV == undefined)
+	process.env.NODE_ENV = 'development';
+
+// config variables
+const config = require('./config/config.js');
+
 var app = express();
+
+app.get('/', (req, res) => {
+    res.json(global.gConfig);
+});
+
 var bars = exphbs({ 
 	defaultLayout: 'main'
 });
@@ -27,4 +39,7 @@ app.get('/data/getFkData', grid.getFKData);
 
 app.get('/grid/data/:id', grid.getOneData);
 
-app.listen(3050);
+//app.listen('3050');
+app.listen(global.gConfig.node_port, () => {
+    console.log(`${global.gConfig.app_name} listening on port ${global.gConfig.node_port}`);
+});

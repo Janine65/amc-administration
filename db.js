@@ -1,8 +1,8 @@
 const { Sequelize, Model, Deferrable } = require('sequelize');
 
-const sequelize = new Sequelize('amcmitglieder', 'webuser', 'Yogi-298294', {
-  host:"localhost",
-  dialect:"mysql"
+const sequelize = new Sequelize(global.gConfig.database, global.gConfig.user, global.gConfig.pwd, {
+  host:"localhost", port:global.gConfig.port,
+  dialect:global.gConfig.dbtype
 });
 
 global.sequelize = sequelize; 
@@ -116,7 +116,7 @@ Adressen.init({
   notes: Sequelize.BLOB
 }, {
   sequelize,
-  tableName: 'Adressen',
+  tableName: 'adressen',
   modelName: 'adressen',
   indexes: [{ unique: true, fields: ['name','vorname','ort'] }]  
 });
