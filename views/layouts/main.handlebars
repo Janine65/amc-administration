@@ -14,7 +14,7 @@
 
 
 const topmenu_data = [
-        {id:"home", value:"Home", icon:"webix_icon mdi mdi-home"},
+        {id:"home", value:"Home", icon:"webix_icon mdi mdi-home", href:"/"},
         {id:"1", value:"Mitglieder", icon:"webix_icon mdi mdi-account", 
             data:[
                 {id:"11",value:"Mitglieder verwalten", href:"/grid"},
@@ -36,14 +36,30 @@ const top_toolbar = { view: "toolbar", padding:3, elements: [
             $$("sidebar").toggle();
         }
     },
-	{ id: "top_label", view: "label", label: "AMC"},
-	{ id: "copyright", view: "label", label: footer_data, css:"webix_label_right"}
+	{ id: "top_label", view: "label", label: "AMC"}, {},
+	{ id: "copyright", view: "label", label: footer_data, css:{ "text-align": "right", "font-style":"italic"}}
     ]};
 
 const firstCol = 
         {
         cols: [ {
-            view:"sidebar", id:"sidebar", data:topmenu_data, collapsed:false
+            view:"sidebar", id:"sidebar", data:topmenu_data, collapsed:false,
+			arrow: function(obj) {
+				var html = "";
+				for (var i=1; i<=obj.$level; i++) {
+					if (i==obj.$level && obj.$count) {
+						var icon = "wxi-angle-"+(obj.open?"down":"left");
+						var className = "webix_sidebar_dir_icon webix_icon "+ icon;
+						html+="<span class='"+className+"'></span>";
+					}
+				}
+				return html;
+			},
+			on:{
+				onItemClick: function(id, e, node){
+					webix.message("sidebar Click: " + id);
+				}
+			}
             }
         ]
         };
