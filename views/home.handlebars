@@ -2,9 +2,11 @@
     const hometext = "<p>Hier kannst Du die Daten von Auto-Moto-Club Swissair administrieren.</p>" +
 "<br><br>";
 
+//var menu = require("/menu");
+
 const dataarea = webix.ui({
 	type:"wide",
-    rows: [ top_toolbar,
+    rows: [ menu.getToolbar(),
             {cols: [ firstCol,
                     { template:hometext}                     
 	        ]}

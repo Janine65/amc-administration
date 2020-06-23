@@ -72,7 +72,7 @@ function reloadGrid(){
 	$$("adressen-grid").sort(sort);
 };
 
-function addMember() {
+function addAdresse() {
 	$$("adressen-grid").unselectAll();			
 	$$("labelhead").define("label","Neues Mitglied hinzufügen");
 	$$("labelhead").refresh();
@@ -80,7 +80,7 @@ function addMember() {
 	$$("adresse-form").elements.name.focus();
 };
 
-function mutMember() {
+function mutAdresse() {
 	var data = $$('adressen-grid').getSelectedItem();
 	if (data == null) {
 		webix.message({type:"error", text:"Keine Zeile ausgewählt zum Ändern"});
@@ -92,7 +92,7 @@ function mutMember() {
 	$$("adresse-form").elements.name.focus();
 };
 
-function delMember() {
+function delAdresse() {
 	var values = $$('adressen-grid').getSelectedItem();
 	if (values == null) {
 		webix.message({type:"error", text:"Keine Zeile ausgewählt zum Löschen"});
@@ -112,9 +112,9 @@ webix.i18n.setLocale("de-DE");
 var toolbar = {
 	view:"toolbar", id:"adressen-toolbar", autowidth: true,
 	cols:[
-		{ view:"button", value:"Neues Mitglied", click:addMember },
-		{ view:"button", value:"Mitglied mutieren", click:mutMember},
-		{ view:"button", value:"Mitglidschaft beenden", click:delMember},
+		{ view:"button", value:"Neues Mitglied", click:addAdresse },
+		{ view:"button", value:"Mitglied mutieren", click:mutAdresse},
+		{ view:"button", value:"Mitglidschaft beenden", click:delAdresse},
 		{ view:"button", id:"count_adr", value:"Anzahl ", click:function() { 
 			reloadGrid();
 		}}
@@ -300,15 +300,15 @@ var contextmenu = webix.ui({
 	  var listItem = list.getItem(listId);
 	  switch (id) {
 			case "add":
-		  		addMember();
+		  		addAdresse();
 				break;
 			case "mut":
 			  	list.select(listId);
-				mutMember();
+				mutAdresse();
 				break;
 			case "del":
 	  			list.select(listId);
-				delMember();
+				delAdresse();
 				break;
 			case "col":
 				showMenu(this.$view);

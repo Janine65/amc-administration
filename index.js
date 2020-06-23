@@ -1,6 +1,9 @@
-var express = require('express');
-var exphbs  = require('express-handlebars');
-var bodyParser = require('body-parser');
+"use strict";
+
+const express = require('express');
+const bodyParser = require('body-parser');
+const path = require("path");
+const nedb = require("nedb");
 
 // environment variables
 if (process.env.NODE_ENV == undefined)
@@ -9,41 +12,37 @@ if (process.env.NODE_ENV == undefined)
 // config variables
 const config = require('./config/config.js');
 
-var app = express();
+const app = express();
 
-// app.get('/', (req, res) => {
-//     res.json(global.gConfig);
-// });
+app.use(bodyParser.json());
+app.use("/", express.static(path.join(__dirname, '/public')));
 
-var bars = exphbs({ 
-	defaultLayout: 'main'
-});
+const db = require('./db')
+
+const adresse = require("./controllers/adresse");
+app.get('/adresse/data', adresse.getData);
+app.post('/adresse/data', adresse.addData);
+app.put('/adresse/data/:id', adresse.updateData);
+app.delete('/adresse/data/:id', adresse.removeData);
+app.get('/data/getFkData', adresse.getFKData);
+app.get('/adresse/data/:id', adresse.getOneData);
 
 
-app.engine('handlebars', bars);
-app.set('view engine', 'handlebars');
-
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static(require("path").join(__dirname, 'public')));
-
-//static pages
-// var menu = require("./menu");
-// app.get('/', 	 (req, res) => res.render('home', menu(req) ));
-// app.get('/grid', (req, res) => res.render('grid', menu(req) ));
-app.get('/', 	 (req, res) => res.render('home' ));
-app.get('/grid', (req, res) => res.render('grid' ));
-
-var grid = require("./controllers/grid");
-app.get('/grid/data', grid.getData);
-app.post('/grid/data', grid.addData);
-app.put('/grid/data/:id', grid.updateData);
-app.delete('/grid/data/:id', grid.removeData);
-
-app.get('/data/getFkData', grid.getFKData);
-
-app.get('/grid/data/:id', grid.getOneData);
-
-//app.listen('3050');
+  
+  /**
+   * A common handler to deal with DB operation errors.  Returns a 500 and an error object.
+   *
+   * @param inError    Error object from the DB call.
+   * @param inResponse The response being serviced.
+   */
+  const commonErrorHandler = function(inError, inResponse) {
+  
+	console.log(inError);
+	inResponse.status(500);
+	inResponse.send(`{ "error" : "Server error" }`);
+  
+  }; /* End commonErrorHandler(). */
+  
 app.listen(global.gConfig.node_port, () => {
     console.log(`${global.gConfig.app_name} listening on port ${global.gConfig.node_port}`);
 });

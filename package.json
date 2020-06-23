@@ -26,12 +26,12 @@
     "@mdi/font": "^5.2.45",
     "body-parser": "^1.19.0",
     "express": "^4.17.1",
-    "express-handlebars": "^3.1.0",
     "formidable": "^1.2.2",
     "mariadb": "^2.4.0",
     "mongodb": "^3.5.7",
     "mongoskin": "^2.1.0",
     "mysql2": "^1.7.0",
+    "nedb": "^1.8.0",
     "sequelize": "^5.21.8",
     "webix": "^7.3.0"
   }
