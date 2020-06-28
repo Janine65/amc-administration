@@ -90,7 +90,7 @@ wxAMC.moduleClasses.Tasks = class {
             { view : "toolbar",
               cols : [
                 { width : 6 },
-                { view : "button", label : "Back To Summary", width : "170",
+                { view : "button", label : "Zurück", width : "170",
                   type : "iconButton", icon : "webix_icon mdi mdi-arrow-left",
                   click : () => {
                     $$("moduleTasks-itemsCell").show();
@@ -254,37 +254,6 @@ wxAMC.moduleClasses.Tasks = class {
    * Service requests from day-at-a-glance to present data for this module.
    */
   dayAtAGlance() {
-
-    // Add a section to the day-at-a-glance body for this module if there isn't one already.
-    if (!$$("dayAtAGlanceScreen_Tasks")) {
-      $$("dayAtAGlanceBody").addView({
-        view : "fieldset", label : "Tasks",
-        body : { id : "dayAtAGlanceScreen_Tasks",  rows : [ ] }
-      });
-      $$("dayAtAGlanceBody").addView({ height : 20 });
-    }
-
-    // Populate the day-at-a-glance screen.
-    const template = webix.template("#subject#");
-    let dataItems = wxAMC.getModuleData("Tasks");
-    dataItems = wxAMC.objectAsArray(dataItems);
-    wxAMC.sortArray(dataItems, "value", "A");
-    const currentDate = new Date().setHours(0, 0, 0, 0);
-    const rows = [ ];
-    for (let i = 0; i < dataItems.length; i++) {
-      const item = dataItems[i];
-      const itemDate = new Date(item.dueDate).setHours(0, 0, 0, 0);
-      if (itemDate == currentDate) {
-        if (item.status == 1) {
-          item.status = "Ongoing";
-        } else {
-          item.status = "Completed";
-        }
-        item.dueDate = webix.i18n.timeFormatStr(new Date(item.dueDate));
-        rows.push({ borderless : true, template : template(item), height : 30 });
-      }
-    }
-    webix.ui(rows, $$("dayAtAGlanceScreen_Tasks"));
 
   } /* End dayAtAGlance(). */
 

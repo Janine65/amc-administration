@@ -318,7 +318,7 @@ class WXAMC {
    * @return           The data as an object.
    */
   getModuleData(inModuleName) {
-    
+  
     return null;
 
   } /* End getModuleData(). */
@@ -333,20 +333,41 @@ class WXAMC {
   saveHandler(inModuleName, inFormIDs) {
 
     // Merge all forms together.  Usually there's just one, but some modules may have more than one.
-    const itemData = { };
+    var itemData = { };
     for (let i = 0; i < inFormIDs.length; i++) {
-      const formData = $$(inFormIDs[i]).getValues();
-      webix.proto(itemData, formData);
+      if ($$(inFormIDs[i]).isDirty()) {
+        const formData = $$(inFormIDs[i]).getValues();
+        webix.proto(itemData, formData);
+      }
     }
+    if (itemData.count == 0)
+      return;
+
     itemData.id = wxAMC.modules[inModuleName].editingID;
 
     // webix.proto() adds an $init() function, but we don't need that, so let's delete it now.
     delete itemData.$init;
 
-    // Get the collection of module data, apply this one, and then set it again.
-    const moduleData = wxAMC.getModuleData(inModuleName);
-    moduleData[itemData.id] = itemData;
-    localStorage.setItem(`${inModuleName}DB`, webix.stringify(moduleData));
+    console.log("itemData: ",itemData);
+    const url = "/"+inModuleName+"/data/";
+
+    const promiseModule = fetch(url, {
+      method: 'POST', // *GET, POST, PUT, DELETE, etc.
+      mode: 'cors', // no-cors, *cors, same-origin
+      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+      credentials: 'same-origin', // include, *same-origin, omit
+      headers: {
+        'Content-Type': 'application/json'
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      redirect: 'follow', // manual, *follow, error
+      referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+      body: JSON.stringify(itemData) // body data type must match "Content-Type" header
+    })
+    .then((response) => response.json());;
+ 
+    //const promiseModule = fetch ("/"+inModuleName+"/data/", {method: 'POST',body: JSON.stringify(itemData)}).then((response) => response.json());
+    Promise.resolve(promiseModule);
 
     // Refresh the module's summary list and return to that list.
     wxAMC.modules[inModuleName].refreshData();
@@ -365,9 +386,8 @@ class WXAMC {
    *
    * @param inModuleName The name of the module.
    */
-  emailHandler(inModuleName, inFormIDs) {
-   // webix.message({type : "info", text: "Email sent to id " + inFormIDs});
-    console.log(inFormIDs);
+  sendEmail(inModuleName) {
+   // webix.message({type : "info", text: "Email sent to id " + sEmail});
 
 
   } /* End emailHandler(). */

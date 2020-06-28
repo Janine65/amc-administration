@@ -1,5 +1,3 @@
-"use strict";
-
 // "Register" this module with wxAMC.
 wxAMC.registeredModules.push("Adressen");
 
@@ -152,13 +150,14 @@ wxAMC.moduleClasses.Adressen = class {
                 $$("moduleAdressen-editButton").enable();
               }
             },
-            url:"/adresse/data", save:"rest->/adresse/data"
+            url:"/adresse/data"
             },
             { view : "toolbar",
               cols : [
+                { id: "count_adr", view : "label", label: "Anzahl 0"},
                 { },
                 { id: "moduleAdressen-emailAllButton", view : "button", label : "Email", width : "80", type : "iconButton",
-                  icon : "webix_icon mdi mdi-email-plus", click : wxAMC.emailHandler("Adressen", "all")
+                  icon : "webix_icon mdi mdi-email-plus", click : this.showEmailForm("")
                 },
                 { id: "moduleAdressen-editButton", view : "button", label : "Edit", width : "80", type : "iconButton", disabled: true,
                   icon : "webix_icon mdi mdi-pencil", click : this.editExisting.bind(this)
@@ -186,7 +185,7 @@ wxAMC.moduleClasses.Adressen = class {
                 } }
               },
               elements:[
-                { readonly:true, view:"text", name:"mnr", label:"MNR", hidden:true },
+                { readonly:true, view:"text", name:"mnr", label:"MNR" },
                   { view:"combo", 
                       options:[{ id:"1", value:"männlich" }, { id:"2", value:"weiblich" }], 
                       name:"geschlecht", label:"Geschlecht", required : true },
@@ -197,7 +196,7 @@ wxAMC.moduleClasses.Adressen = class {
                 { view:"text", name:"adresse", label:"Adresse", required : true,
                 invalidMessage : "Subject is required" },
                 { view:"text", width:150, name:"plz", label:"PLZ", required : true,
-                invalidMessage : "Subject is required", attributes : { maxlength : 5 }},
+                invalidMessage : "Subject is required", width:180, attributes : { maxlength : 5 }},
                 { view:"text", name:"ort", label:"Ort", required : true,
                 invalidMessage : "Subject is required" },
                 { view:"combo", 
@@ -234,7 +233,7 @@ wxAMC.moduleClasses.Adressen = class {
             { view : "toolbar",
               cols : [
                 { width : 6 },
-                { view : "button", label : "Back To Summary", width : "170",
+                { view : "button", label : "Zurück", width : "90",
                   type : "iconButton", icon : "mdi mdi-arrow-left",
                   click : () => {
                     $$("moduleAdressen-itemsCell").show();
@@ -244,7 +243,7 @@ wxAMC.moduleClasses.Adressen = class {
                 { id : "moduleAdressen-emailButton", view : "button", label : "Email",
                   width : "90", type : "iconButton",
                   icon : "webix_icon mdi mdi-email-box", disabled : true, 
-                    click : () => { wxAMC.emailHandler("Adressen", $$("moduleAdressen-detailsForm").elements.email.data.value); }
+                    click : () => { this.showEmailForm($$("moduleAdressen-detailsForm").elements.email.data.value); }
                 },
                 { id : "moduleAdressen-deleteButton", view : "button", label : "Delete",
                   width : "90", type : "iconButton",
@@ -258,7 +257,7 @@ wxAMC.moduleClasses.Adressen = class {
                 },
                 { width : 6 }
               ]
-            } /* End adresse details toolbar. */
+            }, /* End adresse details toolbar. */
           ] /* End adresse details cell rows. */
         } /* End adresse details cell. */
       ] /* End main layout cells. */
@@ -295,21 +294,138 @@ wxAMC.moduleClasses.Adressen = class {
     // disable the delete button since we obviously can't delete during an add.
     $$("moduleAdressen-details").show();
     $$("moduleAdressen-detailsForm").clear();
+    $$("moduleAdressen-detailsForm").elements.geschlecht.data.value = 1;
+    $$("moduleAdressen-detailsForm").elements.sam_mitglied.data.value = 1;
+    $$("moduleAdressen-detailsForm").elements.land.data.value = "CH";
+    
+    
     $$("moduleAdressen-deleteButton").disable();
 
   } /* End newHandler(). */
 
+  sendMail() {
+    const mailForm = $$('moduleAdressen-emailForm').getValues();
 
+    const url = "/Adressen/email/";
+
+    const promiseModule = fetch(url, {
+      method: 'POST', // *GET, POST, PUT, DELETE, etc.
+      mode: 'cors', // no-cors, *cors, same-origin
+      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+      credentials: 'same-origin', // include, *same-origin, omit
+      headers: {
+        'Content-Type': 'application/json'
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      redirect: 'follow', // manual, *follow, error
+      referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+      body: JSON.stringify(mailForm) // body data type must match "Content-Type" header
+    })
+    .then((response) => response.json());;
+ 
+    //const promiseModule = fetch ("/"+inModuleName+"/data/", {method: 'POST',body: JSON.stringify(itemData)}).then((response) => response.json());
+    Promise.resolve(promiseModule);
+
+    $$('moduleAdressen-email').close();
+    $$("moduleAdressen-itemsCell").show();
+
+
+  } /* sendMail */
+
+
+  /**
+   * Show Email Form, depending on the parameter
+   */
+
+   showEmailForm(sEmailType) {
+
+    if (sEmailType == "") {
+      return;
+    }
+
+    if (sEmailType == "Alle") {
+
+    }
+
+    if ($$("moduleAdressen-email"))    
+      $$('moduleAdressen-email').close();
+
+    
+    webix.ui(        /* ---------- Email details cell. ---------- */
+      { view : "window", id : "moduleAdressen-email",
+      width : 600, height : 600, position : "center", borderless : false, scroll: true,
+      head : {
+        view : "toolbar",
+        cols : [
+          { view : "label", label : "Email senden" },
+          { view : "icon", icon : "mdi mdi-window-close",
+            click : function() { $$("moduleAppointments-dateWindow").close(); }
+          }
+        ]
+      },
+      body: {
+        rows : [
+          /* Adresse details form. */
+          { view : "form", id : "moduleAdressen-emailForm",
+            // elementsConfig : { view : "text", labelWidth : 100,
+            //   on : { onChange : () => {
+            //     $$("moduleAdressen-sendButton")
+            //       [$$("moduleAdressen-emailForm").validate()? "enable" : "disable"]();
+            //   } }
+            // },
+            elements:[
+                { view:"text", name: "email_an", label:"AN:" },
+                { view:"text", name: "email_cc", label:"CC:" },
+                { view:"text", name: "email_bcc", label:"BCC:" },
+                { view:"text", name: "email_subject", label:"Betreff:", required: true },
+                { view:"richtext", name: "email_body", label:"Meldung:", required: true }
+            ]
+          }, // End Email form */
+          /* Email details toolbar. */
+          { view : "toolbar",
+          cols : [
+            { width : 6 },
+            { view : "button", label : "Zurück", width : "90",
+              type : "iconButton", icon : "mdi mdi-arrow-left",
+              click : () => {
+                $$('moduleAdressen-email').close();
+                $$("moduleAdressen-itemsCell").show();
+              }
+            },
+            { },
+            { id : "moduleAdressen-sendButton", view : "button", label : "Email",
+              width : "90", type : "iconButton",
+              icon : "webix_icon mdi mdi-email-box", disabled : false, 
+                click : () => { this.sendMail(); 
+              }
+            } ]
+          } ] /* End Email details toolbar */
+        }
+      }
+    ).show();
+
+    var emailData = [];
+
+    emailData.email_an = sEmailType;
+    emailData.email_cc = "";
+    emailData.email_bcc = "";
+    emailData.email_subject = "";
+    emailData.email_body = "";
+
+    // Populate the form.
+    $$("moduleAdressen-emailForm").setValues(emailData);
+
+   } /* End showEmailForm */
   /**
    * Handles clicks on the Save button.
    */
-  editExisting(inID) {
+  editExisting() {
 
     const adresse = $$("moduleAdressen-items").getSelectedItem();
 
     // Set flag to indicate editing an existing adresse and show the details.
     wxAMC.modules.Adressen.isEditingExisting = true;
-    wxAMC.modules.Adressen.editingID = inID;
+    wxAMC.modules.Adressen.editingID = adresse.id;
 
     // Clear the details form.
     $$("moduleAdressen-detailsForm").clear();
@@ -334,14 +450,16 @@ wxAMC.moduleClasses.Adressen = class {
    */
   refreshData() {
 
-    // First, get the data for this module.  Then, create a new object from it where
-    // the keys are normalized (without time component) dates and store the object on
-    // the module class instance.
-    const dataItems = wxAMC.getModuleData("Adressen");
-
-    // Now, have the adresse list refresh itself using the new data object.
-    $$("moduleAdressen-items").refresh();
-
+    var state = $$("moduleAdressen-items").getState();
+    var sort = state.sort
+    if (sort == null) {
+      sort = [{by:"name", dir:"asc"},{by:"vorname", dir:"asc"}];
+    }
+    console.info("reloadGrid: ", sort);
+    $$("moduleAdressen-items").clearAll();
+    $$("moduleAdressen-items").load($$("moduleAdressen-items").config.url);
+    $$("moduleAdressen-items").sort(sort);
+  
   } /* End refreshData(). */
 
   /**
@@ -359,26 +477,23 @@ wxAMC.moduleClasses.Adressen = class {
     }
 
     // Populate the day-at-a-glance screen.
-    const template = webix.template("#subject# - #when# #location#");
-    let dataItems = wxAMC.getModuleData("Adressen");
-    dataItems = wxAMC.objectAsArray(dataItems);
-    wxAMC.sortArray(dataItems, "when", "A");
-    const currentDate = new Date().setHours(0, 0, 0, 0);
-    const rows = [ ];
-    for (let i = 0; i < dataItems.length; i++) {
-      const item = dataItems[i];
-      const itemDate = new Date(item.when).setHours(0, 0, 0, 0);
-      if (itemDate == currentDate) {
-        if (item.location) {
-          item.location = "(" + item.location + ")";
-        } else {
-          item.location = "";
-        }
-        item["when"] = webix.i18n.timeFormatStr(new Date(item.when));
-        rows.push({ borderless : true, template : template(item), height : 30 });
-      }
-    }
-    webix.ui(rows, $$("dayAtAGlanceScreen_Adressen"));
+    const template = webix.template("#label# : #anzahl#");
+    var rows = [ ];
+
+    const promiseModule = fetch("/Adressen/getOverviewData").then((response) => response.json());
+    Promise.resolve(promiseModule)
+    .then(totals => {
+      totals.forEach(total => {
+        rows.push({ borderless : true, template : template(total), height : 50 });
+      })
+    })
+    .catch((e) => console.error(e));
+
+    console.log(rows);
+   
+    $$("dayAtAGlanceScreen_Adressen").body = { rows : rows };
+    console.log($$("dayAtAGlanceScreen_Adressen"));
+    //webix.ui(rows, $$("dayAtAGlanceScreen_Adressen"));
 
   } /* End dayAtAGlance(). */
 

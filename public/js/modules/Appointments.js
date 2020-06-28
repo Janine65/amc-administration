@@ -98,7 +98,7 @@ wxAMC.moduleClasses.Appointments = class {
             { view : "toolbar",
               cols : [
                 { width : 6 },
-                { view : "button", label : "Back To Summary", width : "170",
+                { view : "button", label : "Zurück", width : "170",
                   type : "iconButton", icon : "mdi mdi-arrow-left",
                   click : () => {
                     $$("moduleAppointments-itemsCell").show();
@@ -346,6 +346,8 @@ wxAMC.moduleClasses.Appointments = class {
    * Service requests from day-at-a-glance to present data for this module.
    */
   dayAtAGlance() {
+
+    return;
 
     // Add a section to the day-at-a-glance body for this module if there isn't one already.
     if (!$$("dayAtAGlanceScreen_Appointments")) {

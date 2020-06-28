@@ -32,6 +32,7 @@
     "mongoskin": "^2.1.0",
     "mysql2": "^1.7.0",
     "nedb": "^1.8.0",
+    "sendmail": "^1.6.1",
     "sequelize": "^5.21.8",
     "webix": "^7.3.0"
   }

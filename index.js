@@ -4,6 +4,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const path = require("path");
 const nedb = require("nedb");
+const sendmail = require("sendmail")();
 
 // environment variables
 if (process.env.NODE_ENV == undefined)
@@ -17,17 +18,35 @@ const app = express();
 app.use(bodyParser.json());
 app.use("/", express.static(path.join(__dirname, '/public')));
 
-const db = require('./db')
+const db = require('./public/js/db')
 
-const adresse = require("./controllers/adresse");
+const adresse = require("./public/js/controllers/adresse");
 app.get('/adresse/data', adresse.getData);
-app.post('/adresse/data', adresse.addData);
-app.put('/adresse/data/:id', adresse.updateData);
-app.delete('/adresse/data/:id', adresse.removeData);
+app.post('/Adressen/data', adresse.updateData);
+app.put('/Adressen/data/:id', adresse.updateData);
+app.delete('/Adressen/data/:id', adresse.removeData);
 app.get('/data/getFkData', adresse.getFKData);
-app.get('/adresse/data/:id', adresse.getOneData);
+app.get('/Adressen/data/:id', adresse.getOneData);
+app.get('/Adressen/getOverviewData', adresse.getOverviewData);
 
+app.post('/Adressen/email', sendEmail);
 
+    function sendEmail(req, res) {
+      const email = req.body;
+
+      console.log(req, res);
+
+      sendmail({
+        from: 'info@automoto-sr.info',
+        to: 'janine@olconet.com',
+        subject: email.email_subject,
+        html: email.email_body,
+      }, function(err, reply) {
+        console.log(err && err.stack);
+        console.dir(reply);
+    });
+
+    }
   
   /**
    * A common handler to deal with DB operation errors.  Returns a 500 and an error object.

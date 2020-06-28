@@ -8,6 +8,26 @@ module.exports = {
 			 }}).then(data => res.json(data));		
 	},
 
+	getOverviewData: function (req, res) {
+		// get a json file with the following information to display on first page:
+		// count of active adressen
+		// count of SAM_Mitglieder
+		// count of not SAM_Mitglieder
+		
+		var qrySelect = "SELECT 'Anzahl aktive Mitglieder' as label, count(id) as anzahl FROM adressen  WHERE `austritt` > NOW()";
+		qrySelect += " UNION SELECT 'Anzahl SAM Mitglieder', count(id) FROM adressen WHERE  `austritt` > NOW() and sam_mitglied = 1";
+		qrySelect += " UNION SELECT 'Anzahl Freimitglieder', count(id) FROM adressen WHERE  `austritt` > NOW() and sam_mitglied = 0";
+
+		sequelize.query(qrySelect, 
+			{ 
+				type: Sequelize.QueryTypes.SELECT,
+				plain: false,
+				logging: console.log,
+				raw: false
+			}
+		).then(data => res.json(data));					
+	},
+
 	getOneData: function (req, res) {
 		db.Adressen.findByPk(req.param.id).then(data => res.json(data));
 	},
@@ -64,14 +84,28 @@ module.exports = {
 		if (data.austritt == "" || data.austritt == null) {
 			data.austritt = "3000-01-01T00:00:00";
 		}
-		console.info('update: ',res, req);
+		if (data.eintritt == "" || data.eintritt == null) {
+			data.eintritt = new Date().toISOString();
+		}
+		if (data.mnr == "") {
+			// insert
+			console.info('insert: ',data);
+			//data.id = db.Adressen.increment('id');
+			//console.info('insert2: ',data);
+			db.Adressen.create(data).then((obj) =>
+				res.json({ id: obj.id }));
+		} else {
+			// update
+			console.info('update: ',data);
 		
-		db.Adressen.findByPk(req.params.id)
-			.then((adresse) => {
+			const adresse = db.Adressen.findByPk(data.id);
+			if (addresse != null) {
 				console.info('update - adresse: ',adresse);				
-				if (adresse.update(data))
-					res.json({});
-		});
+				adresse.update(data);
+			} else {
+				console.error("updateData: adresse is empty");
+			}
+		}
 	},
 
 };

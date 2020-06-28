@@ -207,7 +207,7 @@ wxAMC.moduleClasses.Contacts = class {
             { view : "toolbar",
               cols : [
                 { width : 6 },
-                { view : "button", label : "Back To Summary", width : "170",
+                { view : "button", label : "Zurück", width : "170",
                   type : "iconButton", icon : "webix_icon mdi mdi-arrow-left",
                   click : () => {
                     $$("moduleContacts-itemsCell").show();

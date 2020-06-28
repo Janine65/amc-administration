@@ -1,6 +1,5 @@
 "use strict";
 
-
 /**
  * Get the UI config object for the day-at-a-glance screen.
  */
