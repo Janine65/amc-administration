@@ -73,7 +73,7 @@ wxAMC.moduleClasses.Adressen = class {
   getUIConfig() {
 
     return {
-      winWidth : 1200, winHeight : 800, winLabel : "Adressen", winIcon : "webix_icon mdi mdi-contacts",
+      winWidth : 1200, winHeight : 800, winLabel : "Adressen", winIcon : "mdi mdi-contacts",
       id : "moduleAdressen-container",
       cells : [
         /* ---------- Adresse list cell. ---------- */
@@ -378,6 +378,7 @@ wxAMC.moduleClasses.Adressen = class {
                 { view:"text", name: "email_cc", label:"CC:" },
                 { view:"text", name: "email_bcc", label:"BCC:" },
                 { view:"text", name: "email_subject", label:"Betreff:", required: true },
+                //{ view:"", name:"attachement", label:"Attachement" },
                 { view:"richtext", name: "email_body", label:"Meldung:", required: true }
             ]
           }, // End Email form */
@@ -468,12 +469,8 @@ wxAMC.moduleClasses.Adressen = class {
   dayAtAGlance() {
 
     // Add a section to the day-at-a-glance body for this module if there isn't one already.
-    if (!$$("dayAtAGlanceScreen_Adressen")) {
-      $$("dayAtAGlanceBody").addView({
-        view : "fieldset", label : "Adressen",
-        body : { id : "dayAtAGlanceScreen_Adressen",  rows : [ ] }
-      });
-      $$("dayAtAGlanceBody").addView({ height : 20 });
+    if ($$("dayAtAGlanceScreen_Adressen")) {
+      $$("dayAtAGlanceScreen_Adressen").close();
     }
 
     // Populate the day-at-a-glance screen.
@@ -484,16 +481,25 @@ wxAMC.moduleClasses.Adressen = class {
     Promise.resolve(promiseModule)
     .then(totals => {
       totals.forEach(total => {
-        rows.push({ borderless : true, template : template(total), height : 50 });
+        rows.push(
+          { view:"fieldset", label: total.label, body: { 
+            rows : [ 
+              {view: "label", label : total.anzahl}
+            ]}
+          });
       })
     })
     .catch((e) => console.error(e));
 
     console.log(rows);
    
-    $$("dayAtAGlanceScreen_Adressen").body = { rows : rows };
-    console.log($$("dayAtAGlanceScreen_Adressen"));
-    //webix.ui(rows, $$("dayAtAGlanceScreen_Adressen"));
+    $$("dayAtAGlanceBody").addView({
+      view : "fieldset", label : "Adressen", id : "dayAtAGlanceScreen_Adressen",  
+      body : { id: "dayAtAGlanceScreen_AdressenRows", rows : [ rows ] }
+    });
+    $$("dayAtAGlanceBody").addView({ height : 20 });
+
+  //webix.ui(rows, $$("dayAtAGlanceScreen_Adressen"));
 
   } /* End dayAtAGlance(). */
 
