@@ -85,7 +85,7 @@ wxAMC.moduleClasses.Adressen = class {
             resizeColumn: { headerOnly:true},
             scroll:true, 
             editable:false, 
-            headermenu:{
+/*             headermenu:{
               data: [
               { id:"mobile", value:"Mobile"},
               { id:"email", value:"Email"},
@@ -101,7 +101,7 @@ wxAMC.moduleClasses.Adressen = class {
               { id:"adressenId", value:"Geworben von"}
               ]
             },
-            defaultData: {geschlecht: "1", land: "CH", sam_mitglied:"1"},	
+            defaultData: {geschlecht: "1", land: "CH", sam_mitglied:"1"},	*/
             columns:[
               { id:"mnr", css:{'text-align':'right'}, header:[{text:"MNR"},{content:"numberFilter"}], sort:"int", adjust:true},
               { id:"geschlecht", header:[{text:"Geschlecht"}], options:[
@@ -161,6 +161,9 @@ wxAMC.moduleClasses.Adressen = class {
                 },
                 { id: "moduleAdressen-editButton", view : "button", label : "Edit", width : "80", type : "iconButton", disabled: true,
                   icon : "webix_icon mdi mdi-pencil", click : this.editExisting.bind(this)
+                },
+                { id : "moduleAdressen-deleteButton", view : "button", label : "Delete", width : "80", type : "iconButton",
+                  icon : "webix_icon mdi mdi-delete", click : () => { wxAMC.deleteHandler("Adressen"); }
                 },
                 { id: "moduleAdressen-newButton", view : "button", label : "New", width : "80", type : "iconButton",
                   icon : "webix_icon mdi mdi-plus", click : this.newHandler.bind(this)
@@ -244,10 +247,6 @@ wxAMC.moduleClasses.Adressen = class {
                   width : "90", type : "iconButton",
                   icon : "webix_icon mdi mdi-email-box", disabled : true, 
                     click : () => { this.showEmailForm($$("moduleAdressen-detailsForm").elements.email.data.value); }
-                },
-                { id : "moduleAdressen-deleteButton", view : "button", label : "Delete",
-                  width : "90", type : "iconButton",
-                  icon : "webix_icon mdi mdi-delete", click : () => { wxAMC.deleteHandler("Adressen"); }
                 },
                 { },
                 { view : "button", label : "Save", width : "80", type : "iconButton",
@@ -456,7 +455,7 @@ wxAMC.moduleClasses.Adressen = class {
     if (sort == null) {
       sort = [{by:"name", dir:"asc"},{by:"vorname", dir:"asc"}];
     }
-    console.info("reloadGrid: ", sort);
+    //console.info("reloadGrid: ", sort);
     $$("moduleAdressen-items").clearAll();
     $$("moduleAdressen-items").load($$("moduleAdressen-items").config.url);
     $$("moduleAdressen-items").sort(sort);
@@ -469,17 +468,22 @@ wxAMC.moduleClasses.Adressen = class {
   dayAtAGlance() {
 
     // Add a section to the day-at-a-glance body for this module if there isn't one already.
-    if ($$("dayAtAGlanceScreen_Adressen")) {
-      $$("dayAtAGlanceScreen_Adressen").close();
-    }
+    if (!$$("dayAtAGlanceScreen_Adressen")) {
+      $$("dayAtAGlanceBody").addView({
+        view : "fieldset", label : "Adressen", 
+        body : { id: "dayAtAGlanceScreen_Adressen", cols : [  ] }
+      });
+      $$("dayAtAGlanceBody").addView({ height : 20 });  
+      }
 
     // Populate the day-at-a-glance screen.
-    const template = webix.template("#label# : #anzahl#");
     var rows = [ ];
 
-    const promiseModule = fetch("/Adressen/getOverviewData").then((response) => response.json());
+    const promiseModule = fetch("/Adressen/getOverviewData")
+      .then((response) => response.json())
+      .catch((e) => webix.message({ type:"error", text: e}));
     Promise.resolve(promiseModule)
-    .then(totals => {
+    .then(function(totals) {
       totals.forEach(total => {
         rows.push(
           { view:"fieldset", label: total.label, body: { 
@@ -488,18 +492,11 @@ wxAMC.moduleClasses.Adressen = class {
             ]}
           });
       })
+      //console.log(rows);
+      webix.ui(rows, $$("dayAtAGlanceScreen_Adressen")); 
     })
-    .catch((e) => console.error(e));
+    .catch((e) => webix.message({ type:"error", text: e}));
 
-    console.log(rows);
-   
-    $$("dayAtAGlanceBody").addView({
-      view : "fieldset", label : "Adressen", id : "dayAtAGlanceScreen_Adressen",  
-      body : { id: "dayAtAGlanceScreen_AdressenRows", rows : [ rows ] }
-    });
-    $$("dayAtAGlanceBody").addView({ height : 20 });
-
-  //webix.ui(rows, $$("dayAtAGlanceScreen_Adressen"));
 
   } /* End dayAtAGlance(). */
 

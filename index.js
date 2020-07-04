@@ -48,6 +48,16 @@ app.post('/Adressen/email', sendEmail);
 
     }
   
+    const anlaesse = require("./public/js/controllers/anlaesse");
+    app.get('/Anlaesse/data', anlaesse.getData);
+    app.post('/Anlaesse/data', anlaesse.updateData);
+    app.put('/Anlaesse/data', anlaesse.updateData);
+    app.delete('/Anlaesse/data', anlaesse.removeData);
+    app.delete('/Anlaesse/data', anlaesse.removeData);
+    app.get('/Anlaesse/getFkData', anlaesse.getFKData);
+    app.get('/Anlaesse/data/:id', anlaesse.getOneData);
+    app.get('/Anlaesse/getOverviewData', anlaesse.getOverviewData);
+    
   /**
    * A common handler to deal with DB operation errors.  Returns a 500 and an error object.
    *

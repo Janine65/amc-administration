@@ -1,5 +1,3 @@
-"use strict";
-
 class WXAMC {
 
 
@@ -319,7 +317,15 @@ class WXAMC {
    */
   getModuleData(inModuleName) {
   
-    return null;
+    const url = "/"+inModuleName+"/data";
+
+    fetch(url)
+      .then(function(response) {
+        console.log(response);
+        return response.json();
+      }).catch(function(error) {
+        console.log("Failed!", error);
+      });
 
   } /* End getModuleData(). */
 
@@ -330,29 +336,24 @@ class WXAMC {
    * @param inModuleName The name of the module.
    * @param inFormIDs    An array of form IDs.
    */
-  saveHandler(inModuleName, inFormIDs) {
-
+  saveHandler(inModuleName, inFormID) {
+    var itemData;
     // Merge all forms together.  Usually there's just one, but some modules may have more than one.
-    var itemData = { };
-    for (let i = 0; i < inFormIDs.length; i++) {
-      if ($$(inFormIDs[i]).isDirty()) {
-        const formData = $$(inFormIDs[i]).getValues();
-        webix.proto(itemData, formData);
+      if ($$(inFormID).isDirty()) {
+        itemData = $$(inFormID).getValues();
+      } else {
+        webix.message({type : "info", text : "Keine Änderungen vorgenommen"});
+        $$(`module${inModuleName}-itemsCell`).show();
+        return;
       }
-    }
-    if (itemData.count == 0)
-      return;
 
-    itemData.id = wxAMC.modules[inModuleName].editingID;
+    console.log("saveHandler: itemData: ",itemData);
+    const url = "/"+inModuleName+"/data";
 
-    // webix.proto() adds an $init() function, but we don't need that, so let's delete it now.
-    delete itemData.$init;
+    var smethond = (wxAMC.modules[inModuleName].editingID > 0 ? "PUT" : "POST");
 
-    console.log("itemData: ",itemData);
-    const url = "/"+inModuleName+"/data/";
-
-    const promiseModule = fetch(url, {
-      method: 'POST', // *GET, POST, PUT, DELETE, etc.
+    fetch(url, {
+      method: smethond, // *GET, POST, PUT, DELETE, etc.
       mode: 'cors', // no-cors, *cors, same-origin
       cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
       credentials: 'same-origin', // include, *same-origin, omit
@@ -364,20 +365,19 @@ class WXAMC {
       referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
       body: JSON.stringify(itemData) // body data type must match "Content-Type" header
     })
-    .then((response) => response.json());;
- 
-    //const promiseModule = fetch ("/"+inModuleName+"/data/", {method: 'POST',body: JSON.stringify(itemData)}).then((response) => response.json());
-    Promise.resolve(promiseModule);
+    .then((response) => response.json())
+    .then(function(){
+      // Refresh the module's summary list and return to that list.
+      wxAMC.modules[inModuleName].refreshData();
+      $$(`module${inModuleName}-itemsCell`).show();
 
-    // Refresh the module's summary list and return to that list.
-    wxAMC.modules[inModuleName].refreshData();
-    $$(`module${inModuleName}-itemsCell`).show();
+      // Give the day-at-a-glance screen a chance to update (needed for desktop mode).
+      wxAMC.dayAtAGlance();
 
-    // Give the day-at-a-glance screen a chance to update (needed for desktop mode).
-    wxAMC.dayAtAGlance();
-
-    // Finally, show a completion message.
-    webix.message({ type : "error", text : "Item saved" });
+      // Finally, show a completion message.
+      webix.message({ type : "success", text : "gesichert" });
+    })
+    .catch((e) => webix.message({type : "error", text : e}));
 
   } /* End saveHandler(). */
 
@@ -405,17 +405,30 @@ class WXAMC {
       callback : function(inResult) {
         // Delete confirmed.
         if (inResult) {
-          // Get the data collection, remove the specified one, and then set it again.
-          const dataItems = wxAMC.getModuleData(inModuleName);
-          delete dataItems[wxAMC.modules[inModuleName].editingID];
-          localStorage.setItem(`${inModuleName}DB`, webix.stringify(dataItems));
-          // Refresh the module's summary list and return to that list.
-          wxAMC.modules[inModuleName].refreshData();
-          $$(`module${inModuleName}-itemsCell`).show();
-          // Give the day-at-a-glance screen a chance to update (needed for desktop mode).
-          wxAMC.dayAtAGlance();
-          // Finally, show a completion message.
-          webix.message({ type : "error", text : "Item deleted" });
+          const url = "/"+inModuleName+"/data/";
+          var anlass = $$(`module${inModuleName}-items`).getSelectedItem();
+          fetch(url, {
+            method: 'DELETE', // *GET, POST, PUT, DELETE, etc.
+            mode: 'cors', // no-cors, *cors, same-origin
+            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: 'same-origin', // include, *same-origin, omit
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            redirect: 'follow', // manual, *follow, error
+            referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+            body: JSON.stringify(anlass) // body data type must match "Content-Type" header
+          })
+          .then((response) => response.json())
+          .then(function(){
+              // Refresh the module's summary list and return to that list.
+              wxAMC.modules[inModuleName].refreshData();
+              // Give the day-at-a-glance screen a chance to update (needed for desktop mode).
+              wxAMC.dayAtAGlance();
+              // Finally, show a completion message.
+              webix.message({ type : "success", text : "gelöscht" });
+            })
+          .catch((e) => webix.message({ type:"error", text: e}));      
         }
       }
     }), "animated bounceIn");

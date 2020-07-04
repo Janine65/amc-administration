@@ -1,4 +1,4 @@
-const { Sequelize, Model, Deferrable } = require('sequelize');
+const { Sequelize, Model } = require('sequelize');
 
 const sequelize = new Sequelize(global.gConfig.database, global.gConfig.user, global.gConfig.pwd, {
   host:"localhost", port:global.gConfig.port,
@@ -121,10 +121,50 @@ Adressen.init({
   indexes: [{ unique: true, fields: ['name','vorname','ort'] }]  
 });
 
+class Anlaesse extends Model {
+}
+Anlaesse.init({
+  id: {
+    type: Sequelize.INTEGER, 
+    allowNull: true,
+    autoIncrement: true,
+    primaryKey: true,
+    defaultValue: 0
+  },
+  datum: {type: Sequelize.DATEONLY, allowNull: false},
+  name: {type: Sequelize.STRING, allowNull: false},
+  beschreibung: {type: Sequelize.STRING, allowNull: false},
+  punkte: {type: Sequelize.INTEGER, allowNull: false, defaultValue: 50},
+  istkegeln: {type: Sequelize.TINYINT, allowNull: false, defaultValue: 0},
+  nachkegeln: {type: Sequelize.TINYINT, allowNull: false, defaultValue: 0},
+  gaeste: {type: Sequelize.INTEGER, allowNull: true},
+  anlaesseId: {type: Sequelize.INTEGER, allowNull: true,
+    references: {
+    model: Anlaesse,
+    key: 'id'
+  },
+  defaultValue: null,
+  set(value) {
+    // einen empty String zu Null konvertieren
+    if (value == "") 
+      this.setDataValue('anlaesseId', null);
+    else
+      this.setDataValue('anlaesseId', value);
+  }
+}
+}, {
+  sequelize,
+  tableName: 'clubmeisterschaft',
+  modelName: 'anlaesse',
+  indexes: [{ unique: true, fields: ['datum','name'] }]  
+});
+
 
 Adressen.belongsTo(Adressen);
 Adressen.hasMany(Adressen);
 
+Anlaesse.belongsTo(Anlaesse);
+
 module.exports = {
-  Adressen
+  Adressen, Anlaesse
 };
