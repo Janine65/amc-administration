@@ -4,7 +4,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const path = require("path");
 const nedb = require("nedb");
-const sendmail = require("sendmail")();
+const nodemailer = require("nodemailer");
 
 // environment variables
 if (process.env.NODE_ENV == undefined)
@@ -31,32 +31,43 @@ app.get('/Adressen/getOverviewData', adresse.getOverviewData);
 
 app.post('/Adressen/email', sendEmail);
 
-    function sendEmail(req, res) {
-      const email = req.body;
+function sendEmail(req, res) {
+  const email = req.body;
 
-      console.log(req, res);
+  console.log(req, res);
 
-      sendmail({
-        from: 'info@automoto-sr.info',
-        to: 'janine@olconet.com',
-        subject: email.email_subject,
-        html: email.email_body,
-      }, function(err, reply) {
-        console.log(err && err.stack);
-        console.dir(reply);
-    });
-
+  // create reusable transporter object using the default SMTP transport
+  const transporter = nodemailer.createTransport({
+    host: "smtp.zoho.com",
+    port: 465,
+    secure: true, // true for 465, false for other ports
+    auth: {
+      user: "janine@automoto-sr.info", // generated ethereal user
+      pass: "Yogi-2982", // generated ethereal password
     }
+  });
+
+  const info = transporter.sendMail({
+        from: '"Janine Franken" <janine@automoto-sr.info>', // sender address
+        to: "janine@olconet.com", // list of receivers
+        subject: email.email_subject, // Subject line
+        text: email.email_body, // plain text body
+        html: email.email_body, // html body
+    })
+    .then((result) => console.info(result))
+    .catch((error) => console.error(error));
+      
+}
   
-    const anlaesse = require("./public/js/controllers/anlaesse");
-    app.get('/Anlaesse/data', anlaesse.getData);
-    app.post('/Anlaesse/data', anlaesse.updateData);
-    app.put('/Anlaesse/data', anlaesse.updateData);
-    app.delete('/Anlaesse/data', anlaesse.removeData);
-    app.delete('/Anlaesse/data', anlaesse.removeData);
-    app.get('/Anlaesse/getFkData', anlaesse.getFKData);
-    app.get('/Anlaesse/data/:id', anlaesse.getOneData);
-    app.get('/Anlaesse/getOverviewData', anlaesse.getOverviewData);
+const anlaesse = require("./public/js/controllers/anlaesse");
+app.get('/Anlaesse/data', anlaesse.getData);
+app.post('/Anlaesse/data', anlaesse.updateData);
+app.put('/Anlaesse/data', anlaesse.updateData);
+app.delete('/Anlaesse/data', anlaesse.removeData);
+app.delete('/Anlaesse/data', anlaesse.removeData);
+app.get('/Anlaesse/getFkData', anlaesse.getFKData);
+app.get('/Anlaesse/data/:id', anlaesse.getOneData);
+app.get('/Anlaesse/getOverviewData', anlaesse.getOverviewData);
     
   /**
    * A common handler to deal with DB operation errors.  Returns a 500 and an error object.

@@ -23,17 +23,17 @@
   },
   "homepage": "https://github.com/Janine65/amc-administration",
   "dependencies": {
-    "@mdi/font": "^5.2.45",
+    "@mdi/font": "^5.3.45",
     "body-parser": "^1.19.0",
     "express": "^4.17.1",
     "formidable": "^1.2.2",
-    "mariadb": "^2.4.0",
-    "mongodb": "^3.5.7",
+    "mariadb": "^2.4.1",
+    "mongodb": "^3.5.9",
     "mongoskin": "^2.1.0",
     "mysql2": "^1.7.0",
     "nedb": "^1.8.0",
-    "sendmail": "^1.6.1",
-    "sequelize": "^5.21.8",
+    "nodemailer": "^6.4.10",
+    "sequelize": "^5.22.3",
     "webix": "^7.3.0"
   }
 }
