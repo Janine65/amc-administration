@@ -9,7 +9,13 @@
         "user": "webuser",
         "pwd": "yogi298294",
         "port": "3306",
-        "dbtype": "mysql"
+        "dbtype": "mysql",
+        "email_to": "janine@olconet.com",
+        "smtp": "smtp.zoho.com",
+        "smtp_port": 465,
+        "smtp_mail": "janine@automoto-sr.info",
+        "smtp_pwd": "",
+        "email_from": "Janine Franken <janine@automoto-sr.info>"
     },
     "production": {
         "config_id": "production",
@@ -18,6 +24,10 @@
         "user": "webuser",
         "pwd": "MGKlMb-MShwOeSN7u",
         "port": "3307",
-        "dbtype": "mariadb"
+        "dbtype": "mariadb",
+        "email_to": "",
+        "smtp_mail": "info@automoto-sr.info",
+        "smtp_pwd": "",
+        "email_from": "AutoMotoClub Swissair <info@automoto-sr.info>"
     }
 }

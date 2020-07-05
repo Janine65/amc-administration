@@ -5,6 +5,9 @@ const bodyParser = require('body-parser');
 const path = require("path");
 const nedb = require("nedb");
 const nodemailer = require("nodemailer");
+const CryptoJS = require("crypto-js");
+const key = "ASECRET";
+
 
 // environment variables
 if (process.env.NODE_ENV == undefined)
@@ -34,22 +37,29 @@ app.post('/Adressen/email', sendEmail);
 function sendEmail(req, res) {
   const email = req.body;
 
-  console.log(req, res);
+  // DECRYPT
+  var decipher = CryptoJS.AES.decrypt("Yogi-2982", key);
+  decipher = decipher.toString(CryptoJS.enc.Utf8);
+  console.log(decipher);
+
+  // ENCRYPT
+  var cipher = CryptoJS.AES.encrypt(global.gConfig.smtp_pwd, key);
+  cipher = cipher.toString();
 
   // create reusable transporter object using the default SMTP transport
   const transporter = nodemailer.createTransport({
-    host: "smtp.zoho.com",
-    port: 465,
+    host: global.gConfig.smtp,
+    port: global.gConfig.smtp_port,
     secure: true, // true for 465, false for other ports
     auth: {
-      user: "janine@automoto-sr.info", // generated ethereal user
-      pass: "Yogi-2982", // generated ethereal password
+      user: global.gConfig.smtp_user, // generated ethereal user
+      pass: cipher, // generated ethereal password
     }
   });
 
   const info = transporter.sendMail({
-        from: '"Janine Franken" <janine@automoto-sr.info>', // sender address
-        to: "janine@olconet.com", // list of receivers
+        from: global.gConfig.email_from, // sender address
+        to: (global.gConfig.email_to == "" ? email.email_to : global.gConfig.email_to), // list of receivers
         subject: email.email_subject, // Subject line
         text: email.email_body, // plain text body
         html: email.email_body, // html body
