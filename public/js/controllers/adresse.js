@@ -5,7 +5,9 @@ module.exports = {
 	getData: function (req, res) {		
 		db.Adressen.findAll({ where: { 			
 			austritt: { [Op.gte]: new Date() }
-			 }}).then(data => res.json(data));		
+			 }})
+		.then(data => res.json(data))
+		.catch((e) => console.error(e));		
 	},
 
 	getOverviewData: function (req, res) {
@@ -24,12 +26,15 @@ module.exports = {
 				plain: false,
 				logging: console.log,
 				raw: false
-			}
-		).then(data => res.json(data));					
+			})
+		.then(data => res.json(data))
+		.catch((e) => console.error(e));					
 	},
 
 	getOneData: function (req, res) {
-		db.Adressen.findByPk(req.param.id).then(data => res.json(data));
+		db.Adressen.findByPk(req.param.id)
+			.then(data => res.json(data))
+			.catch((e) => console.error(e));
 	},
 
 	getFKData: function(req, res) {
@@ -47,8 +52,9 @@ module.exports = {
 				logging: console.log,
 				raw: false
 			}
-		).then(data => res.json(data));					
-		},
+		).then(data => res.json(data))
+		.catch((e) => console.error(e));					
+	},
 
 	removeData: function (req, res) {
 		const data = req.body;
@@ -56,13 +62,14 @@ module.exports = {
 		let endDate = new Date();
 		endDate.setMonth(11);
 		endDate.setDate(31);
-		db.Adressen.findByPk(req.params.id)
+		db.Adressen.findByPk(data.id)
 		.then((adresse) =>
 			//adresse.destroy()
-			adresse.update({austritt: endDate}))
-		.then(() =>
-			res.json({}));
-},
+			adresse.update({austritt: endDate})
+			.then((obj) => res.json({ id: obj.id }))
+			.catch((e) => console.error(e)))
+		.catch((e) => console.error(e));
+	},
 
 	addData: function (req, res) {
 		var data = req.body;
@@ -73,10 +80,9 @@ module.exports = {
 			data.eintritt = new Date().toISOString();
 		}
 		console.info('insert: ',data);
-		//data.id = db.Adressen.increment('id');
-		//console.info('insert2: ',data);
-		db.Adressen.create(data).then((obj) =>
-			res.json({ id: obj.id }));
+		db.Adressen.create(data)
+			.then((obj) => res.json({ id: obj.id }))
+			.catch((e) => console.error(e));
 	},
 	
 	updateData: function (req, res) {
@@ -90,21 +96,18 @@ module.exports = {
 		if (data.mnr == "") {
 			// insert
 			console.info('insert: ',data);
-			//data.id = db.Adressen.increment('id');
-			//console.info('insert2: ',data);
-			db.Adressen.create(data).then((obj) =>
-				res.json({ id: obj.id }));
+			db.Adressen.create(data)
+			.then((obj) => res.json({ id: obj.id }))
+			.catch((e) => console.error(e))
 		} else {
 			// update
 			console.info('update: ',data);
 		
-			const adresse = db.Adressen.findByPk(data.id);
-			if (addresse != null) {
-				console.info('update - adresse: ',adresse);				
-				adresse.update(data);
-			} else {
-				console.error("updateData: adresse is empty");
-			}
+			db.Adressen.findByPk(data.id)
+			.then((adresse) => adresse.update(data)
+				.then((obj) => res.json({id: obj.id}))
+				.catch((e) => console.error(e)))
+			.catch((e) => console.error(e));
 		}
 	},
 

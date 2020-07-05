@@ -218,7 +218,7 @@ class WXAMC {
         const taskbar = $$("taskbar");
         const moduleButton = webix.ui({
           id : `moduleTasbbarButton-${inModuleName}`,
-          view : "toggle", type : "iconButton", width : 140, height : 50,
+          view : "toggle", type : "icon", width : 140, height : 50,
           icon : moduleUIConfig.winIcon, label : moduleUIConfig.winLabel,
           click : function() {
             // Hide or show the module's window based on the CURRENT state of the button.
@@ -321,10 +321,10 @@ class WXAMC {
 
     fetch(url)
       .then(function(response) {
-        console.log(response);
+      //  console.log(response);
         return response.json();
       }).catch(function(error) {
-        console.log("Failed!", error);
+        webix.message({type : "error", text : error});
       });
 
   } /* End getModuleData(). */
@@ -380,17 +380,6 @@ class WXAMC {
     .catch((e) => webix.message({type : "error", text : e}));
 
   } /* End saveHandler(). */
-
-  /**
-   * Handles clicks of the email button for modules.
-   *
-   * @param inModuleName The name of the module.
-   */
-  sendEmail(inModuleName) {
-   // webix.message({type : "info", text: "Email sent to id " + sEmail});
-
-
-  } /* End emailHandler(). */
 
   /**
    * Handles clicks of the delete button for modules.

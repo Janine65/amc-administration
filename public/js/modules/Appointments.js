@@ -48,7 +48,7 @@ wxAMC.moduleClasses.Appointments = class {
             { view : "toolbar",
               cols : [
                 { },
-                { view : "button", label : "New", width : "80", type : "iconButton",
+                { view : "button", label : "New", width : "80", type : "icon",
                   icon : "mdi mdi-plus", click : this.newHandler.bind(this)
                 },
                 { width : 6 }
@@ -99,18 +99,18 @@ wxAMC.moduleClasses.Appointments = class {
               cols : [
                 { width : 6 },
                 { view : "button", label : "Zurück", width : "170",
-                  type : "iconButton", icon : "mdi mdi-arrow-left",
+                  type : "icon", icon : "mdi mdi-arrow-left",
                   click : () => {
                     $$("moduleAppointments-itemsCell").show();
                   }
                 },
                 { },
                 { id : "moduleAppointments-deleteButton", view : "button", label : "Delete",
-                  width : "90", type : "iconButton",
+                  width : "90", type : "icon",
                   icon : "mdi mdi-delete", click : () => { wxAMC.deleteHandler("Appointments"); }
                 },
                 { },
-                { view : "button", label : "Save", width : "80", type : "iconButton",
+                { view : "button", label : "Save", width : "80", type : "icon",
                   icon : "mdi mdi-content-save", id : "moduleAppointments-saveButton", disabled : true,
                   click : function() {
                     wxAMC.saveHandler("Appointments", [ "moduleAppointments-detailsForm" ]);

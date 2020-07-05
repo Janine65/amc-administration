@@ -21,12 +21,12 @@ app.use("/", express.static(path.join(__dirname, '/public')));
 const db = require('./public/js/db')
 
 const adresse = require("./public/js/controllers/adresse");
-app.get('/adresse/data', adresse.getData);
+app.get('/Adressen/data', adresse.getData);
 app.post('/Adressen/data', adresse.updateData);
-app.put('/Adressen/data/:id', adresse.updateData);
-app.delete('/Adressen/data/:id', adresse.removeData);
+app.put('/Adressen/data', adresse.updateData);
+app.delete('/Adressen/data', adresse.removeData);
 app.get('/data/getFkData', adresse.getFKData);
-app.get('/Adressen/data/:id', adresse.getOneData);
+app.get('/Adressen/data', adresse.getOneData);
 app.get('/Adressen/getOverviewData', adresse.getOverviewData);
 
 app.post('/Adressen/email', sendEmail);

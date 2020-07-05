@@ -137,33 +137,44 @@ Anlaesse.init({
   punkte: {type: Sequelize.INTEGER, allowNull: false, defaultValue: 50},
   istkegeln: {type: Sequelize.TINYINT, allowNull: false, defaultValue: 0},
   nachkegeln: {type: Sequelize.TINYINT, allowNull: false, defaultValue: 0},
-  gaeste: {type: Sequelize.INTEGER, allowNull: true},
+  gaeste: {type: Sequelize.INTEGER, allowNull: true, defaultValue: null,
+    set(value) {
+      // einen empty String zu Null konvertieren
+      if (value == "") 
+        this.setDataValue('gaeste', null);
+      else
+        this.setDataValue('gaeste', value);
+    }
+  },
   anlaesseId: {type: Sequelize.INTEGER, allowNull: true,
     references: {
     model: Anlaesse,
     key: 'id'
+    },
+    defaultValue: null,
+    set(value) {
+      // einen empty String zu Null konvertieren
+      if (value == "") 
+        this.setDataValue('anlaesseId', null);
+      else
+        this.setDataValue('anlaesseId', value);
+    }
   },
-  defaultValue: null,
-  set(value) {
-    // einen empty String zu Null konvertieren
-    if (value == "") 
-      this.setDataValue('anlaesseId', null);
-    else
-      this.setDataValue('anlaesseId', value);
+  status: {type: Sequelize.TINYINT, allowNull: false, defaultValue: 1}
+  }, 
+  {
+    sequelize,
+    tableName: 'clubmeisterschaft',
+    modelName: 'anlaesse',
+    indexes: [{ unique: true, fields: ['datum','name'] }]  
   }
-}
-}, {
-  sequelize,
-  tableName: 'clubmeisterschaft',
-  modelName: 'anlaesse',
-  indexes: [{ unique: true, fields: ['datum','name'] }]  
-});
+  );
 
 
 Adressen.belongsTo(Adressen);
 Adressen.hasMany(Adressen);
 
-Anlaesse.belongsTo(Anlaesse);
+Anlaesse.belongsTo(Anlaesse, { as: 'linkedEvent', constraints: false, foreignKey: 'anlaesseId' });
 
 module.exports = {
   Adressen, Anlaesse

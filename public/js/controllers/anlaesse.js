@@ -3,7 +3,12 @@ const { Op, Sequelize } = require("sequelize");
 
 module.exports = {
 	getData: function (req, res) {		
-		db.Anlaesse.findAll().then(data => res.json(data));		
+		db.Anlaesse.findAll({
+			attributes: {exclude: ['longname']},
+			include: [
+				{ model: db.Anlaesse, as: 'linkedEvent', required: false, attributes: ['longname']}
+			 ],
+		}).then(data => res.json(data));		
 	},
 
 	getOverviewData: function (req, res) {
@@ -12,8 +17,8 @@ module.exports = {
 		// count of SAM_Mitglieder
 		// count of not SAM_Mitglieder
 		
-		var qrySelect = "SELECT 'Anzahl Anlässe im aktuellen Jahr' as label, count(id) as value from clubmeisterschaft where YEAR(`datum`) = (SELECT `systemparameter`.`Wert_Zahl` FROM `systemparameter` WHERE `systemparameter`.`Feld` = 'CLUBJAHR')";
-		qrySelect += " UNION SELECT 'Anzahl zukünftiger Anlässe', count(id) from clubmeisterschaft where datum > NOW()";
+		var qrySelect = "SELECT 'Anzahl Anlässe im aktuellen Jahr' as label, count(id) as value from clubmeisterschaft where status = 1 and YEAR(`datum`) = (SELECT `systemparameter`.`Wert_Zahl` FROM `systemparameter` WHERE `systemparameter`.`Feld` = 'CLUBJAHR')";
+		qrySelect += " UNION SELECT 'Anzahl zukünftiger Anlässe', count(id) from clubmeisterschaft where status = 1 and datum > NOW()";
 
 		sequelize.query(qrySelect, 
 			{ 
@@ -30,12 +35,12 @@ module.exports = {
 	},
 
 	getFKData: function(req, res) {
-		var qrySelect = "SELECT `id`, `fullname` as value FROM `clubmeisterschaft` WHERE YEAR(`datum`) < YEAR£(NOW())" ;
+		var qrySelect = "SELECT `id`, `longname` as value FROM `clubmeisterschaft` WHERE status = 1 " ;
 		if (req.query.filter != null) {
 			var qfield = '%' + req.query.filter.value + '%';
-			qrySelect = qrySelect + " AND lower(`fullname`) like '" + qfield + "'";
+			qrySelect = qrySelect + " AND lower(`longname`) like '" + qfield + "'";
 		}
-		qrySelect = qrySelect + " ORDER BY 2";
+		qrySelect = qrySelect + " ORDER BY datum desc";
 		
 		sequelize.query(qrySelect, 
 			{ 
@@ -54,16 +59,18 @@ module.exports = {
 		}
 		console.info('delete: ',data);
 		db.Anlaesse.findByPk(data.id)
-		.then((anlass) =>
-			anlass.destroy())
+		.then((anlass) => anlass.destroy()
+			.then((obj) => res.json({id: obj.id}))
+			.catch((e) => console.error(e)))
 		.catch((e) => console.log(e));
 },
 
 	addData: function (req, res) {
 		var data = req.body;
 		console.info('insert: ',data);
-		db.Anlaesse.create(data).then((obj) =>
-			res.json({ id: obj.id }));
+		db.Anlaesse.create(data)
+			.then((obj) => res.json({ id: obj.id }))
+			.catch((e) => console.error(e));
 	},
 	
 	updateData: function (req, res) {
@@ -71,14 +78,17 @@ module.exports = {
 		if (data.id == 0 || data.id == null) {
 			// insert
 			console.info('insert: anlass',data);
-			db.Anlaesse.create(data).then((obj) =>
-				res.json({ id: obj.id }));
+			db.Anlaesse.create(data)
+				.then((obj) => res.json({ id: obj.id }))
+				.catch((e) => console.error(e));
 		} else {
 			// update
 			console.info('update: ',data);
 		
 			db.Anlaesse.findByPk(data.id)
-			.then((anlass) => anlass.update(data))
+			.then((anlass) => anlass.update(data)
+				.then((obj) => res.json({id: obj.id}))
+				.catch((e) => console.error(e)))
 			.catch((e) => console.error(e));
 		}
 	},

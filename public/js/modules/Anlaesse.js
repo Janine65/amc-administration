@@ -1,4 +1,3 @@
-
 // "Register" this module with wxAMC.
 wxAMC.registeredModules.push("Anlaesse");
 
@@ -22,37 +21,34 @@ wxAMC.moduleClasses.Anlaesse = class {
 
   } /* End constructor. */
 
-  mark_kegeln (value, config) {
-    if (value.istkegeln == 1) {
-      return "<span class='webix_icon mdi mdi-checkbox-marked'></span>";
-    } else {
-      return "<span class='webix_icon mdi mdi-checkbox-blank-outline'></span>";
-    }
-  }
-  
-   mark_nachkegeln (value, config) {
-    if (value.nachkegeln == 1) {
-      return "<span class='webix_icon mdi mdi-checkbox-marked'></span>";
-    } else {
-      return "<span class='webix_icon mdi mdi-checkbox-blank-outline'></span>";
-    }
-  }
   
   show_vorjahr (value, config) {
-    if (value.anlaesseId != "" && value.anlaesseId != null ) {
-      return value.anlaesseId;
+    if (value.linkedEvent != null ) {
+      return value.linkedEvent.longname;
     } else return "";
   }
 
+ custom_status(obj, common, value){
+    if (value)
+        return "<div class=' custom checked'> Aktiv </div>";
+    else
+        return "<div class=' custom notchecked'> Inaktiv </div>";
+};
 
+custom_checkbox(obj, common, value){
+  if (value)
+      return "<div class='webix_icon mdi mdi-checkbox-marked'></div>";
+  else
+      return "<div class='webix_icon mdi mdi-checkbox-blank-outline'></div>";
+};
 
-  /**
+/**
    * Return the module's UI config object.
    */
   getUIConfig() {
 
     return {
-      winWidth : 800, winHeight : 800, winLabel : "Anlaesse", winIcon : "mdi mdi-calendar-check",
+      winWidth : 1000, winHeight : 800, winLabel : "Anlaesse", winIcon : "mdi mdi-calendar-check",
       id : "moduleAnlaesse-container",
       cells : [
         /* ---------- Anlass list cell. ---------- */
@@ -64,15 +60,22 @@ wxAMC.moduleClasses.Anlaesse = class {
             resizeColumn: { headerOnly:true},
             scroll:true, 
             editable:false, 
+            scheme:{
+              $change:function(item){
+                if (item.status == 0)
+                  item.$css = "inactiveLine";
+              }
+            },
             columns:[
               { id:"datum", header:[{text:"Datum"},{content:"textFilter"}], sort:"date", adjust:true, format:webix.i18n.dateFormatStr},
               { id:"name", header:[{text:"Name"},{content:"textFilter"}], sort:"string", adjust:true},
+              { id:"status", header:[{text:"Status"},{content:"textFilter"}], sort:"int", adjust:true, template:this.custom_status},
               { id:"punkte", header:[{text:"Punkte"},{content:"textFilter"}], sort:"int", adjust:true},
               { id:"gaeste", header:[{text:"Gäste"},{content:"textFilter"}], sort:"int", adjust:true},
-              { id:"istkegeln", css:{'text-align':'center'}, header:[{text:"Kegeln?"},{content:"selectFilter"}], sort:"text", template:this.mark_kegeln},
-              { id:"nachkegeln", css:{'text-align':'center'},header:[{text:"Nachkegeln?"},{content:"selectFilter"}], sort:"text", template:this.mark_nachkegeln},		
+              { id:"istkegeln", css:{'text-align':'center'}, header:[{text:"Kegeln?"},{content:"selectFilter"}], sort:"text", template:this.custom_checkbox},
+              { id:"nachkegeln", css:{'text-align':'center'},header:[{text:"Nachkegeln?"},{content:"selectFilter"}], sort:"text", template:this.custom_checkbox},		
               { id:"beschreibung", header:[{text:"Beschreibung"},{content:"textFilter"}], sort:"string", adjust:"header"},
-              { id:"anlaesseId", header:[{text:"Vorjahres Termin"},{content:"selectFilter"}], sort:"text", adjust:"header", template:this.show_vorjahr}  
+              { id:"longname", header:[{text:"Vorjahres Termin"},{content:"selectFilter"}], sort:"text", adjust:true, template:this.show_vorjahr}  
             ],
             hover: "hoverline",
             sort:"multi",
@@ -82,12 +85,19 @@ wxAMC.moduleClasses.Anlaesse = class {
               },
               onAfterLoad:function(){
                 this.hideOverlay();
+                this.filter('#datum#',"2020")
+                $$("count_anlass").setValue("Anzahl " + this.count());	  
+              },
+              onAfterFilter:function(){
                 $$("count_anlass").setValue("Anzahl " + this.count());	  
               },
               onAfterSelect:function(selection, preserve){
                 $$("moduleAnlaesse-editButton").enable();
                 $$("moduleAnlaesse-copyButton").enable();
                 $$("moduleAnlaesse-deleteButton").enable();
+              },
+              onItemDblClick:function(selection, preserve){
+                wxAMC.modules['Anlaesse'].editExisting();
               }
               }
             },
@@ -96,16 +106,16 @@ wxAMC.moduleClasses.Anlaesse = class {
             cols : [
               { id: "count_anlass", view : "label", label: "Anzahl 0"},
               { },
-              { id: "moduleAnlaesse-editButton", view : "button", default : true, label : "Edit", width : "80", type : "iconButton", disabled: true,
+              { id: "moduleAnlaesse-editButton", view : "button", default : true, label : "Edit", width : "80", type : "icon", disabled: true,
                 icon : "webix_icon mdi mdi-pencil", click : this.editExisting.bind(this)
               },
-              { id: "moduleAnlaesse-copyButton", view : "button", label : "Copy", width : "80", type : "iconButton", disabled: true,
-                icon : "webix_icon mdi mdi-content-duplicate", click : this.editExisting.bind(this)
+              { id: "moduleAnlaesse-copyButton", view : "button", label : "Copy", width : "80", type : "icon", disabled: true,
+                icon : "webix_icon mdi mdi-content-duplicate", click : this.copyHandler.bind(this)
               },
-              { id : "moduleAnlaesse-deleteButton", view : "button", label : "Delete", width : "80", type : "iconButton", disabled: true,
+              { id : "moduleAnlaesse-deleteButton", view : "button", label : "Delete", width : "80", type : "icon", disabled: true,
               icon : "webix_icon mdi mdi-delete", click : () => { wxAMC.deleteHandler("Anlaesse"); }
               },
-              { id: "moduleAnlaesse-newButton", view : "button", label : "New", width : "80", type : "iconButton",
+              { id: "moduleAnlaesse-newButton", view : "button", label : "New", width : "80", type : "icon",
                 icon : "webix_icon mdi mdi-plus", click : this.newHandler.bind(this)
               },
               { width : 6 }
@@ -114,11 +124,11 @@ wxAMC.moduleClasses.Anlaesse = class {
           ] /* End anlass list rows. */
         }, /* End anlass list cell. */
         /* ---------- Anlass details cell. ---------- */
-        { id : "moduleAnlaesse-details",
+        { id : "moduleAnlaesse-details", 
           rows : [
             /* Anlass details form. */
-            { view : "form", id : "moduleAnlaesse-detailsForm", borderless : true,
-              elementsConfig : { view : "text", labelWidth : 100, bottomPadding : 20,
+            { view : "form", id : "moduleAnlaesse-detailsForm", borderless : false, scroll: true,
+              elementsConfig : { view : "text", labelWidth : 100, 
                 on : { onChange : () => {
                   $$("moduleAnlaesse-saveButton")[$$("moduleAnlaesse-detailsForm").validate() ?
                     "enable" : "disable"]();
@@ -131,42 +141,47 @@ wxAMC.moduleClasses.Anlaesse = class {
                 { view : "text", name : "name", label : "Anlass", required : true,
                   invalidMessage: "Anlass ist notwendig"
                 },
+                { view:"combo", 
+                options:[{ id:"0", value:"Inaktiv" }, { id:"1", value:"Aktiv" }], 
+                  name : "status", label : "Status"
+                },
                 { view:"text", type:"number", name : "punkte", label : "Punkte", required : true,
                   invalidMessage: "Punkte ist notwendig"
                 },
                 { view:"text", type:"number", name : "gaeste", label : "Anzahl Gäste"
                 },
-                { name : "beschreibung", label : "Beschreibung", view : "textarea"
+                { name : "beschreibung", label : "Beschreibung", view : "textarea", height: 100
                 },
-                { view : "radio", name : "istkegeln", label : "Kegeln?", value : 0,
+                { view : "radio", name : "istkegeln", label : "Kegeln?", value : "0",
                   options : [
                     { id : 0, value : "Nein" }, { id : 1, value : "Ja" }
                   ]
                 },
-                { view : "radio", name : "nachkegeln", label : "Nachkegeln?", value : 0,
+                { view : "radio", name : "nachkegeln", label : "Nachkegeln?", value : "0",
                   options : [
                     { id : 0, value : "Nein" }, { id : 1, value : "Ja" }
                   ]
-                }
+                },
+                { view:"combo", suggest:"/Anlaesse/getFkData", name:"anlaesseId", label:"Vorjahresevent" }
               ]
             }, /* End anlass details form. */
-            { },
+            //{ },
             /* Anlass details toolbar. */
             { view : "toolbar",
               cols : [
                 { width : 6 },
-                { view : "button", label : "Zurück", width : "170",
-                  type : "iconButton", icon : "webix_icon mdi mdi-arrow-left",
+                { view : "button", label : "Zurück", width : "90",
+                  type : "icon", icon : "webix_icon mdi mdi-arrow-left",
                   click : () => {
                     $$("moduleAnlaesse-itemsCell").show();
                   }
                 },
                 { },
                 { view : "button", label : "Save", width : "80",
-                  type : "iconButton", icon : "webix_icon mdi mdi-content-save",
+                  type : "icon", icon : "webix_icon mdi mdi-content-save",
                   id : "moduleAnlaesse-saveButton", disabled : true,
                   click : function() {
-                    wxAMC.saveHandler("Anlaesse", [ "moduleAnlaesse-detailsForm" ]);
+                    wxAMC.saveHandler("Anlaesse", "moduleAnlaesse-detailsForm");
                   }
                 },
                 { width : 6 }
@@ -200,8 +215,8 @@ wxAMC.moduleClasses.Anlaesse = class {
   newHandler() {
 
     // We're adding a new anlass, so set the editing flag and create an ID.
-    wxAMC.isEditingExisting = false;
-    wxAMC.editingID = new Date().getTime();
+    this.isEditingExisting = false;
+    this.editingID = 0;
 
     // Now show the details form and clear it, then set any defaults.  Don't
     // forget to disable the delete button since we obviously can't delete
@@ -210,21 +225,54 @@ wxAMC.moduleClasses.Anlaesse = class {
     $$("moduleAnlaesse-detailsForm").clear();
     $$("moduleAnlaesse-detailsForm").elements.istkegeln.data.value = 0;
     $$("moduleAnlaesse-detailsForm").elements.nachkegeln.data.value = 0;
+    $$("moduleAnlaesse-detailsForm").elements.punkte.data.value = 50;
     $$("moduleAnlaesse-deleteButton").disable();
 
   } /* End newHandler(). */
 
 
+  copyHandler() {
+
+    // We're adding a new anlass, but with the value of the selected one.
+    this.isEditingExisting = false;
+    this.editingID = 0;
+
+    const anlassOrig = $$('moduleAnlaesse-items').getSelectedItem();
+    console.log(anlassOrig);
+    var anlass = [];
+    anlass.id = null;
+    var datum = new Date(anlassOrig.datum);
+    datum.setUTCFullYear(new Date(anlassOrig.datum).getUTCFullYear()+1);
+    anlass.datum = datum;
+    anlass.name = anlassOrig.name;
+    anlass.beschreibung = anlassOrig.beschreibung;
+    anlass.istkegeln = anlassOrig.istkegeln;
+    anlass.nachkegeln = anlassOrig.nachkegeln;
+    anlass.punkte = anlassOrig.punkte;
+    anlass.anlaesseId = anlassOrig.id;
+
+    // Now show the details form and clear it, then set any defaults.  Don't
+    // forget to disable the delete button since we obviously can't delete
+    // during an add.
+    $$("moduleAnlaesse-details").show();
+    $$("moduleAnlaesse-detailsForm").clear();
+    // Populate the form.
+    $$("moduleAnlaesse-detailsForm").setValues(anlass);
+    $$("moduleAnlaesse-detailsForm").setDirty(true);
+    $$("moduleAnlaesse-deleteButton").disable();
+
+  } /* End newHandler(). */
+
   /**
    * Handles clicks on the Save button.
    */
-  editExisting(inID) {
+  editExisting() {
 
     const anlass = $$('moduleAnlaesse-items').getSelectedItem();
 
     // Set flag to indicate editing an existing anlass and show the details.
-    wxAMC.isEditingExisting = true;
-    wxAMC.editingID = anlass.id;
+    this.isEditingExisting = true;
+    this.editingID = anlass.id;
 
     // Clear the details form.
     $$("moduleAnlaesse-detailsForm").clear();
@@ -252,9 +300,6 @@ wxAMC.moduleClasses.Anlaesse = class {
    */
   refreshData() {
 
-    // Get the collection of data items from local storage.  If none,
-    // create it now.
-//    const dataItems = wxAMC.getModuleData("Anlaesse");
     const url = "/Anlaesse/data";
    // var dataItems;
 
@@ -273,13 +318,18 @@ wxAMC.moduleClasses.Anlaesse = class {
 
     // Sort the array by the value property (ascending) so they appear in
     // alphabetical order.
-    wxAMC.sortArray(itemsAsArray, "datum", "D");
+    //wxAMC.sortArray(itemsAsArray, "datum", "D");
 
+    var state = $$("moduleAnlaesse-items").getState();
+     var sort = state.sort
+     if (sort == null) {
+       sort = [{by:"datum", dir:"desc"},{by:"name", dir:"desc"}];
+     }
     //console.log('itemsAsArray: ',itemsAsArray);
     // Populate the tree.
     $$("moduleAnlaesse-items").clearAll();
     $$("moduleAnlaesse-items").parse(itemsAsArray);
-
+    $$("moduleAnlaesse-items").sort(sort);
   });
 
 } /* End refreshData(). */

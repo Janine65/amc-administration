@@ -21,45 +21,12 @@ wxAMC.moduleClasses.Adressen = class {
   } /* End constructor. */
 
 
-   mark_sam_mitglied (value, config) {
-    if (value.sam_mitglied == 1) {
-      return "<span class='webix_icon mdi mdi-checkbox-marked'></span>";
-    } else {
-      return "<span class='webix_icon mdi mdi-checkbox-blank-outline'></span>";
-    }
-  }
-  
-   mark_ehrenmitglied (value, config) {
-    if (value.ehrenmitglied == 1) {
-      return "<span class='webix_icon mdi mdi-checkbox-marked'></span>";
-    } else {
-      return "<span class='webix_icon mdi mdi-checkbox-blank-outline'></span>";
-    }
-  }
-  
-   mark_vorstand (value, config) {
-    if (value.vorstand == 1) {
-      return "<span class='webix_icon mdi mdi-checkbox-marked'></span>";
-    } else {
-      return "<span class='webix_icon mdi mdi-checkbox-blank-outline'></span>";
-    }
-  }
-  
-   mark_revisor (value, config) {
-    if (value.revisor == 1) {
-      return "<span class='webix_icon mdi mdi-checkbox-marked'></span>";
-    } else {
-      return "<span class='webix_icon mdi mdi-checkbox-blank-outline'></span>";
-    }
-  }
-  
-   mark_allianz (value, config) {
-    if (value.allianz == 1) {
-      return "<span class='webix_icon mdi mdi-checkbox-marked'></span>";
-    } else {
-      return "<span class='webix_icon mdi mdi-checkbox-blank-outline'></span>";
-    }
-  }
+  custom_checkbox(obj, common, value){
+    if (value)
+        return "<div class='webix_icon mdi mdi-checkbox-marked'></div>";
+    else
+        return "<div class='webix_icon mdi mdi-checkbox-blank-outline'></div>";
+  };
   
   show_geworben (value, config) {
     if (value.adressenId != "" && value.adressenId != null ) {
@@ -85,23 +52,6 @@ wxAMC.moduleClasses.Adressen = class {
             resizeColumn: { headerOnly:true},
             scroll:true, 
             editable:false, 
-/*             headermenu:{
-              data: [
-              { id:"mobile", value:"Mobile"},
-              { id:"email", value:"Email"},
-              { id:"notes", value:"Notizen"},
-              { id:"mnr_sam", value:"SAM Nr."},
-              { id:"sam_mitglied", value:"SAM Mitglied"},		
-              { id:"ehrenmitglied", value:"Ehrenmitglied"},		
-              { id:"vorstand", value:"Vorstand"},		
-              { id:"revisor", value:"Revisor"},		
-              { id:"allianz", value:"Allianz"},		
-              { id:"eintritt", value:"Eintritt"},
-              { id:"austritt", value:"Austritt"},
-              { id:"adressenId", value:"Geworben von"}
-              ]
-            },
-            defaultData: {geschlecht: "1", land: "CH", sam_mitglied:"1"},	*/
             columns:[
               { id:"mnr", css:{'text-align':'right'}, header:[{text:"MNR"},{content:"numberFilter"}], sort:"int", adjust:true},
               { id:"geschlecht", header:[{text:"Geschlecht"}], options:[
@@ -115,14 +65,14 @@ wxAMC.moduleClasses.Adressen = class {
               { id:"land", header:[{text:"Land"},{content:"textFilter"}], adjust:true},
               { id:"telefon_p", header:"Telefon (P)"},
               { id:"mobile", header:"Mobile"},
-              { id:"email", header:"Email"},
+              { id:"email", header:"Email", fillspace:true},
               { id:"notes", header:"Notizen", hidden:true},
               { id:"mnr_sam", css:{'text-align':'right'}, header:[{text:"SAM Nr."},{content:"numberFilter"}], sort:"int", adjust:true},
-              { id:"sam_mitglied", css:{'text-align':'center'}, header:[{text:"SAM Mitglied"},{content:"selectFilter"}], sort:"text", template:this.mark_sam_mitglied},
-              { id:"ehrenmitglied", css:{'text-align':'center'},header:[{text:"Ehrenmitglied"},{content:"selectFilter"}], sort:"text", template:this.mark_ehrenmitglied},		
-              { id:"vorstand", css:{'text-align':'center'},header:[{text:"Vorstand"},{content:"selectFilter"}], sort:"text", template:this.mark_vorstand, hidden:true},		
-              { id:"revisor", css:{'text-align':'center'},header:[{text:"Revisor"},{content:"selectFilter"}], sort:"text", template:this.mark_revisor, hidden:true},		
-              { id:"allianz", css:{'text-align':'center'},header:[{text:"Allianz"},{content:"selectFilter"}], sort:"text", template:this.mark_allianz, hidden:true},		
+              { id:"sam_mitglied", css:{'text-align':'center'}, header:[{text:"SAM Mitglied"},{content:"selectFilter"}], sort:"text", template:this.custom_checkbox},
+              { id:"ehrenmitglied", css:{'text-align':'center'},header:[{text:"Ehrenmitglied"},{content:"selectFilter"}], sort:"text", template:this.custom_checkbox},		
+              { id:"vorstand", css:{'text-align':'center'},header:[{text:"Vorstand"},{content:"selectFilter"}], sort:"text", template:this.custom_checkbox, hidden:true},		
+              { id:"revisor", css:{'text-align':'center'},header:[{text:"Revisor"},{content:"selectFilter"}], sort:"text", template:this.custom_checkbox, hidden:true},		
+              { id:"allianz", css:{'text-align':'center'},header:[{text:"Allianz"},{content:"selectFilter"}], sort:"text", template:this.custom_checkbox, hidden:true},		
               { id:"eintritt", header:[{text:"Eintritt"},{content:"textFilter"}], sort:"string", adjust:true, template:function(obj){return new Date(obj.eintritt).getFullYear();}, hidden:true},
               { id:"austritt", header:[{text:"Austritt"},{content:"textFilter"}], sort:"string", adjust:true, template:function(obj){return new Date(obj.austritt).getFullYear();}, hidden:true},
               { id:"adressenId", header:[{text:"Geworben von"},{content:"selectFilter"}], sort:"text", adjust:"header", template:this.show_geworben, hidden:true}
@@ -130,12 +80,12 @@ wxAMC.moduleClasses.Adressen = class {
             hover: "hoverline",
             sort:"multi",
             ready:function(){
-              this.sort([
-                { by:"name", dir:"asc" }, 
-                { by:"vorname", dir:"asc" }
-                ]);
-              this.markSorting("name", "asc");
-              this.markSorting("vorname", "asc", true);
+              // this.sort([
+              //   { by:"name", dir:"asc" }, 
+              //   { by:"vorname", dir:"asc" }
+              //   ]);
+              // this.markSorting("name", "asc");
+              // this.markSorting("vorname", "asc", true);
             },
             on:{
               onBeforeLoad:function(){
@@ -146,26 +96,32 @@ wxAMC.moduleClasses.Adressen = class {
               //console.info(this.count());
               $$("count_adr").setValue("Anzahl " + this.count());	  
               },
+              onAfterFilter:function(){
+              $$("count_adr").setValue("Anzahl " + this.count());	  
+              },
               onAfterSelect:function(selection, preserve){
                 $$("moduleAdressen-editButton").enable();
+                $$("moduleAdressen-deleteButton").enable();
+              },
+              onItemDblClick:function(selection, preserve){
+                wxAMC.modules['Adressen'].editExisting();
               }
-            },
-            url:"/adresse/data"
+            }
             },
             { view : "toolbar",
               cols : [
                 { id: "count_adr", view : "label", label: "Anzahl 0"},
                 { },
-                { id: "moduleAdressen-emailAllButton", view : "button", label : "Email", width : "80", type : "iconButton",
+                { id: "moduleAdressen-emailAllButton", view : "button", label : "Email", width : "80", type : "icon",
                   icon : "webix_icon mdi mdi-email-plus", click : this.showEmailForm("")
                 },
-                { id: "moduleAdressen-editButton", view : "button", label : "Edit", width : "80", type : "iconButton", disabled: true,
+                { id: "moduleAdressen-editButton", view : "button", label : "Edit", width : "80", type : "icon", disabled: true,
                   icon : "webix_icon mdi mdi-pencil", click : this.editExisting.bind(this)
                 },
-                { id : "moduleAdressen-deleteButton", view : "button", label : "Delete", width : "80", type : "iconButton",
+                { id : "moduleAdressen-deleteButton", view : "button", label : "Delete", width : "80", type : "icon", disabled: true,
                   icon : "webix_icon mdi mdi-delete", click : () => { wxAMC.deleteHandler("Adressen"); }
                 },
-                { id: "moduleAdressen-newButton", view : "button", label : "New", width : "80", type : "iconButton",
+                { id: "moduleAdressen-newButton", view : "button", label : "New", width : "80", type : "icon",
                   icon : "webix_icon mdi mdi-plus", click : this.newHandler.bind(this)
                 },
                 { width : 6 }
@@ -184,7 +140,7 @@ wxAMC.moduleClasses.Adressen = class {
                   $$("moduleAdressen-saveButton")
                     [$$("moduleAdressen-detailsForm").validate()? "enable" : "disable"]();
                     $$("moduleAdressen-emailButton")
-                    [$$("moduleAdressen-detailsForm").validate()? "enable" : "disable"]();
+                    [$$("moduleAdressen-detailsForm").validate() && $$("moduleAdressen-detailsForm").elements.email.data.value != "" ? "enable" : "disable"]();
                 } }
               },
               elements:[
@@ -193,65 +149,52 @@ wxAMC.moduleClasses.Adressen = class {
                       options:[{ id:"1", value:"männlich" }, { id:"2", value:"weiblich" }], 
                       name:"geschlecht", label:"Geschlecht", required : true },
                   { view:"text", name:"name", label:"Name", required : true,
-                  invalidMessage : "Subject is required" },
+                    invalidMessage : "Name ist notwendig" },
                   { view:"text", name:"vorname", label:"Vorname", required : true,
-                  invalidMessage : "Subject is required" },
-                { view:"text", name:"adresse", label:"Adresse", required : true,
-                invalidMessage : "Subject is required" },
-                { view:"text", width:150, name:"plz", label:"PLZ", required : true,
-                invalidMessage : "Subject is required", width:180, attributes : { maxlength : 5 }},
-                { view:"text", name:"ort", label:"Ort", required : true,
-                invalidMessage : "Subject is required" },
-                { view:"combo", 
+                    invalidMessage : "Vorname ist notwendig" },
+                  { view:"text", name:"adresse", label:"Adresse", required : true,
+                    invalidMessage : "Strasse ist notwendig" },
+                  { view:"text", width:150, name:"plz", label:"PLZ", required : true,
+                    invalidMessage : "PLZ ist notwendig", width:180, attributes : { maxlength : 5 }},
+                  { view:"text", name:"ort", label:"Ort", required : true,
+                    invalidMessage : "Ort ist notwendig" },
+                  { view:"combo", 
                       options:[{ id:"CH", value:"Schweiz" }, { id:"DE", value:"Deutschland" }], 
-                      name:"land", label:"Land", required : true }
-                ,
+                      name:"land", label:"Land", required : true },
                 { view:"text", name:"telefon_p", label:"Telefon" },
                 { view:"text", name:"mobile", label:"Mobile" },
-                { view:"text", name:"email", label:"Email(s)", required : true }
-                ,
+                { view:"text", name:"email", label:"Email(s)"},
                 { view:"textarea", name:"notes", label:"Notizen" },
                 { view:"text", type:"number", name:"mnr_sam", label:"SAM Nr." },
                 { view:"checkbox", name:"sam_mitglied", label:"SAM Mitglied", width:300 },
-                { view:"checkbox", name:"ehrenmitglied", label:"Ehrenmitglied", width:300 }
-                ,
+                { view:"checkbox", name:"ehrenmitglied", label:"Ehrenmitglied", width:300 },
                 { view:"checkbox", name:"vorstand", label:"Vorstand" },
-                { view:"checkbox", name:"revisor", label:"Revisor" }
-                ,
+                { view:"checkbox", name:"revisor", label:"Revisor" },
                 { view:"datepicker", name:"eintritt", label:"Eintritt" },
-                { view:"datepicker", name:"austritt", label:"Austritt" }
-                ,
+                { view:"datepicker", name:"austritt", label:"Austritt" },
                 { view:"combo", suggest:"/data/getFkData", name:"adressenId", label:"Geworben von" }
-              ],
-              rules:{
-                "name":webix.rules.isNotEmpty,
-                "vorname":webix.rules.isNotEmpty,
-                "adresse":webix.rules.isNotEmpty,
-                "plz":webix.rules.isNotEmpty,
-                "plz":webix.rules.isNumber,
-                "ort":webix.rules.isNotEmpty
-              }
+              ]
               }, /* End adresse details form. */
             /* Adresse details toolbar. */
             { view : "toolbar",
               cols : [
                 { width : 6 },
                 { view : "button", label : "Zurück", width : "90",
-                  type : "iconButton", icon : "mdi mdi-arrow-left",
+                  type : "icon", icon : "mdi mdi-arrow-left",
                   click : () => {
                     $$("moduleAdressen-itemsCell").show();
                   }
                 },
                 { },
                 { id : "moduleAdressen-emailButton", view : "button", label : "Email",
-                  width : "90", type : "iconButton",
+                  width : "80", type : "icon",
                   icon : "webix_icon mdi mdi-email-box", disabled : true, 
                     click : () => { this.showEmailForm($$("moduleAdressen-detailsForm").elements.email.data.value); }
                 },
                 { },
-                { view : "button", label : "Save", width : "80", type : "iconButton",
+                { view : "button", label : "Save", width : "80", type : "icon",
                   icon : "webix_icon mdi mdi-content-save", id : "moduleAdressen-saveButton", disabled : true,
-                  click : () => { wxAMC.saveHandler("Adressen", [ $$("moduleAdressen-detailsForm")])
+                  click : () => { wxAMC.saveHandler("Adressen", "moduleAdressen-detailsForm")
                   }
                 },
                 { width : 6 }
@@ -286,8 +229,8 @@ wxAMC.moduleClasses.Adressen = class {
   newHandler() {
 
     // We're adding a new adresse, so set the editing flag and create an ID.
-    wxAMC.modules.Adressen.isEditingExisting = false;
-    wxAMC.modules.Adressen.editingID = 0;
+    this.isEditingExisting = false;
+    this.editingID = 0;
 
     // Now show the details form and clear it, then set any defaults.  Don't forget to
     // disable the delete button since we obviously can't delete during an add.
@@ -296,11 +239,34 @@ wxAMC.moduleClasses.Adressen = class {
     $$("moduleAdressen-detailsForm").elements.geschlecht.data.value = 1;
     $$("moduleAdressen-detailsForm").elements.sam_mitglied.data.value = 1;
     $$("moduleAdressen-detailsForm").elements.land.data.value = "CH";
-    
-    
     $$("moduleAdressen-deleteButton").disable();
 
   } /* End newHandler(). */
+
+  /**
+   * Handles clicks on the Save button.
+   */
+  editExisting() {
+
+    const adresse = $$("moduleAdressen-items").getSelectedItem();
+
+    // Set flag to indicate editing an existing adresse and show the details.
+    this.isEditingExisting = true;
+    this.editingID = adresse.id;
+
+    // Clear the details form.
+    $$("moduleAdressen-detailsForm").clear();
+
+    // Show the form.  Note that this has to be done before the call to setValues()
+    // below otherwise we get an error due to setting the value of the richtext (my
+    // guess is it lazy-builds the DOM and it's not actually there until the show()
+    // executes).
+    $$("moduleAdressen-details").show();
+
+    // Populate the form.
+    $$("moduleAdressen-detailsForm").setValues(adresse);
+
+   } /* End editExisting(). */
 
   sendMail() {
     const mailForm = $$('moduleAdressen-emailForm').getValues();
@@ -366,12 +332,6 @@ wxAMC.moduleClasses.Adressen = class {
         rows : [
           /* Adresse details form. */
           { view : "form", id : "moduleAdressen-emailForm",
-            // elementsConfig : { view : "text", labelWidth : 100,
-            //   on : { onChange : () => {
-            //     $$("moduleAdressen-sendButton")
-            //       [$$("moduleAdressen-emailForm").validate()? "enable" : "disable"]();
-            //   } }
-            // },
             elements:[
                 { view:"text", name: "email_an", label:"AN:" },
                 { view:"text", name: "email_cc", label:"CC:" },
@@ -386,7 +346,7 @@ wxAMC.moduleClasses.Adressen = class {
           cols : [
             { width : 6 },
             { view : "button", label : "Zurück", width : "90",
-              type : "iconButton", icon : "mdi mdi-arrow-left",
+              type : "icon", icon : "mdi mdi-arrow-left",
               click : () => {
                 $$('moduleAdressen-email').close();
                 $$("moduleAdressen-itemsCell").show();
@@ -394,7 +354,7 @@ wxAMC.moduleClasses.Adressen = class {
             },
             { },
             { id : "moduleAdressen-sendButton", view : "button", label : "Email",
-              width : "90", type : "iconButton",
+              width : "90", type : "icon",
               icon : "webix_icon mdi mdi-email-box", disabled : false, 
                 click : () => { this.sendMail(); 
               }
@@ -416,50 +376,44 @@ wxAMC.moduleClasses.Adressen = class {
     $$("moduleAdressen-emailForm").setValues(emailData);
 
    } /* End showEmailForm */
-  /**
-   * Handles clicks on the Save button.
-   */
-  editExisting() {
-
-    const adresse = $$("moduleAdressen-items").getSelectedItem();
-
-    // Set flag to indicate editing an existing adresse and show the details.
-    wxAMC.modules.Adressen.isEditingExisting = true;
-    wxAMC.modules.Adressen.editingID = adresse.id;
-
-    // Clear the details form.
-    $$("moduleAdressen-detailsForm").clear();
-
-    // Show the form.  Note that this has to be done before the call to setValues()
-    // below otherwise we get an error due to setting the value of the richtext (my
-    // guess is it lazy-builds the DOM and it's not actually there until the show()
-    // executes).
-    $$("moduleAdressen-details").show();
-
-    // Populate the form.
-    $$("moduleAdressen-detailsForm").setValues(adresse);
-
-    // Finally, enable the delete button.
-    $$("moduleAdressen-deleteButton").enable();
-
-   } /* End editExisting(). */
-
 
   /**
    * Refresh the adressen list from local storage.
    */
   refreshData() {
 
-    var state = $$("moduleAdressen-items").getState();
-    var sort = state.sort
-    if (sort == null) {
-      sort = [{by:"name", dir:"asc"},{by:"vorname", dir:"asc"}];
-    }
-    //console.info("reloadGrid: ", sort);
-    $$("moduleAdressen-items").clearAll();
-    $$("moduleAdressen-items").load($$("moduleAdressen-items").config.url);
-    $$("moduleAdressen-items").sort(sort);
-  
+    const url = "/Adressen/data";
+    // var dataItems;
+ 
+     const promiseModule = fetch(url)
+       .then(function(response) {
+         //console.log(response);
+         return response.json();
+       }).catch(function(error) {
+         webix.message({ type:"error", text: error})
+   });
+   Promise.resolve(promiseModule)
+   .then(function(dataItems) {
+     //console.log('dataItems: ',dataItems);
+     // Get the items as an array of objects.
+     const itemsAsArray = wxAMC.objectAsArray(dataItems);
+ 
+     // Sort the array by the value property (ascending) so they appear in
+     // alphabetical order.
+     //wxAMC.sortArray(itemsAsArray, "vorname", "A");
+     //wxAMC.sortArray(itemsAsArray, "name", "A");
+ 
+     var state = $$("moduleAdressen-items").getState();
+     var sort = state.sort
+     if (sort == null) {
+       sort = [{by:"name", dir:"asc"},{by:"vorname", dir:"asc"}];
+     }
+     //console.info("reloadGrid: ", sort);
+     $$("moduleAdressen-items").clearAll();
+     $$("moduleAdressen-items").parse(itemsAsArray);
+     $$("moduleAdressen-items").sort(sort);
+ 
+   });
   } /* End refreshData(). */
 
   /**

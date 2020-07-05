@@ -13,3 +13,18 @@
 .webix_window {
   box-shadow : 0 0 40px #202020;
 }
+.inactiveLine {
+  color: lightgrey;
+	font-style: italic;
+}
+
+.custom{
+  font-weight: bold;
+  cursor:pointer;
+}
+.checked{
+  color:green;
+}
+.notchecked{
+  color:lightgray;
+}

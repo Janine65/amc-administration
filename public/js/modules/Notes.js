@@ -53,7 +53,7 @@ wxAMC.moduleClasses.Notes = class {
               cols : [
                 { },
                 { view : "button", label : "New", width : "80",
-                  type : "iconButton", icon : "webix_icon mdi mdi-plus",
+                  type : "icon", icon : "webix_icon mdi mdi-plus",
                   click : this.newHandler.bind(this)
                 },
                 { width : 6 }
@@ -93,19 +93,19 @@ wxAMC.moduleClasses.Notes = class {
               cols : [
                 { width : 6 },
                 { view : "button", label : "Zurück", width : "170",
-                  type : "iconButton", icon : "webix_icon mdi mdi-arrow-left",
+                  type : "icon", icon : "webix_icon mdi mdi-arrow-left",
                   click : () => {
                     $$("moduleNotes-itemsCell").show();
                   }
                 },
                 { },
                 { id : "moduleNotes-deleteButton", view : "button",
-                  label : "Delete", width : "90", type : "iconButton",
+                  label : "Delete", width : "90", type : "icon",
                   icon : "webix_icon mdi mdi-delete", click : () => { wxAMC.deleteHandler("Notes"); }
                 },
                 { },
                 { view : "button", label : "Save", width : "80",
-                  type : "iconButton", icon : "webix_icon mdi mdi-content-save",
+                  type : "icon", icon : "webix_icon mdi mdi-content-save",
                   id : "moduleNotes-saveButton", disabled : true,
                   click : function() {
                     wxAMC.saveHandler("Notes", [ "moduleNotes-detailsForm" ]);
