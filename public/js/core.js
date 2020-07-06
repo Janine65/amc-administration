@@ -113,9 +113,6 @@ class WXAMC {
       // Hide sidemenu.
       $$("sidemenu").hide();
 
-      // Set header text to reflect which module we're using.
-      $$("headerLabel").setValue(inModuleName);
-
       // Set flags to indicate not editing an existing item.
       wxAMC.editingID = null;
       wxAMC.isEditingExisting = false;
@@ -129,9 +126,6 @@ class WXAMC {
 
       // Hide sidemenu.
       $$("sidemenu").hide();
-
-      // Set header text to reflect which module we're using.
-      $$("headerLabel").setValue(inModuleName);
 
       let moduleWindow = $$(`moduleWindow-${inModuleName}`);
 

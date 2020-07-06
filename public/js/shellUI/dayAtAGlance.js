@@ -30,11 +30,10 @@ wxAMC.dayAtAGlance = function() {
     // Make sure there's no active module when we're on day-at-a-glance or we'll have problems.
     wxAMC.activeModule = null;
 
-    // Set the day-at-a-glance header text
-    $$("headerLabel").setValue($$("headerLabel").config.defaultLabel);
-
   }
 
+  $$("headerLabel").setValue($$("headerLabel").config.defaultLabel);
+  
   // Give each module a chance to participate.
   for (let moduleName of wxAMC.registeredModules) {
     wxAMC.modules[moduleName].dayAtAGlance();

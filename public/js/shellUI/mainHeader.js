@@ -28,7 +28,7 @@ wxAMC.getMainHeaderConfig = function() {
           }
         },
         { id : "headerLabel", view: "label",
-          label : "", defaultLabel : "Day-at-a-glance"
+          label : "", defaultLabel : "Auto-Moto Club Swissair"
         },
         { view : "toolbar", id : "taskbar", borderless : true, elements : [ ] },
       ]
