@@ -54,6 +54,23 @@ custom_checkbox(obj, common, value){
         /* ---------- Anlass list cell. ---------- */
         { id : "moduleAnlaesse-itemsCell",
           rows : [
+            {
+              view:"select", value: wxAMC.parameter.get('CLUBJAHR'), label: "Jahr wählen:",
+              id:"datumSelect",
+              options:[
+                {"id":(parseInt(wxAMC.parameter.get('CLUBJAHR'))-1), value:parseInt(wxAMC.parameter.get('CLUBJAHR'))-1},
+                {"id":wxAMC.parameter.get('CLUBJAHR'), value:wxAMC.parameter.get('CLUBJAHR'), selected: true},
+                {"id":(parseInt(wxAMC.parameter.get('CLUBJAHR'))+1), value:parseInt(wxAMC.parameter.get('CLUBJAHR'))+1}
+              ],
+              on: {
+                onViewShow: function() {
+                  $$("moduleAnlaesse-items").filterByAll();
+                },
+                onChange: function() {
+                  $$("moduleAnlaesse-items").filterByAll();
+                }
+              }
+            },
             { view : "datatable", id : "moduleAnlaesse-items",
             css:"webix_header_border webix_data_border", 
             select:true, autofit:true,
@@ -67,26 +84,39 @@ custom_checkbox(obj, common, value){
               }
             },
             columns:[
-              { id:"datum", header:[{text:"Datum"},{content:"textFilter"}], sort:"date", adjust:true, format:webix.i18n.dateFormatStr},
-              { id:"name", header:[{text:"Name"},{content:"textFilter"}], sort:"string", adjust:true},
-              { id:"status", header:[{text:"Status"},{content:"textFilter"}], sort:"int", adjust:true, template:this.custom_status},
-              { id:"punkte", header:[{text:"Punkte"},{content:"textFilter"}], sort:"int", adjust:true},
-              { id:"gaeste", header:[{text:"Gäste"},{content:"textFilter"}], sort:"int", adjust:true},
-              { id:"istkegeln", css:{'text-align':'center'}, header:[{text:"Kegeln?"},{content:"selectFilter"}], sort:"text", template:this.custom_checkbox},
-              { id:"nachkegeln", css:{'text-align':'center'},header:[{text:"Nachkegeln?"},{content:"selectFilter"}], sort:"text", template:this.custom_checkbox},		
-              { id:"beschreibung", header:[{text:"Beschreibung"},{content:"textFilter"}], sort:"string", adjust:"header"},
-              { id:"longname", header:[{text:"Vorjahres Termin"},{content:"selectFilter"}], sort:"text", adjust:true, template:this.show_vorjahr}  
+              { id:"datum", header:[{text:"Datum"}], adjust:true, format:webix.i18n.dateFormatStr},
+              { id:"name", header:[{text:"Name"}],  adjust:true},
+              { id:"status", header:[{text:"Status"}], adjust:true, template:this.custom_status},
+              { id:"punkte", header:[{text:"Punkte"}], adjust:true},
+              { id:"gaeste", header:[{text:"Gäste"}],  adjust:true},
+              { id:"istkegeln", css:{'text-align':'center'}, header:[{text:"Kegeln?"}], template:this.custom_checkbox},
+              { id:"nachkegeln", css:{'text-align':'center'},header:[{text:"Nachkegeln?"}], template:this.custom_checkbox},		
+              { id:"beschreibung", header:[{text:"Beschreibung"}], adjust:"header"},
+              { id:"longname", header:[{text:"Vorjahres Termin"}], adjust:true, template:this.show_vorjahr}  
             ],
             hover: "hoverline",
-            sort:"multi",
             on : {
+              onViewShow:function(){
+                this.filterByAll();
+              },
                onBeforeLoad:function(){
                 this.showOverlay("Loading...");
               },
               onAfterLoad:function(){
                 this.hideOverlay();
-                this.filter('#datum#',"2020")
                 $$("count_anlass").setValue("Anzahl " + this.count());	  
+                $$("moduleAnlaesse-items").registerFilter(
+                  $$("datumSelect"),  
+                  { columnId:"datum" },
+                  {  
+                    getValue:function(view){
+                      return view.getValue();
+                    },
+                    setValue:function(view, value){
+                      view.setValue(value)
+                    }
+                  }
+                );
               },
               onAfterFilter:function(){
                 $$("count_anlass").setValue("Anzahl " + this.count());	  
@@ -315,22 +345,13 @@ custom_checkbox(obj, common, value){
     //console.log('dataItems: ',dataItems);
     // Get the items as an array of objects.
     const itemsAsArray = wxAMC.objectAsArray(dataItems);
-
-    // Sort the array by the value property (ascending) so they appear in
-    // alphabetical order.
-    //wxAMC.sortArray(itemsAsArray, "datum", "D");
-
-    var state = $$("moduleAnlaesse-items").getState();
-     var sort = state.sort
-     if (sort == null) {
-       sort = [{by:"datum", dir:"desc"},{by:"name", dir:"desc"}];
-     }
+    
     //console.log('itemsAsArray: ',itemsAsArray);
     // Populate the tree.
     $$("moduleAnlaesse-items").clearAll();
     $$("moduleAnlaesse-items").parse(itemsAsArray);
-    $$("moduleAnlaesse-items").sort(sort);
-  });
+    $$("moduleAnlaesse-items").filterByAll();
+});
 
 } /* End refreshData(). */
 

@@ -4,6 +4,7 @@ const { Op, Sequelize } = require("sequelize");
 module.exports = {
 	getData: function (req, res) {		
 		db.Anlaesse.findAll({
+			where: {datum: { [Op.gte]: new Date('01.01.'+(global.Parameter.get('CLUBJAHR') - 1 )) }},
 			attributes: {exclude: ['longname']},
 			include: [
 				{ model: db.Anlaesse, as: 'linkedEvent', required: false, attributes: ['longname']}
@@ -17,7 +18,7 @@ module.exports = {
 		// count of SAM_Mitglieder
 		// count of not SAM_Mitglieder
 		
-		var qrySelect = "SELECT 'Anzahl Anlässe im aktuellen Jahr' as label, count(id) as value from clubmeisterschaft where status = 1 and YEAR(`datum`) = (SELECT `systemparameter`.`Wert_Zahl` FROM `systemparameter` WHERE `systemparameter`.`Feld` = 'CLUBJAHR')";
+		var qrySelect = "SELECT 'Anzahl Anlässe im aktuellen Jahr' as label, count(id) as value from clubmeisterschaft where status = 1 and YEAR(`datum`) = " + global.Parameter.get('CLUBJAHR');
 		qrySelect += " UNION SELECT 'Anzahl zukünftiger Anlässe', count(id) from clubmeisterschaft where status = 1 and datum > NOW()";
 
 		sequelize.query(qrySelect, 

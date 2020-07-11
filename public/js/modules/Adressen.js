@@ -56,7 +56,7 @@ wxAMC.moduleClasses.Adressen = class {
               { id:"mnr", css:{'text-align':'right'}, header:[{text:"MNR"},{content:"numberFilter"}], sort:"int", adjust:true},
               { id:"geschlecht", header:[{text:"Geschlecht"}], options:[
                       { id:"1", value:"M" },
-                      { id:"2", value:"W" }], adjust:true},
+                      { id:"2", value:"W" }], sort:"text", adjust:true},
               { id:"name", header:[{text:"Name"},{content:"textFilter"}], sort:"string", adjust:true},
               { id:"vorname", header:[{text:"Vorname"},{content:"textFilter"}], sort:"string", adjust:true},
               { id:"adresse", header:[{text:"Adresse"},{content:"textFilter"}], adjust:true},
@@ -68,13 +68,13 @@ wxAMC.moduleClasses.Adressen = class {
               { id:"email", header:"Email", fillspace:true},
               { id:"notes", header:"Notizen", hidden:true},
               { id:"mnr_sam", css:{'text-align':'right'}, header:[{text:"SAM Nr."},{content:"numberFilter"}], sort:"int", adjust:true},
-              { id:"sam_mitglied", css:{'text-align':'center'}, header:[{text:"SAM Mitglied"},{content:"selectFilter"}], sort:"text", template:this.custom_checkbox},
-              { id:"ehrenmitglied", css:{'text-align':'center'},header:[{text:"Ehrenmitglied"},{content:"selectFilter"}], sort:"text", template:this.custom_checkbox},		
-              { id:"vorstand", css:{'text-align':'center'},header:[{text:"Vorstand"},{content:"selectFilter"}], sort:"text", template:this.custom_checkbox, hidden:true},		
-              { id:"revisor", css:{'text-align':'center'},header:[{text:"Revisor"},{content:"selectFilter"}], sort:"text", template:this.custom_checkbox, hidden:true},		
-              { id:"allianz", css:{'text-align':'center'},header:[{text:"Allianz"},{content:"selectFilter"}], sort:"text", template:this.custom_checkbox, hidden:true},		
-              { id:"eintritt", header:[{text:"Eintritt"},{content:"textFilter"}], sort:"string", adjust:true, template:function(obj){return new Date(obj.eintritt).getFullYear();}, hidden:true},
-              { id:"austritt", header:[{text:"Austritt"},{content:"textFilter"}], sort:"string", adjust:true, template:function(obj){return new Date(obj.austritt).getFullYear();}, hidden:true},
+              { id:"sam_mitglied", css:{'text-align':'center'}, header:[{text:"SAM Mitglied"},{content:"selectFilter"}], sort:"int", template:this.custom_checkbox},
+              { id:"ehrenmitglied", css:{'text-align':'center'},header:[{text:"Ehrenmitglied"},{content:"selectFilter"}], sort:"int", template:this.custom_checkbox},		
+              { id:"vorstand", css:{'text-align':'center'},header:[{text:"Vorstand"},{content:"selectFilter"}], sort:"int", template:this.custom_checkbox, hidden:true},		
+              { id:"revisor", css:{'text-align':'center'},header:[{text:"Revisor"},{content:"selectFilter"}], sort:"int", template:this.custom_checkbox, hidden:true},		
+              { id:"allianz", css:{'text-align':'center'},header:[{text:"Allianz"},{content:"selectFilter"}], sort:"int", template:this.custom_checkbox, hidden:true},		
+              { id:"eintritt", header:[{text:"Eintritt"},{content:"textFilter"}], sort:"text", adjust:true, template:function(obj){return new Date(obj.eintritt).getFullYear();}, hidden:true},
+              { id:"austritt", header:[{text:"Austritt"},{content:"textFilter"}], sort:"text", adjust:true, template:function(obj){return new Date(obj.austritt).getFullYear();}, hidden:true},
               { id:"adressenId", header:[{text:"Geworben von"},{content:"selectFilter"}], sort:"text", adjust:"header", template:this.show_geworben, hidden:true}
             ],
             hover: "hoverline",
@@ -368,6 +368,7 @@ wxAMC.moduleClasses.Adressen = class {
 
     // Populate the form.
     $$('moduleAdressen-email').show();
+    $$('moduleAdressen-email').unbind();
     $$("moduleAdressen-emailForm").setValues(emailData);
 
    } /* End showEmailForm */
@@ -399,14 +400,21 @@ wxAMC.moduleClasses.Adressen = class {
      //wxAMC.sortArray(itemsAsArray, "name", "A");
  
      var state = $$("moduleAdressen-items").getState();
-     var sort = state.sort
+     var sort = state.sort;
      if (sort == null) {
-       sort = [{by:"name", dir:"asc"},{by:"vorname", dir:"asc"}];
+       sort = [{by:"name", id:"name", dir:"asc"},{by:"vorname", id:"vorname", dir:"asc"}];
      }
-     //console.info("reloadGrid: ", sort);
+     console.info("reloadGrid: ", sort);
      $$("moduleAdressen-items").clearAll();
      $$("moduleAdressen-items").parse(itemsAsArray);
      $$("moduleAdressen-items").sort(sort);
+     if (sort instanceof Array) {
+        sort.forEach(element => {
+          $$("moduleAdressen-items").markSorting(element.id, element.dir, true);
+        });
+     } else {
+        $$("moduleAdressen-items").markSorting(sort.id, sort.dir);
+     }
      
  
    });

@@ -1,5 +1,3 @@
-"use strict";
-
 
 /**
  * Get the UI config object for the main header.

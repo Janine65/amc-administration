@@ -1,5 +1,3 @@
-"use strict";
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require("path");
@@ -71,7 +69,16 @@ app.delete('/Anlaesse/data', anlaesse.removeData);
 app.get('/Anlaesse/getFkData', anlaesse.getFKData);
 app.get('/Anlaesse/data/:id', anlaesse.getOneData);
 app.get('/Anlaesse/getOverviewData', anlaesse.getOverviewData);
-    
+
+
+const parameter = require("./public/js/controllers/parameter");
+app.get('/Parameter/data', parameter.getData);
+app.post('/Parameter/data', parameter.updateData);
+app.put('/Parameter/data', parameter.updateData);
+app.delete('/Parameter/data', parameter.removeData);
+
+console.log(global);
+
   /**
    * A common handler to deal with DB operation errors.  Returns a 500 and an error object.
    *

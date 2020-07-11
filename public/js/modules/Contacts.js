@@ -1,5 +1,3 @@
-"use strict";
-
 // "Register" this module with wxAMC.
 wxAMC.registeredModules.push("Contacts");
 

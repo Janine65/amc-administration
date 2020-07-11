@@ -1,6 +1,5 @@
 class WXAMC {
 
-
   /**
    * Constructor.
    */
@@ -43,6 +42,28 @@ class WXAMC {
     webix.i18n.setLocale("de-DE");
 
 
+ 
+    this.parameter = new Map();
+    const url = "/Parameter/data";
+    const promiseModule = fetch(url)
+      .then(function(response) {
+        //console.log(response);
+        return response.json();
+      }).catch(function(error) {
+        webix.message({ type:"error", text: error})
+     });
+    Promise.resolve(promiseModule)
+      .then(function(lparam) {
+      //console.log('dataItems: ',dataItems);
+      //const lparam = wxAMC.objectAsArray(dataItems);
+      lparam.forEach(param => {
+        //console.log(param);
+         wxAMC.parameter.set(param.key, param.value);	
+      });
+    })
+    .catch((e) => console.error(e));    
+
+    console.log(this.parameter);
 
     // Custom window component so that by default windows will animated when opened and when hidden.
     webix.protoUI({

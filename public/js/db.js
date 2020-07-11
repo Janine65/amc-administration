@@ -171,6 +171,18 @@ Anlaesse.init({
   }
   );
 
+  class Parameter extends Model {
+  }
+  Parameter.init({
+    key: {type: Sequelize.STRING, allowNull: false},
+    value: {type: Sequelize.STRING, allowNull: false},
+  },
+  {
+    sequelize,
+    tableName: 'parameter',
+    modelName: 'parameter' 
+  }
+);
 
 Adressen.belongsTo(Adressen);
 Adressen.hasMany(Adressen);
@@ -178,5 +190,5 @@ Adressen.hasMany(Adressen);
 Anlaesse.belongsTo(Anlaesse, { as: 'linkedEvent', constraints: false, foreignKey: 'anlaesseId' });
 
 module.exports = {
-  Adressen, Anlaesse
+  Adressen, Anlaesse, Parameter
 };
