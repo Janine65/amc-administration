@@ -1,0 +1,54 @@
+{
+  "useSingleToken": false,
+  "verifyUserBy": "ADMIN",
+  "verify3rdPartyUserBy": "AUTO",
+  "appName":"User managemens",
+  "port": 5000,
+  "database": {
+    "name": "user-managements-db",
+    "username": "user-managements-username",
+    "password": "user-managements-password",
+    "settings": {
+      "host": "localhost",
+      "dialect": "sqlite",
+      "storage": "/tmp/user-managements.sqlite",
+      "pool": {
+        "max": 5,
+        "min": 0,
+        "idle": 10000
+      },
+      "logging": false
+    }
+  },
+  "email": {
+    "service": "your-email-service",
+    "user": "your-email@address.com",
+    "pass": "your-email-password",
+    "from": "your-email@address.com"
+  },
+  "verificationUrl": "http://localhost:5000/user/verify/",
+  "changePasswordUrl": "http://localhost:3000/change-password/",
+  "loginUrl": "http://localhost:3000",
+  "tokenHash": "dev-token-key",
+  "adminEmail": "users.managements@gmail.com",
+  "log4js": {
+    "appenders": { "app": { "type": "file", "filename": "/tmp/your-app-name/app-name.log" } },
+    "categories": { "default": { "appenders": ["app"], "level": "all" } }
+  },
+  "templates": {
+    "activation":{
+      "body" : "./email-templates/activation/body.html",
+      "subject" : "./email-templates/activation/subject.html"
+    },
+    "approved":{
+      "body" : "./email-templates/approved-activation/body.html",
+      "subject" : "./email-templates/approved-activation/subject.html"
+    },
+    "notify":{
+      "body" : "./email-templates/notify-admin-when-user-created/body.html",
+      "subject" : "./email-templates/notify-admin-when-user-created/subject.html"
+    },
+    "activationResponse" : "./email-templates/activation/response.html"
+  },
+  "userRoutePrefix": "/user"
+}

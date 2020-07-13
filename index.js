@@ -1,10 +1,15 @@
 const express = require('express');
+const helmet = require('helmet');
 const bodyParser = require('body-parser');
 const path = require("path");
 const nedb = require("nedb");
 const nodemailer = require("nodemailer");
 const _ = require("./public/js/cipher");
-const key = "ASECRET";
+const multer = require('multer') // v1.0.5
+const upload = multer() // for parsing multipart/form-data
+const Sequelize = require("sequelize");
+const session = require("express-session");
+const SequelizeStore = require("connect-session-sequelize")(session.Store);
 
 
 // environment variables
@@ -14,12 +19,47 @@ if (process.env.NODE_ENV == undefined)
 // config variables
 const config = require('./config/config.js');
 
-const app = express();
+const db = require('./public/js/db')
 
+var Session = global.sequelize.define("Session", {
+  sid: {
+    type: Sequelize.STRING
+  },
+  userId: Sequelize.STRING,
+  expires: Sequelize.DATE,
+  data: Sequelize.STRING(50000),
+});
+ 
+function extendDefaultFields(defaults, session) {
+  return {
+    data: defaults.data,
+    expires: defaults.expires,
+    userId: session.userId,
+  };
+}
+ 
+var store = new SequelizeStore({
+  db: sequelize,
+  table: "Session",
+  extendDefaultFields: extendDefaultFields,
+  checkExpirationInterval: 15 * 60 * 1000, // The interval at which to cleanup expired sessions in milliseconds.
+  expiration: 30 * 60 * 1000  // The maximum age (in milliseconds) of a valid session.
+});
+
+const app = express();
+// 
 app.use(bodyParser.json());
 app.use("/", express.static(path.join(__dirname, '/public')));
-
-const db = require('./public/js/db')
+  
+app.use(helmet());
+app.use(
+  session({
+    secret: global.cipher.secret,
+    store: store,
+    resave: false, // we support the touch method so per the express-session docs this should be set to false
+    proxy: false, // if you do SSL outside of node.
+  })
+);
 
 const adresse = require("./public/js/controllers/adresse");
 app.get('/Adressen/data', adresse.getData);
@@ -31,8 +71,6 @@ app.get('/Adressen/data', adresse.getOneData);
 app.get('/Adressen/getOverviewData', adresse.getOverviewData);
 
 app.post('/Adressen/email', sendEmail);
-
-
 
 function sendEmail(req, res) {
   const email = req.body;
@@ -73,9 +111,9 @@ app.get('/Anlaesse/getOverviewData', anlaesse.getOverviewData);
 
 const parameter = require("./public/js/controllers/parameter");
 app.get('/Parameter/data', parameter.getData);
-app.post('/Parameter/data', parameter.updateData);
-app.put('/Parameter/data', parameter.updateData);
-app.delete('/Parameter/data', parameter.removeData);
+app.post('/Parameter/data', upload.array(), parameter.updateData);
+app.put('/Parameter/data', upload.array(), parameter.updateData);
+app.get('/Parameter/getOneDataByKey', parameter.getOneDataByKey);
 
 console.log(global);
 

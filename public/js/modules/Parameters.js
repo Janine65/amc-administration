@@ -26,6 +26,12 @@ wxAMC.moduleClasses.Parameters = class {
    * Return the module's UI config object.
    */
   getUIConfig() {
+    var elements = [{id: "SYSTEM", label: "Systemparameter", type: "label"},];
+    elements.push();
+    wxAMC.parameter.forEach((value, key) => {
+      elements.push({id:key , label: key , type: "text", value: value},);
+    });
+    elements.push({ id: "USER", label: "Andere", type: "label"});
 
     return {
       winWidth : 300, winHeight : 300, winLabel : "Parameters", winIcon : "mdi mdi-clipboard-list-outline",
@@ -40,11 +46,7 @@ wxAMC.moduleClasses.Parameters = class {
             resizeColumn: { headerOnly:true},
             scroll:true, 
             editable:true,
-            elements: [
-                { label: "Systemparameter", type: "label"},
-                { id:"CLUBJAHR", label: "Clubjahr", type: "text", value: parseInt(wxAMC.parameter.get('CLUBJAHR'))},
-                { label: "Andere", type: "label"}
-            ],
+            elements: elements,
             hover: "hoverline",
             on : {
               onAfterEditStop:function(){
@@ -101,17 +103,45 @@ wxAMC.moduleClasses.Parameters = class {
    */
 
   saveParameters() {
-    var clubjahr = $$("moduleParameters-items").getItem('CLUBJAHR');
-    console.log(clubjahr);
-    if (clubjahr != wxAMC.parameter.get('CLUBJAHR')) {
+    var mUpdate = new Map();
+
+    wxAMC.parameter.forEach((value, key) => 
+      mUpdate.set(key, $$("moduleParameters-items").getItem(key).value)
+    );
+    console.log(mUpdate);
+
       webix.html.addCss(webix.confirm({
         title : `Please Confirm`, ok : "Yes", cancel : "No", type : "confirm-warning",
         text : `Are you sure you want to update this item?`, width : 300,
         callback : function(inResult) {
-
+          if (inResult) {
+            const url = "/Parameters/data/";
+            fetch(url, {
+              method: 'PUT', // *GET, POST, PUT, DELETE, etc.
+              mode: 'cors', // no-cors, *cors, same-origin
+              cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+              credentials: 'same-origin', // include, *same-origin, omit
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              redirect: 'follow', // manual, *follow, error
+              referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+              body: mUpdate // body data type must match "Content-Type" header
+            })
+            .then((response) => response.json())
+            .then(function(){
+                // Refresh the module's summary list and return to that list.
+                wxAMC.modules['Parameters'].refreshData();
+                // Give the day-at-a-glance screen a chance to update (needed for desktop mode).
+                wxAMC.dayAtAGlance();
+                // Finally, show a completion message.
+                webix.message({ type : "success", text : "gesichert" });
+              })
+            .catch((e) => webix.message({ type:"error", text: e}));      
+          }  
         }
       }), "animated bounceIn");
-    }
+    
   } /* End saveParameters */
 
 

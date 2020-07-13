@@ -1003,26 +1003,11 @@ button,
   background-color: #ffeeee;
 }
 .webix_dataview_item.tiles {
-  border: none;
-  padding: 4px;
-}
-.webix_dataview_item.tiles .webix_dataview_inner_item {
+  box-sizing: border-box;
   border: 1px solid #ebebeb;
-  padding: 2px 10px;
-  height: 100%;
 }
-.webix_dataview_item.tiles.webix_selected,
-.webix_dataview_item.tiles.webix_drag_over {
-  background: transparent;
-}
-.webix_dataview_item.tiles.webix_selected .webix_dataview_inner_item {
-  background-color: #27ae60;
-}
-.webix_dataview_item.tiles.webix_selected:focus .webix_dataview_inner_item {
-  background-color: #25a65b;
-}
-.webix_dataview_item.tiles.webix_drag_over .webix_dataview_inner_item {
-  background: transparent;
+.webix_drag_zone > .webix_dataview_item.tiles {
+  margin: 0 !important;
 }
 .webix_dataview .webix_scroll_cont {
   box-sizing: border-box;
@@ -1411,6 +1396,13 @@ button,
 .webix_ss_footer TD,
 .webix_ss_vscroll_footer {
   background: #fafafa;
+}
+.webix_hcell.webix_measure_size {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  font-size: 15px;
+  color: #4A4A4A;
 }
 /*content in header and footer*/
 .webix_hcell {
@@ -2686,6 +2678,33 @@ div.webix_modal_cover {
   background-color: #219552;
   box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
 }
+.webix_popup_input.webix_el_text {
+  outline: none;
+  overflow: hidden;
+  padding: 3px 2px;
+}
+.webix_popup_input.webix_el_text input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 30px;
+  font-size: 15px;
+  background: #ffffff;
+  font-family: 'PT Sans', Tahoma;
+  border-color: #cccccc;
+  /*.altBackColor;
+	.altBackBorderColor;*/
+}
+.webix_popup_input.webix_el_text.webix_required::before {
+  position: absolute;
+  right: 18px;
+  padding-top: 1px;
+  content: "*";
+  color: red;
+}
+.webix_popup_input.webix_el_text.webix_popup_invalid input {
+  background-color: #ffedee;
+  border-color: #fea5a8;
+}
 .webix_popup_title {
   color: #666666;
   line-height: 20px;
@@ -2702,25 +2721,36 @@ div.webix_modal_cover {
   padding: 24px 16px 0px 16px;
   font-size: 15px;
   color: #666666;
-  min-height: 20px;
   line-height: 20px;
+}
+.webix_popup_text.webix_popup_label {
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .webix_alert .webix_popup_title,
 .webix_confirm .webix_popup_title,
+.webix_prompt .webix_popup_title,
 .webix_alert .webix_popup_text,
-.webix_confirm .webix_popup_text {
+.webix_confirm .webix_popup_text,
+.webix_prompt .webix_popup_text {
   box-shadow: inset 0 4px #3498db;
 }
 .webix_alert-warning .webix_popup_title,
 .webix_confirm-warning .webix_popup_title,
+.webix_prompt-warning .webix_popup_title,
 .webix_alert-warning .webix_popup_text,
-.webix_confirm-warning .webix_popup_text {
+.webix_confirm-warning .webix_popup_text,
+.webix_prompt-warning .webix_popup_text {
   box-shadow: inset 0 4px #ffd21a;
 }
 .webix_alert-error .webix_popup_title,
 .webix_confirm-error .webix_popup_title,
+.webix_prompt-error .webix_popup_title,
 .webix_alert-error .webix_popup_text,
-.webix_confirm-error .webix_popup_text {
+.webix_confirm-error .webix_popup_text,
+.webix_prompt-error .webix_popup_text {
   box-shadow: inset 0 4px #ce5545;
 }
 .webix_message {
@@ -2914,7 +2944,8 @@ div.webix_modal_cover {
 .webix_invisible {
   display: none !important;
 }
-.webix_drop_area {
+.webix_drop_area,
+.webix_drop_area_inner {
   height: 34px;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
@@ -2933,6 +2964,9 @@ div.webix_modal_cover {
 }
 .webix_dataview .webix_drop_area {
   float: left;
+  background-color: transparent;
+}
+.webix_dataview .webix_drop_area_inner {
   border-right: 1px solid #ebebeb;
   border-bottom: 1px solid #ebebeb;
 }
@@ -5890,12 +5924,12 @@ body.webix_print {
 .webix_dataview_item {
   border-right-color: #ebebeb;
 }
-.webix_dataview_item.tiles.webix_selected .webix_dataview_inner_item {
+.webix_dataview_item.tiles.webix_selected {
   background-color: #ddf7e8;
   color: #666666;
   border-color: #27ae60;
 }
-.webix_dataview_item.tiles.webix_selected:focus .webix_dataview_inner_item {
+.webix_dataview_item.tiles.webix_selected:focus {
   background-color: #c8f3da;
 }
 .webix_view .webix_pager_item {

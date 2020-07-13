@@ -1,5 +1,4 @@
 const { Sequelize, Model } = require('sequelize');
-//const cipher = require("./cipher");
 
 const sequelize = new Sequelize(global.gConfig.database, global.gConfig.db_user, global.cipher.decrypt(global.gConfig.db_pwd), {
   host:"localhost", port:global.gConfig.port,

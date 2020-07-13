@@ -1249,26 +1249,11 @@ button,
   background-color: #ffeeee;
 }
 .webix_dataview_item.tiles {
-  border: none;
-  padding: 4px;
-}
-.webix_dataview_item.tiles .webix_dataview_inner_item {
+  box-sizing: border-box;
   border: 1px solid #EDEFF0;
-  padding: 2px 12px;
-  height: 100%;
 }
-.webix_dataview_item.tiles.webix_selected,
-.webix_dataview_item.tiles.webix_drag_over {
-  background: transparent;
-}
-.webix_dataview_item.tiles.webix_selected .webix_dataview_inner_item {
-  background-color: #F4F5F9;
-}
-.webix_dataview_item.tiles.webix_selected:focus .webix_dataview_inner_item {
-  background-color: #edeff5;
-}
-.webix_dataview_item.tiles.webix_drag_over .webix_dataview_inner_item {
-  background: transparent;
+.webix_drag_zone > .webix_dataview_item.tiles {
+  margin: 0 !important;
 }
 .webix_dataview .webix_scroll_cont {
   box-sizing: border-box;
@@ -1662,6 +1647,16 @@ button,
 .webix_ss_footer TD,
 .webix_ss_vscroll_footer {
   background: #fafafa;
+}
+.webix_hcell.webix_measure_size {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  font-family: Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #313131;
+  letter-spacing: 0.2px;
 }
 /*content in header and footer*/
 .webix_hcell {
@@ -3052,6 +3047,35 @@ div.webix_modal_cover {
 .webix_popup_button.confirm:active {
   background-color: #17839d;
 }
+.webix_popup_input.webix_el_text {
+  outline: none;
+  overflow: hidden;
+  padding: 3px 2px;
+}
+.webix_popup_input.webix_el_text input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 30px;
+  font-size: 14px;
+  background: #ffffff;
+  font-family: Roboto, sans-serif;
+  border-color: #CCD7E6;
+  /*.altBackColor;
+	.altBackBorderColor;*/
+}
+.webix_popup_input.webix_el_text.webix_required::before {
+  position: absolute;
+  right: 18px;
+  padding-top: 1px;
+  content: "*";
+  color: red;
+}
+.webix_popup_input.webix_el_text.webix_popup_invalid input {
+  background-color: #ffedee;
+  border-color: #fea5a8;
+  color: #FF5C4C;
+  background-color: #ffdedb;
+}
 .webix_popup_title {
   color: #475466;
   line-height: 20px;
@@ -3068,25 +3092,36 @@ div.webix_modal_cover {
   padding: 24px 16px 0px 16px;
   font-size: 14px;
   color: #475466;
-  min-height: 20px;
   line-height: 20px;
+}
+.webix_popup_text.webix_popup_label {
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .webix_alert .webix_popup_title,
 .webix_confirm .webix_popup_title,
+.webix_prompt .webix_popup_title,
 .webix_alert .webix_popup_text,
-.webix_confirm .webix_popup_text {
+.webix_confirm .webix_popup_text,
+.webix_prompt .webix_popup_text {
   box-shadow: inset 0 4px #1CA1C1;
 }
 .webix_alert-warning .webix_popup_title,
 .webix_confirm-warning .webix_popup_title,
+.webix_prompt-warning .webix_popup_title,
 .webix_alert-warning .webix_popup_text,
-.webix_confirm-warning .webix_popup_text {
+.webix_confirm-warning .webix_popup_text,
+.webix_prompt-warning .webix_popup_text {
   box-shadow: inset 0 4px #FDBF4C;
 }
 .webix_alert-error .webix_popup_title,
 .webix_confirm-error .webix_popup_title,
+.webix_prompt-error .webix_popup_title,
 .webix_alert-error .webix_popup_text,
-.webix_confirm-error .webix_popup_text {
+.webix_confirm-error .webix_popup_text,
+.webix_prompt-error .webix_popup_text {
   box-shadow: inset 0 4px #FF5C4C;
 }
 .webix_message {
@@ -3282,7 +3317,8 @@ div.webix_modal_cover {
 .webix_invisible {
   display: none !important;
 }
-.webix_drop_area {
+.webix_drop_area,
+.webix_drop_area_inner {
   height: 36px;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
@@ -3301,6 +3337,9 @@ div.webix_modal_cover {
 }
 .webix_dataview .webix_drop_area {
   float: left;
+  background-color: transparent;
+}
+.webix_dataview .webix_drop_area_inner {
   border-right: 1px solid #EDEFF0;
   border-bottom: 1px solid #EDEFF0;
 }
@@ -6859,7 +6898,7 @@ body.webix_print {
 .webix_dataview_item.webix_selected {
   box-shadow: none;
 }
-.webix_dataview .webix_dataview_item.tiles.webix_selected .webix_dataview_inner_item {
+.webix_dataview_item.tiles.webix_selected {
   border-color: #5ccce7;
 }
 .webix_view .webix_pager_item {
