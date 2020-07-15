@@ -122,6 +122,7 @@ wxAMC.moduleClasses.Parameters = class {
               cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
               credentials: 'same-origin', // include, *same-origin, omit
               headers: {
+                // 'Content-Type': 'application/x-www-form-urlencoded'
                 'Content-Type': 'application/json'
               },
               redirect: 'follow', // manual, *follow, error
