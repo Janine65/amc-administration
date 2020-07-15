@@ -11,7 +11,6 @@ const Sequelize = require("sequelize");
 const session = require("express-session");
 const SequelizeStore = require("connect-session-sequelize")(session.Store);
 
-
 // environment variables
 if (process.env.NODE_ENV == undefined)
 	process.env.NODE_ENV = 'development';
