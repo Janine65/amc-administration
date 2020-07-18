@@ -10,7 +10,7 @@ const upload = multer() // for parsing multipart/form-data
 const Sequelize = require("sequelize");
 const session = require("express-session");
 const SequelizeStore = require("connect-session-sequelize")(session.Store);
-const argon = require("argon2");
+//const argon = require("argon2");
 
 // environment variables
 if (process.env.NODE_ENV == undefined)
