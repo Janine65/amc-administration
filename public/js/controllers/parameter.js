@@ -38,16 +38,24 @@ module.exports = {
 	
 	updateData: function (req, res) {
 		var lparam = req.body;
-		lparam.forEach(data => function (data) {
-			// update
-			console.info('update: ',data);
-		
-			db.Parameter.getOneDataByKey(data)
-			.then((param) => param.update(data)
-				.then((obj) => res.json({id: obj.id}))
-				.catch((e) => console.error(e)))
-			.catch((e) => console.error(e));
-		});
+		var ok = true;
+		if (lparam) {
+			for (let k of Object.keys(lparam)) {
+				// update
+				console.info('update: ',k, lparam[k]);
+			
+				db.Parameter.findOne({where: 
+					{ key: {[Op.eq]: k } }
+				})	
+				.then((param) => param.update({value: lparam[k]})
+					.then((updated) => global.Parameter.set(updated.key, updated.value))
+					.catch((e) => {ok = false; console.error(e);}))
+				.catch((e) => {ok = false; console.error(e);});
+			};
+			if (ok) {
+				res.json({});
+			}
+		}
 	},
 
 };

@@ -34,7 +34,7 @@ wxAMC.moduleClasses.Parameters = class {
     elements.push({ id: "USER", label: "Andere", type: "label"});
 
     return {
-      winWidth : 300, winHeight : 300, winLabel : "Parameters", winIcon : "mdi mdi-clipboard-list-outline",
+      winWidth : 300, winHeight : 300, winLabel : "Parameters", winIcon : "mdi mdi-key",
       id : "moduleParameters-container",
       cells : [
         /* ---------- Param list cell. ---------- */
@@ -57,7 +57,7 @@ wxAMC.moduleClasses.Parameters = class {
             /* Param list toolbar. */
             { view : "toolbar",
             cols : [
-              { id: "count_param", view : "label", label: "Anzahl 1"},
+              { id: "count_param", view : "label", label: "Anzahl 2"},
               { },
               { view : "button", label : "Save", width : "80",
                 type : "icon", icon : "webix_icon mdi mdi-content-save",
@@ -103,10 +103,12 @@ wxAMC.moduleClasses.Parameters = class {
    */
 
   saveParameters() {
-    var mUpdate = new Map();
-
-    wxAMC.parameter.forEach((value, key) => 
-      mUpdate.set(key, $$("moduleParameters-items").getItem(key).value)
+    var mUpdate = Object.create(null);
+    
+    wxAMC.parameter.forEach((value, key) => {
+        if (value !== $$("moduleParameters-items").getItem(key).value)
+          mUpdate[key] = $$("moduleParameters-items").getItem(key).value;
+      }
     );
     console.log(mUpdate);
 
@@ -115,7 +117,9 @@ wxAMC.moduleClasses.Parameters = class {
         text : `Are you sure you want to update this item?`, width : 300,
         callback : function(inResult) {
           if (inResult) {
-            const url = "/Parameters/data/";
+            const url = "/Parameter/data/";
+            var stringified = JSON.stringify(mUpdate);
+            console.log(stringified);
             fetch(url, {
               method: 'PUT', // *GET, POST, PUT, DELETE, etc.
               mode: 'cors', // no-cors, *cors, same-origin
@@ -127,14 +131,23 @@ wxAMC.moduleClasses.Parameters = class {
               },
               redirect: 'follow', // manual, *follow, error
               referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-              body: mUpdate // body data type must match "Content-Type" header
+              body: stringified // body data type must match "Content-Type" header
             })
-            .then((response) => response.json())
+            .then((response) => {
+              if (!response.ok) {                                  // ***
+                webix.message({ type:"error", text: "HTTP error " + response.status});  // ***
+              }})
+            //.then((response) => response.json())
             .then(function(){
-                // Refresh the module's summary list and return to that list.
-                wxAMC.modules['Parameters'].refreshData();
+                // Reload the Parameters.
+                wxAMC.reloadParameters();
+                
+                // Close the Parameter Window
+                $$(`moduleWindow-Parameters`).close();
+                $$("taskbar").removeView(`moduleTasbbarButton-Parameters`);
                 // Give the day-at-a-glance screen a chance to update (needed for desktop mode).
                 wxAMC.dayAtAGlance();
+                $$('dayAtAGlance').show();
                 // Finally, show a completion message.
                 webix.message({ type : "success", text : "gesichert" });
               })
@@ -151,26 +164,8 @@ wxAMC.moduleClasses.Parameters = class {
    */
   dayAtAGlance() {
 
-    // Add a section to the day-at-a-glance body for this module if there isn't one already.
-    if (!$$("dayAtAGlanceScreen_Parameters")) {
-      $$("dayAtAGlanceBody").addView({
-        view : "fieldset", label : "Parameters", 
-        body : { id: "dayAtAGlanceScreen_Parameters", cols: [ ] }
-      });
-      $$("dayAtAGlanceBody").addView({ height : 20 });
-    } 
+    return;
 
-    // Populate the day-at-a-glance screen.
-    var rows = [ ];
-    rows.push( 
-        { view:"fieldset", label: "Clubjahr", body: 
-          { rows : 
-              [ { view: "label", label : wxAMC.parameter.get('CLUBJAHR') }
-              ] 
-          }
-        }
-    );
-    webix.ui (rows, $$("dayAtAGlanceScreen_Parameters"));
   } /* End dayAtAGlance(). */
 
 }; /* End Parameters class. */

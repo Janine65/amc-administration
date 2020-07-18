@@ -26,7 +26,7 @@ wxAMC.getMainHeaderConfig = function() {
           }
         },
         { id : "headerLabel", view: "label",
-          label : "", defaultLabel : "Auto-Moto Club Swissair"
+          label : ""
         },
         { view : "toolbar", id : "taskbar", borderless : true, elements : [ ] },
       ]

@@ -41,29 +41,11 @@ class WXAMC {
     webix.i18n.locales["de-DE"] = this.deLocale;
     webix.i18n.setLocale("de-DE");
 
+    this.parameter = new Map();
+    this.reloadParameters();
+    console.log(this.parameter);
 
  
-    this.parameter = new Map();
-    const url = "/Parameter/data";
-    const promiseModule = fetch(url)
-      .then(function(response) {
-        //console.log(response);
-        return response.json();
-      }).catch(function(error) {
-        webix.message({ type:"error", text: error})
-     });
-    Promise.resolve(promiseModule)
-      .then(function(lparam) {
-      //console.log('dataItems: ',dataItems);
-      //const lparam = wxAMC.objectAsArray(dataItems);
-      lparam.forEach(param => {
-        //console.log(param);
-         wxAMC.parameter.set(param.key, param.value);	
-      });
-    })
-    .catch((e) => console.error(e));    
-
-    console.log(this.parameter);
 
     // Custom window component so that by default windows will animated when opened and when hidden.
     webix.protoUI({
@@ -87,11 +69,30 @@ class WXAMC {
 
   } /* End constructor. */
 
+  async reloadParameters() {
+
+    const url = "/Parameter/data";
+    const promiseModule = fetch(url)
+      .then((response) => response.json())
+      .catch((error) => webix.message({ type:"error", text: error})
+     );
+    await Promise.resolve(promiseModule)
+      .then((lparam) => {
+        console.log('lparam: ',lparam);
+        lparam.forEach(param => {
+          //console.log(param);
+           wxAMC.parameter.set(param.key, param.value);	
+        });
+        console.log(wxAMC.parameter);
+      })
+      .catch((e) => console.error(e));    
+
+  } /* End reloadParameters */
 
   /**
    * Builds the UI app shell.
    */
-  start() {
+   start() {
 
     // Instantiate modules.
     for (let moduleName of wxAMC.registeredModules) {
@@ -380,7 +381,10 @@ class WXAMC {
       referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
       body: JSON.stringify(itemData) // body data type must match "Content-Type" header
     })
-    .then((response) => response.json())
+    .then((response) => {
+      if (!response.ok) {                                  // ***
+        webix.message({ type:"error", text: "HTTP error " + response.status});  // ***
+      }})
     .then(function(){
       // Refresh the module's summary list and return to that list.
       wxAMC.modules[inModuleName].refreshData();
@@ -423,8 +427,11 @@ class WXAMC {
             referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
             body: JSON.stringify(anlass) // body data type must match "Content-Type" header
           })
-          .then((response) => response.json())
-          .then(function(){
+          .then((response) => {
+            if (!response.ok) {                                  // ***
+              webix.message({ type:"error", text: "HTTP error " + response.status});  // ***
+            }})
+        .then(function(){
               // Refresh the module's summary list and return to that list.
               wxAMC.modules[inModuleName].refreshData();
               // Give the day-at-a-glance screen a chance to update (needed for desktop mode).

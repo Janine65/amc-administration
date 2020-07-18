@@ -45,8 +45,8 @@ wxAMC.moduleClasses.Adressen = class {
       cells : [
         /* ---------- Adresse list cell. ---------- */
         { id : "moduleAdressen-itemsCell",
-          rows : [ {
-            view:"datatable", id:"moduleAdressen-items", 
+          rows : [ 
+            { view:"datatable", id:"moduleAdressen-items", 
             css:"webix_header_border webix_data_border", 
             select:true, autofit:true,
             resizeColumn: { headerOnly:true},
@@ -65,7 +65,7 @@ wxAMC.moduleClasses.Adressen = class {
               { id:"land", header:[{text:"Land"},{content:"textFilter"}], adjust:true},
               { id:"telefon_p", header:"Telefon (P)"},
               { id:"mobile", header:"Mobile"},
-              { id:"email", header:"Email", fillspace:true},
+              { id:"email", header:"Email"},
               { id:"notes", header:"Notizen", hidden:true},
               { id:"mnr_sam", css:{'text-align':'right'}, header:[{text:"SAM Nr."},{content:"numberFilter"}], sort:"int", adjust:true},
               { id:"sam_mitglied", css:{'text-align':'center'}, header:[{text:"SAM Mitglied"},{content:"selectFilter"}], sort:"int", template:this.custom_checkbox},
@@ -95,7 +95,7 @@ wxAMC.moduleClasses.Adressen = class {
                 this.hideOverlay();
               //console.info(this.count());
               $$("count_adr").setValue("Anzahl " + this.count());	  
-              },
+            },
               onAfterFilter:function(){
               $$("count_adr").setValue("Anzahl " + this.count());	  
               },
@@ -124,6 +124,10 @@ wxAMC.moduleClasses.Adressen = class {
                 { id: "moduleAdressen-newButton", view : "button", label : "New", width : "80", type : "icon",
                   icon : "webix_icon mdi mdi-plus", click : this.newHandler.bind(this)
                 },
+                { width : 6 },
+                { id: "moduleAdressen-exportButton", view : "button", label : "Export", width : "80", type : "icon",
+                icon : "webix_icon mdi mdi-export", click : this.exportData.bind(this)
+              },
                 { width : 6 }
               ] /* End toolbar items. */
             } /* End toolbar. */        
@@ -207,19 +211,16 @@ wxAMC.moduleClasses.Adressen = class {
             rows : [
               /* Adresse details form. */
               { view : "form", id : "moduleAdressen-emailForm", borderless : false, scroll: true,
-                elementsConfig : { view : "text", labelWidth : 100,
-                on : { onChange : () => {
-                  $$("moduleAdressen-sendButton")
-                  [$$("moduleAdressen-emailForm").validate()? "enable" : "disable"]();
-                } }
+                elementsConfig : { view : "text", labelWidth : 100
               },
-              elements:[
-                    { view:"text", name: "email_an", label:"AN:"  },
-                    { view:"text", name: "email_cc", label:"CC:"  },
-                    { view:"text", name: "email_bcc", label:"BCC:"  },
-                    { view:"text", name: "email_subject", label:"Betreff:", required: true },
+              elements:[ 
+                    { view:"textarea", name: "email_an", label:"TO:", height:80 },
+                    { view:"textarea", name: "email_cc", label:"CC:", height:80  },
+                    { view:"textarea", name: "email_bcc", label:"BCC:", height:80  },
+                    { view:"text", name: "email_subject", label:"Betreff:", required: true},
                     //{ view:"", name:"attachement", label:"Attachement" },
-                    { view:"richtext", name: "email_body", label:"Meldung:", width:600, required: true }
+                    { view:"richtext", name: "email_body", label:"Meldung:", width:600, required: true}
+                  
                 ]
               }, // End Email form */
               /* Email details toolbar. */
@@ -235,7 +236,7 @@ wxAMC.moduleClasses.Adressen = class {
                   { },
                   { id : "moduleAdressen-sendButton", view : "button", label : "Senden",
                     width : "90", type : "icon",
-                    icon : "webix_icon mdi mdi-email-send", disabled : false, 
+                    icon : "webix_icon mdi mdi-email-send", 
                       click : this.sendMail.bind(this)
                   } 
                 ]
@@ -262,6 +263,37 @@ wxAMC.moduleClasses.Adressen = class {
 
   } /* End deactivate(). */
 
+  /**
+   * Export selected data to Excel
+   */
+  exportData() {
+    webix.toExcel($$("moduleAdressen-items"), {
+      rawValues:true,
+      columns:[
+        { id:"mnr", header:"MNR"},
+        { id:"geschlecht", header:"Geschlecht"},
+        { id:"name", header:"Name"},
+        { id:"vorname", header:"Vorname"},
+        { id:"adresse", header:"Adresse"},
+        { id:"plz", header:"PLZ"},
+        { id:"ort", header:"Ort"},
+        { id:"land", header:"Land"},
+        { id:"telefon_p", header:"Telefon (P)"},
+        { id:"mobile", header:"Mobile"},
+        { id:"email", header:"Email"},
+        { id:"notes", header:"Notizen"},
+        { id:"mnr_sam", header:"SAM Nr."},
+        { id:"sam_mitglied", header:"SAM Mitglied", exportType:"boolean"},
+        { id:"ehrenmitglied", header:"Ehrenmitglied", exportType:"boolean"},		
+        { id:"vorstand", header:"Vorstand", exportType:"boolean"},		
+        { id:"revisor", header:"Revisor", exportType:"boolean"},		
+        { id:"allianz", header:"Allianz", exportType:"boolean"},		
+        { id:"eintritt", header:"Eintritt"},
+        { id:"austritt", header:"Austritt"},
+        { id:"adressenId", header:"Geworben von"}
+      ]    
+  });
+  } /* End exportData(). */
 
   /**
    * Handle clicks on the New button.
@@ -311,6 +343,21 @@ wxAMC.moduleClasses.Adressen = class {
   sendMail() {
     const mailForm = $$('moduleAdressen-emailForm').getValues();
 
+    // validate form
+    if (mailForm.email_an == "" && mailForm.email_cc == "" && mailForm.email_bcc == "") {
+      webix.message({type: "Error", text: "Kein Empfänger angegeben"});
+      return;
+    }
+    if (mailForm.email_subject == "") {
+      webix.message({type: "Error", text: "Kein Betreff angegeben"});
+      return;
+    }
+    if (mailForm.email_body == "") {
+      webix.message({type: "Error", text: "Keine Nachricht angegeben"});
+      return;
+    }
+
+
     const url = "/Adressen/email/";
 
     const promiseModule = fetch(url, {
@@ -326,10 +373,18 @@ wxAMC.moduleClasses.Adressen = class {
       referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
       body: JSON.stringify(mailForm) // body data type must match "Content-Type" header
     })
-    .then((response) => response.json());;
- 
-    //const promiseModule = fetch ("/"+inModuleName+"/data/", {method: 'POST',body: JSON.stringify(itemData)}).then((response) => response.json());
-    Promise.resolve(promiseModule);
+    .then((response) => {
+      if (!response.ok) {                                  // ***
+        webix.message({ type:"error", text: "HTTP error " + response.status});  // ***
+      }})
+    .catch((e) => webix.message("Mail konnte nicht erfolgreich gesendet werden: " + e, "error"));
+    
+    Promise.resolve(promiseModule)
+    .then((response) => {
+      if (!response.ok) {                                  // ***
+        webix.message({ type:"error", text: "HTTP error " + response.status});  // ***
+      }})
+    .catch((e) => webix.message(`Fehler beim Senden der Nachricht: ${e}`));
 
     $$('moduleAdressen-email').close();
     $$("moduleAdressen-itemsCell").show();
@@ -348,7 +403,13 @@ wxAMC.moduleClasses.Adressen = class {
 
   showEmailFormAll() {
 
-    this.showEmailForm([]);
+    var lstEmail = []
+    $$("moduleAdressen-items").eachRow(function(row){ 
+      const record = $$("moduleAdressen-items").getItem(row);
+      if (record.email != "")
+        lstEmail.push(record.email);
+    });
+    this.showEmailForm(lstEmail);
 
   }
 
@@ -360,9 +421,15 @@ wxAMC.moduleClasses.Adressen = class {
 
     var emailData = [];
 
-    emailData.email_an = lstEmail.join(';');
-    emailData.email_cc = "";
-    emailData.email_bcc = "";
+    if (lstEmail.length > 1) {
+      emailData.email_an = "info@automoto-sr.info";
+      emailData.email_cc = "";
+      emailData.email_bcc = lstEmail.join('; ');  
+    } else {
+      emailData.email_an = lstEmail.join('; ');
+      emailData.email_cc = "";
+      emailData.email_bcc = "";
+    }
     emailData.email_subject = "";
     emailData.email_body = "";
 
@@ -383,7 +450,8 @@ wxAMC.moduleClasses.Adressen = class {
  
      const promiseModule = fetch(url)
        .then(function(response) {
-         //console.log(response);
+         if (!response.ok)
+            webix.message('Fehler beim Lesen der Adressdaten','Error');
          return response.json();
        }).catch(function(error) {
          webix.message({ type:"error", text: error})

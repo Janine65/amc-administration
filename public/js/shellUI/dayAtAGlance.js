@@ -15,7 +15,7 @@ wxAMC.getDayAtAGlanceConfig = function() {
 /**
  * Populates the day-at-a-glance screen.
  */
-wxAMC.dayAtAGlance = function() {
+ wxAMC.dayAtAGlance = function() {
 
   // Do some cleanup required when in mobile mode that isn't needed in desktop mode.
   if (wxAMC.uiType === "mobile") {
@@ -30,7 +30,7 @@ wxAMC.dayAtAGlance = function() {
 
   }
 
-  $$("headerLabel").setValue($$("headerLabel").config.defaultLabel);
+  $$("headerLabel").setValue("Auto-Moto Club Swissair - Clubjahr " + wxAMC.parameter.get('CLUBJAHR'));
   
   // Give each module a chance to participate.
   for (let moduleName of wxAMC.registeredModules) {

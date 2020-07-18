@@ -18,8 +18,8 @@ module.exports = {
 		// count of SAM_Mitglieder
 		// count of not SAM_Mitglieder
 		
-		var qrySelect = "SELECT 'Anzahl Anlässe im aktuellen Jahr' as label, count(id) as value from clubmeisterschaft where status = 1 and YEAR(`datum`) = " + global.Parameter.get('CLUBJAHR');
-		qrySelect += " UNION SELECT 'Anzahl zukünftiger Anlässe', count(id) from clubmeisterschaft where status = 1 and datum > NOW()";
+		var qrySelect = "SELECT 'Anzahl Anlässe im aktuellen Clubjahr' as label, count(id) as value from clubmeisterschaft where status = 1 and YEAR(`datum`) = " + global.Parameter.get('CLUBJAHR');
+		qrySelect += " UNION SELECT 'Anzahl zukünftiger Anlässe im aktuellen Clubjahr', count(id) from clubmeisterschaft where status = 1 and datum > NOW() and YEAR(`datum`) = " + global.Parameter.get('CLUBJAHR');
 
 		sequelize.query(qrySelect, 
 			{ 

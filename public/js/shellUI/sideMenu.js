@@ -6,7 +6,7 @@ wxAMC.getSideMenuConfig = function() {
 
   const listItems = [ ];
   for (let moduleName of wxAMC.registeredModules) {
-    listItems.push({ id : moduleName, value : moduleName,
+    listItems.push({ id : moduleName, value : wxAMC.modules[moduleName].getUIConfig().winLabel,
       icon : wxAMC.modules[moduleName].getUIConfig().winIcon
     });
   }
