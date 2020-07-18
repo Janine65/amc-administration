@@ -9,6 +9,9 @@ module.exports = {
 			include: [
 				{ model: db.Anlaesse, as: 'linkedEvent', required: false, attributes: ['longname']}
 			 ],
+			 order: [
+				 ['datum', 'asc']
+			 ]
 		}).then(data => res.json(data));		
 	},
 
