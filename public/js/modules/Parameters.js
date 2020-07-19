@@ -151,10 +151,11 @@ wxAMC.moduleClasses.Parameters = class {
             .then(async function(){
                 // Reload the Parameters.
                 await wxAMC.reloadParameters();
-                
-                // Close the Parameter Window
-                $$(`moduleWindow-Parameters`).close();
-                $$("taskbar").removeView(`moduleTasbbarButton-Parameters`);
+                if (wxAMC.uiType === "desktop") {
+                  // Close the Parameter Window
+                  $$(`moduleWindow-Parameters`).close();
+                  $$("taskbar").removeView(`moduleTasbbarButton-Parameters`);
+                }
                 // Give the day-at-a-glance screen a chance to update (needed for desktop mode).
                 await wxAMC.dayAtAGlance();
                 $$('dayAtAGlance').show();
