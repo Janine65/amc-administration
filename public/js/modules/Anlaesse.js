@@ -1,3 +1,4 @@
+
 // "Register" this module with wxAMC.
 wxAMC.registeredModules.push("Anlaesse");
 
@@ -330,6 +331,16 @@ custom_checkbox(obj, common, value){
    */
   async refreshData() {
 
+    var sSelYear = $$("datumSelect").getValue();
+    if (sSelYear == "")
+      sSelYear = wxAMC.parameter.get('CLUBJAHR');
+
+    $$("datumSelect").options = [
+      {"id":(parseInt(wxAMC.parameter.get('CLUBJAHR'))-1), value:parseInt(wxAMC.parameter.get('CLUBJAHR'))-1},
+      {"id":parseInt(wxAMC.parameter.get('CLUBJAHR')), value:parseInt(wxAMC.parameter.get('CLUBJAHR'))},
+      {"id":(parseInt(wxAMC.parameter.get('CLUBJAHR'))+1), value:parseInt(wxAMC.parameter.get('CLUBJAHR'))+1}
+    ];
+
     const url = "/Anlaesse/data";
    // var dataItems;
 
@@ -350,6 +361,7 @@ custom_checkbox(obj, common, value){
     // Populate the tree.
     $$("moduleAnlaesse-items").clearAll();
     $$("moduleAnlaesse-items").parse(itemsAsArray);
+    $$("datumSelect").setValue(sSelYear);
     $$("moduleAnlaesse-items").filterByAll();
 });
 

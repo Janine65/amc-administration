@@ -1,3 +1,4 @@
+
 // "Register" this module with wxAMC.
 wxAMC.registeredModules.push("Parameters");
 
@@ -25,7 +26,7 @@ wxAMC.moduleClasses.Parameters = class {
 /**
    * Return the module's UI config object.
    */
-  getUIConfig() {
+   getUIConfig() {
     var elements = [{id: "SYSTEM", label: "Systemparameter", type: "label"},];
     elements.push();
     wxAMC.parameter.forEach((value, key) => {
@@ -93,8 +94,14 @@ wxAMC.moduleClasses.Parameters = class {
   /**
    * Refresh the parameters list from local storage.
    */
-  refreshData() {  
+  async refreshData() {  
+    var elements = {};
+    wxAMC.parameter.forEach((value, key) => {
+      elements[key] = value;
+    });
+    console.log(elements);
 
+    $$("moduleParameters-items").setValues(elements);
 } /* End refreshData(). */
 
 

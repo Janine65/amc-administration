@@ -259,7 +259,7 @@ class WXAMC {
     } /* End uiType check. */
 
     // Refresh data for the module to show their lists of items.
-    wxAMC.modules[inModuleName].refreshData();
+    await wxAMC.modules[inModuleName].refreshData();
 
     // Finally, call the module's activate() handler.
     wxAMC.modules[inModuleName].activate();
