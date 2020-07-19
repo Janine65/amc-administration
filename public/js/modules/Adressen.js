@@ -219,8 +219,12 @@ wxAMC.moduleClasses.Adressen = class {
                     { view:"textarea", name: "email_bcc", label:"BCC:", height:80  },
                     { view:"text", name: "email_subject", label:"Betreff:", required: true},
                     //{ view:"", name:"attachement", label:"Attachement" },
-                    { view:"richtext", name: "email_body", label:"Meldung:", width:600, required: true}
-                  
+                      {
+                        view:"nic-editor",
+                        config:{
+                          fullPanel : true
+                        },
+                        name: "email_body", label:"Meldung:", width:600, required: true}
                 ]
               }, // End Email form */
               /* Email details toolbar. */

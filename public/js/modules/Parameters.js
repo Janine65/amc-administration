@@ -96,6 +96,9 @@ wxAMC.moduleClasses.Parameters = class {
    */
   async refreshData() {  
     var elements = {};
+    
+    await wxAMC.reloadParameters();
+
     wxAMC.parameter.forEach((value, key) => {
       elements[key] = value;
     });

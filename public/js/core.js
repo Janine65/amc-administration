@@ -1,3 +1,5 @@
+
+
 class WXAMC {
 
   /**
@@ -192,7 +194,7 @@ class WXAMC {
           head : {
             view : "toolbar",
             cols : [
-              { view : "label", label: moduleUIConfig.winLabel },
+              { view : "label", id: inModuleName,  label: moduleUIConfig.winLabel },
               { view : "icon", icon : "webix_icon mdi mdi-window-minimize",
                 click : function() {
                   // Hide the window and toggle it's taskbar button.
@@ -241,7 +243,7 @@ class WXAMC {
           icon : moduleUIConfig.winIcon, label : moduleUIConfig.winLabel,
           click : function() {
             // Hide or show the module's window based on the CURRENT state of the button.
-            const moduleName = this.config.label;
+            const moduleName =  this.config.id.split('-')[1];
             if (this.getValue() === 1) {
               $$(`moduleWindow-${moduleName}`).hide();
             } else {

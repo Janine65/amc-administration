@@ -60,7 +60,7 @@ custom_checkbox(obj, common, value){
               id:"datumSelect",
               options:[
                 {"id":(parseInt(wxAMC.parameter.get('CLUBJAHR'))-1), value:parseInt(wxAMC.parameter.get('CLUBJAHR'))-1},
-                {"id":wxAMC.parameter.get('CLUBJAHR'), value:wxAMC.parameter.get('CLUBJAHR'), selected: true},
+                {"id":parseInt(wxAMC.parameter.get('CLUBJAHR')), value:parseInt(wxAMC.parameter.get('CLUBJAHR')), selected: true},
                 {"id":(parseInt(wxAMC.parameter.get('CLUBJAHR'))+1), value:parseInt(wxAMC.parameter.get('CLUBJAHR'))+1}
               ],
               on: {
@@ -230,6 +230,7 @@ custom_checkbox(obj, common, value){
    * Called whenever this module becomes active.
    */
   activate() {
+     this.refreshData();
   } /* End activate(). */
 
 
@@ -331,16 +332,6 @@ custom_checkbox(obj, common, value){
    */
   async refreshData() {
 
-    var sSelYear = $$("datumSelect").getValue();
-    if (sSelYear == "")
-      sSelYear = wxAMC.parameter.get('CLUBJAHR');
-
-    $$("datumSelect").options = [
-      {"id":(parseInt(wxAMC.parameter.get('CLUBJAHR'))-1), value:parseInt(wxAMC.parameter.get('CLUBJAHR'))-1},
-      {"id":parseInt(wxAMC.parameter.get('CLUBJAHR')), value:parseInt(wxAMC.parameter.get('CLUBJAHR'))},
-      {"id":(parseInt(wxAMC.parameter.get('CLUBJAHR'))+1), value:parseInt(wxAMC.parameter.get('CLUBJAHR'))+1}
-    ];
-
     const url = "/Anlaesse/data";
    // var dataItems;
 
@@ -352,15 +343,25 @@ custom_checkbox(obj, common, value){
         webix.message({ type:"error", text: error})
   });
   Promise.resolve(promiseModule)
-  .then(function(dataItems) {
-    //console.log('dataItems: ',dataItems);
+  .then(async function(dataItems) {
     // Get the items as an array of objects.
     const itemsAsArray = wxAMC.objectAsArray(dataItems);
     
-    //console.log('itemsAsArray: ',itemsAsArray);
     // Populate the tree.
     $$("moduleAnlaesse-items").clearAll();
     $$("moduleAnlaesse-items").parse(itemsAsArray);
+    var sSelYear = $$("datumSelect").getValue();
+    if (sSelYear == "")
+      sSelYear = wxAMC.parameter.get('CLUBJAHR');
+
+    await wxAMC.reloadParameters();
+    
+    $$("datumSelect").options = [
+      {"id":(parseInt(wxAMC.parameter.get('CLUBJAHR'))-1), value:parseInt(wxAMC.parameter.get('CLUBJAHR'))-1},
+      {"id":parseInt(wxAMC.parameter.get('CLUBJAHR')), value:parseInt(wxAMC.parameter.get('CLUBJAHR'))},
+      {"id":(parseInt(wxAMC.parameter.get('CLUBJAHR'))+1), value:parseInt(wxAMC.parameter.get('CLUBJAHR'))+1}
+    ];
+
     $$("datumSelect").setValue(sSelYear);
     $$("moduleAnlaesse-items").filterByAll();
 });
