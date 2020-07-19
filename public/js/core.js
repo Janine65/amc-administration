@@ -141,8 +141,8 @@ class WXAMC {
       $$("sidemenu").hide();
 
       // Set flags to indicate not editing an existing item.
-      wxAMC.editingID = null;
-      wxAMC.isEditingExisting = false;
+      wxAMC.modules[wxAMC.activeModule].editingID = null;
+      wxAMC.modules[wxAMC.activeModule].isEditingExisting = false;
 
       // Switch the multiview to the module and show the module's summary view.
       $$(`module${inModuleName}-itemsCell`).show();

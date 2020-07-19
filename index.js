@@ -29,7 +29,17 @@ var Session = global.sequelize.define("Session", {
   expires: Sequelize.DATE,
   data: Sequelize.STRING(50000),
 });
- 
+
+/**
+ * @return {string} The current version of the package.
+ */
+function getVersion() {
+  return require('read-pkg').sync().version;
+}
+module.exports = getVersion();
+
+console.log(getVersion());
+
 function extendDefaultFields(defaults, session) {
   return {
     data: defaults.data,

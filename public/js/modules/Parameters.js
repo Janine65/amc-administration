@@ -98,7 +98,7 @@ wxAMC.moduleClasses.Parameters = class {
     var elements = {};
     
     await wxAMC.reloadParameters();
-
+    
     wxAMC.parameter.forEach((value, key) => {
       elements[key] = value;
     });

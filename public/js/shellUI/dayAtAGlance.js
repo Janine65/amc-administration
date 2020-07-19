@@ -30,7 +30,7 @@ wxAMC.getDayAtAGlanceConfig = function() {
 
   }
 
-  $$("headerLabel").setValue("Auto-Moto Club Swissair - Clubjahr " + wxAMC.parameter.get('CLUBJAHR'));
+  $$("headerLabel").setValue("Auto-Moto Club Swissair - Clubjahr " + wxAMC.parameter.get('CLUBJAHR') + " (Version )");
   
   // Give each module a chance to participate.
   for (let moduleName of wxAMC.registeredModules) {
