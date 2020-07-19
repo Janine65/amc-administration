@@ -15,7 +15,7 @@ wxAMC.getDayAtAGlanceConfig = function() {
 /**
  * Populates the day-at-a-glance screen.
  */
- wxAMC.dayAtAGlance = function() {
+ wxAMC.dayAtAGlance = async function() {
 
   // Do some cleanup required when in mobile mode that isn't needed in desktop mode.
   if (wxAMC.uiType === "mobile") {

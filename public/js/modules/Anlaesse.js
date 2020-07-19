@@ -328,7 +328,7 @@ custom_checkbox(obj, common, value){
   /**
    * Refresh the anlaesse list from local storage.
    */
-  refreshData() {
+  async refreshData() {
 
     const url = "/Anlaesse/data";
    // var dataItems;
@@ -359,7 +359,7 @@ custom_checkbox(obj, common, value){
   /**
    * Service requests from day-at-a-glance to present data for this module.
    */
-  dayAtAGlance() {
+  async dayAtAGlance() {
 
     // Add a section to the day-at-a-glance body for this module if there isn't one already.
     if (!$$("dayAtAGlanceScreen_Anlaesse")) {

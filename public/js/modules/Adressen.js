@@ -340,7 +340,7 @@ wxAMC.moduleClasses.Adressen = class {
 
    } /* End editExisting(). */
 
-  sendMail() {
+  async sendMail() {
     const mailForm = $$('moduleAdressen-emailForm').getValues();
 
     // validate form
@@ -386,7 +386,6 @@ wxAMC.moduleClasses.Adressen = class {
       }})
     .catch((e) => webix.message(`Fehler beim Senden der Nachricht: ${e}`));
 
-    $$('moduleAdressen-email').close();
     $$("moduleAdressen-itemsCell").show();
 
 
@@ -396,7 +395,7 @@ wxAMC.moduleClasses.Adressen = class {
 
     const adresse = $$("moduleAdressen-items").getSelectedItem();
     const sEmailType = adresse.email;
-    this.showEmailForm(sEmailType.split(';'));
+    this.showEmailForm([sEmailType]);
 
   }
 
@@ -443,7 +442,7 @@ wxAMC.moduleClasses.Adressen = class {
   /**
    * Refresh the adressen list from local storage.
    */
-  refreshData() {
+  async refreshData() {
 
     const url = "/Adressen/data";
     // var dataItems;
@@ -491,7 +490,7 @@ wxAMC.moduleClasses.Adressen = class {
   /**
    * Service requests from day-at-a-glance to present data for this module.
    */
-  dayAtAGlance() {
+  async dayAtAGlance() {
 
     // Add a section to the day-at-a-glance body for this module if there isn't one already.
     if (!$$("dayAtAGlanceScreen_Adressen")) {

@@ -3,7 +3,7 @@ class WXAMC {
   /**
    * Constructor.
    */
-  constructor() {
+   constructor() {
 
     // The predefined Webix isNumber and isEmail validation functions count a blank field as invalid, but in some cases
     // we don't want that, we want blank to be considered valid, so we'll provide a new validation function here.
@@ -76,7 +76,7 @@ class WXAMC {
       .then((response) => response.json())
       .catch((error) => webix.message({ type:"error", text: error})
      );
-    await Promise.resolve(promiseModule)
+    Promise.resolve(promiseModule)
       .then((lparam) => {
         console.log('lparam: ',lparam);
         lparam.forEach(param => {
@@ -84,6 +84,9 @@ class WXAMC {
            wxAMC.parameter.set(param.key, param.value);	
         });
         console.log(wxAMC.parameter);
+        if ($$("headerLabel"))
+          $$("headerLabel").setValue("Auto-Moto Club Swissair - Clubjahr " + wxAMC.parameter.get('CLUBJAHR'));
+  
       })
       .catch((e) => console.error(e));    
 
@@ -116,7 +119,7 @@ class WXAMC {
    *
    * @param inModuleName The name of the module.
    */
-  launchModule(inModuleName) {
+  async launchModule(inModuleName) {
 
     // Don't trigger on initial click of the top-level menu item.
     if (inModuleName === "Modules") { return; }
@@ -331,7 +334,7 @@ class WXAMC {
    * @param  inModuleName The name of the module.
    * @return           The data as an object.
    */
-  getModuleData(inModuleName) {
+  async getModuleData(inModuleName) {
   
     const url = "/"+inModuleName+"/data";
 
@@ -352,7 +355,7 @@ class WXAMC {
    * @param inModuleName The name of the module.
    * @param inFormIDs    An array of form IDs.
    */
-  saveHandler(inModuleName, inFormID) {
+  async saveHandler(inModuleName, inFormID) {
     var itemData;
     // Merge all forms together.  Usually there's just one, but some modules may have more than one.
       if ($$(inFormID).isDirty()) {
@@ -405,7 +408,7 @@ class WXAMC {
    *
    * @param inModuleName The name of the module.
    */
-  deleteHandler(inModuleName) {
+  async deleteHandler(inModuleName) {
 
     webix.html.addCss(webix.confirm({
       title : `Please Confirm`, ok : "Yes", cancel : "No", type : "confirm-warning",

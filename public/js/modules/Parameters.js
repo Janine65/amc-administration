@@ -102,7 +102,7 @@ wxAMC.moduleClasses.Parameters = class {
    * Save the parameters to the database
    */
 
-  saveParameters() {
+  async saveParameters() {
     var mUpdate = Object.create(null);
     
     wxAMC.parameter.forEach((value, key) => {
@@ -138,15 +138,15 @@ wxAMC.moduleClasses.Parameters = class {
                 webix.message({ type:"error", text: "HTTP error " + response.status});  // ***
               }})
             //.then((response) => response.json())
-            .then(function(){
+            .then(async function(){
                 // Reload the Parameters.
-                wxAMC.reloadParameters();
+                await wxAMC.reloadParameters();
                 
                 // Close the Parameter Window
                 $$(`moduleWindow-Parameters`).close();
                 $$("taskbar").removeView(`moduleTasbbarButton-Parameters`);
                 // Give the day-at-a-glance screen a chance to update (needed for desktop mode).
-                wxAMC.dayAtAGlance();
+                await wxAMC.dayAtAGlance();
                 $$('dayAtAGlance').show();
                 // Finally, show a completion message.
                 webix.message({ type : "success", text : "gesichert" });
