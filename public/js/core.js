@@ -46,8 +46,7 @@ class WXAMC {
     this.parameter = new Map();
     this.reloadParameters();
     console.log(this.parameter);
-
- 
+    
 
     // Custom window component so that by default windows will animated when opened and when hidden.
     webix.protoUI({
@@ -76,24 +75,24 @@ class WXAMC {
     const url = "/Parameter/data";
     const promiseModule = fetch(url)
       .then((response) => response.json())
-      .catch((error) => webix.message({ type:"error", text: error})
+      .catch((error) => webix.message({ type:"error", text: "Fetch Parameter. " + error, expire: -1})
      );
     Promise.resolve(promiseModule)
       .then((lparam) => {
         console.log('lparam: ',lparam);
-        lparam.forEach(param => {
-          //console.log(param);
-           wxAMC.parameter.set(param.key, param.value);	
-        });
+        if (lparam != null) {
+          wxAMC.version = lparam.pop().value;
+          lparam.forEach(param => {
+            console.log(param);
+            wxAMC.parameter.set(param.key, param.value);	
+          
+          });
+        }
         console.log(wxAMC.parameter);
-        if ($$("headerLabel"))
-          $$("headerLabel").setValue("Auto-Moto Club Swissair - Clubjahr " + wxAMC.parameter.get('CLUBJAHR'));
-  
       })
-      .catch((e) => console.error(e));    
-
+      .catch((e) => webix.message({ type:"error", text: "Resolve Parameter. " + e, expire: -1}));    
   } /* End reloadParameters */
-
+    
   /**
    * Builds the UI app shell.
    */

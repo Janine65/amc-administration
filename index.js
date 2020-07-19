@@ -11,6 +11,7 @@ const upload = multer() // for parsing multipart/form-data
 const Sequelize = require("sequelize");
 const session = require("express-session");
 const SequelizeStore = require("connect-session-sequelize")(session.Store);
+const system = require("./public/js/system");
 //const argon = require("argon2");
 
 // environment variables
@@ -31,15 +32,6 @@ var Session = global.sequelize.define("Session", {
   data: Sequelize.STRING(50000),
 });
 
-/**
- * @return {string} The current version of the package.
- */
-function getVersion() {
-  return require('read-pkg').sync().version;
-}
-module.exports = getVersion();
-
-console.log(getVersion());
 
 function extendDefaultFields(defaults, session) {
   return {
@@ -143,5 +135,5 @@ console.log(global);
   }; /* End commonErrorHandler(). */
   
 app.listen(global.gConfig.node_port, () => {
-    console.log(`${global.gConfig.app_name} listening on port ${global.gConfig.node_port}`);
+    console.log('%s listening on port %d in %s mode - Version %s', global.gConfig.app_name, global.gConfig.node_port, app.settings.env, global.system.version);
 });

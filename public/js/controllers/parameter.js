@@ -1,10 +1,17 @@
 var db = require("../db");
 const { Op, Sequelize } = require("sequelize");
+var getVersion = require("../../../index")
 
 module.exports = {
 	getData: function (req, res) {		
 		db.Parameter.findAll()
-		.then(data => res.json(data))
+		.then(data => {
+			console.log(data);
+			param = new db.Parameter({key: "Version", value: global.system.version});
+			data.push(param);
+			console.log(data);
+			return res.json(data)
+		})
 		.catch((e) => console.error(e));		
 	},
 
