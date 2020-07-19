@@ -3,13 +3,14 @@
   "version": "1.0.3",
   "description": "Auto-Moto-Club Administration",
   "main": "index.js",
+  "private": "true",
   "scripts": {
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:Janine65/amc-administration.git"
+    "url": "https://github.com:Janine65/amc-administration.git"
   },
   "keywords": [
     "webix",
@@ -17,7 +18,7 @@
     "private"
   ],
   "author": "Janine Franken",
-  "license": "GNU",
+  "license": "SEE LICENSE IN LICENSE",
   "bugs": {
     "url": "https://github.com/Janine65/amc-administration/issues"
   },
