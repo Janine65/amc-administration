@@ -111,6 +111,13 @@ app.get('/Anlaesse/getFkData', anlaesse.getFKData);
 app.get('/Anlaesse/data/:id', anlaesse.getOneData);
 app.get('/Anlaesse/getOverviewData', anlaesse.getOverviewData);
 
+const meisterschaft = require("./public/js/controllers/meisterschaft");
+app.get('/Meisterschaft/data', meisterschaft.getData);
+app.post('/Meisterschaft/data', meisterschaft.updateData);
+app.put('/Meisterschaft/data', meisterschaft.updateData);
+app.delete('/Meisterschaft/data', meisterschaft.removeData);
+app.delete('/Meisterschaft/data', meisterschaft.removeData);
+app.get('/Meisterschaft/getFkData', meisterschaft.getFKData);
 
 const parameter = require("./public/js/controllers/parameter");
 app.get('/Parameter/data', parameter.getData);

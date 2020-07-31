@@ -170,6 +170,39 @@ Anlaesse.init({
   }
   );
 
+  class Meisterschaft extends Model {
+  }
+  Meisterschaft.init({
+    mitgliedId: { 
+      type: Sequelize.INTEGER,
+      references: {
+        model: Adressen,
+        key: 'id'
+      }},
+    eventId: { 
+      type: Sequelize.INTEGER,
+      references: {
+        model: Anlaesse,
+        key: 'id'
+    }},
+    punkte: {
+      type: Sequelize.INTEGER,
+      defaultValue: 50
+    },
+    wurf1: Sequelize.INTEGER,
+    wurf2: Sequelize.INTEGER,
+    wurf3: Sequelize.INTEGER,
+    wurf4: Sequelize.INTEGER,
+    wurf5: Sequelize.INTEGER,
+    zusatz: Sequelize.INTEGER,
+    streichresultat: Sequelize.INTEGER
+  },
+  {
+    sequelize,
+    tableName: 'meisterschaft',
+    modelName: 'meisterschaft' 
+  })
+
   class Parameter extends Model {
   }
   Parameter.init({
@@ -187,7 +220,10 @@ Adressen.belongsTo(Adressen);
 Adressen.hasMany(Adressen);
 
 Anlaesse.belongsTo(Anlaesse, { as: 'linkedEvent', constraints: false, foreignKey: 'anlaesseId' });
+Meisterschaft.belongsTo(Anlaesse, { as: 'linkedEvent', constraints: true, foreignKey: 'eventId'});
+Meisterschaft.belongsTo(Adressen, { as: 'teilnehmer', constraints: true, foreignKey: 'mitgliedId'});
+
 
 module.exports = {
-  Adressen, Anlaesse, Parameter
+  Adressen, Anlaesse, Parameter, Meisterschaft
 };

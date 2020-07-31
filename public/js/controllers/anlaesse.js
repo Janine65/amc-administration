@@ -5,7 +5,7 @@ module.exports = {
 	getData: function (req, res) {		
 		db.Anlaesse.findAll({
 			where: {datum: { [Op.gte]: new Date('01.01.'+(global.Parameter.get('CLUBJAHR') - 1 )) }},
-			attributes: {exclude: ['longname']},
+			attributes: { inlcude: ['longname']},
 			include: [
 				{ model: db.Anlaesse, as: 'linkedEvent', required: false, attributes: ['longname']}
 			 ],

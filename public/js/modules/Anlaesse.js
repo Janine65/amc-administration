@@ -126,6 +126,8 @@ custom_checkbox(obj, common, value){
                 $$("moduleAnlaesse-editButton").enable();
                 $$("moduleAnlaesse-copyButton").enable();
                 $$("moduleAnlaesse-deleteButton").enable();
+                $$("moduleAnlaesse-eventButton").enable();
+                
               },
               onItemDblClick:function(selection, preserve){
                 wxAMC.modules['Anlaesse'].editExisting();
@@ -137,16 +139,20 @@ custom_checkbox(obj, common, value){
             cols : [
               { id: "count_anlass", view : "label", label: "Anzahl 0"},
               { },
-              { id: "moduleAnlaesse-editButton", view : "button", default : true, label : "Edit", width : "80", type : "icon", disabled: true,
+              { id: "moduleAnlaesse-eventButton", view : "button", default : true, label : "Event", width : "80", type : "icon", disabled: true,
+                icon : "webix_icon mdi mdi-calendar-multiple-check", click : this.eventsEditing.bind(this)
+              },
+              { },
+              { id: "moduleAnlaesse-editButton", view : "button", default : false, label : "Edit", width : "80", type : "icon", disabled: true,
                 icon : "webix_icon mdi mdi-pencil", click : this.editExisting.bind(this)
               },
-              { id: "moduleAnlaesse-copyButton", view : "button", label : "Copy", width : "80", type : "icon", disabled: true,
+              { id: "moduleAnlaesse-copyButton", view : "button", default : false, label : "Copy", width : "80", type : "icon", disabled: true,
                 icon : "webix_icon mdi mdi-content-duplicate", click : this.copyHandler.bind(this)
               },
-              { id : "moduleAnlaesse-deleteButton", view : "button", label : "Delete", width : "80", type : "icon", disabled: true,
+              { id : "moduleAnlaesse-deleteButton", view : "button", default : false, label : "Delete", width : "80", type : "icon", disabled: true,
               icon : "webix_icon mdi mdi-delete", click : () => { wxAMC.deleteHandler("Anlaesse"); }
               },
-              { id: "moduleAnlaesse-newButton", view : "button", label : "New", width : "80", type : "icon",
+              { id: "moduleAnlaesse-newButton", view : "button", default : false, label : "New", width : "80", type : "icon",
                 icon : "webix_icon mdi mdi-plus", click : this.newHandler.bind(this)
               },
               { width : 6 }
@@ -219,7 +225,97 @@ custom_checkbox(obj, common, value){
               ]
             } /* End anlass details toolbar. */
           ] /* End anlass details cell rows. */
-        } /* End anlass details cellw. */
+        }, /* End anlass details cells. */
+        /* ---------- Anlass Punkte cell. ---------- */
+        { id: "moduleAnlaesse-punkte",
+          rows: [
+        { view : "tabview", id: "moduleAnlaesse-punkteTab", borderless : false, scroll: true,
+          cells: [
+            {
+              header: "Teilnehmer", id: "moduleAnlaesse-punkteTabTeilnehmer",
+              body: 
+              {
+                rows : [ 
+                  { id : "moduleAnlaesse-punkteEvent", 
+                    view: "label",
+                    label: ""
+                  },
+                  { id: "moduleAnlaesse-punkteList",
+                    view: "list", select: true,
+                    data: [], 
+                    template: "#punkte# - #fullname#  (#id#)"
+                  },
+                  /* Anlass punkte toolbar. */
+                  { view : "toolbar",
+                    cols : [
+                      { width : 6 },
+                      { view : "button", label : "Zurück", width : "90",
+                        type : "icon", icon : "webix_icon mdi mdi-arrow-left",
+                        click : () => {
+                          $$("moduleAnlaesse-itemsCell").show();
+                        }
+                      },
+                      { },
+                      { view : "button", label : "Add", width : "80",
+                        type : "icon", icon : "webix_icon mdi mdi-plus",
+                        id : "moduleAnlaesse-addPunkteButton", disabled : true,
+                        click : this.addPunkteForm.bind(this)
+                      },
+                      { view : "button", label : "Edit", width : "80",
+                        type : "icon", icon : "webix_icon mdi mdi-pencil",
+                        id : "moduleAnlaesse-editPunkteButton", disabled : true,
+                        click : this.editPunkteForm.bind(this)
+                      },
+                      { view : "button", label : "Delete", width : "80",
+                        type : "icon", icon : "webix_icon mdi mdi-delete",
+                        id : "moduleAnlaesse-deletePunkteButton", disabled : true,
+                        click : this.deletePunkteForm.bind(this)
+                      },
+                      { width : 6 }
+                    ]
+                  } /* End anlass punkte toolbar. */
+                ]
+              }
+            },
+            {
+              header: "Edit", id: "moduleAnlaesse-punkteTabEdit",
+              body: {
+                rows : [ 
+                  {},
+                  { id: "moduleAnlaesse-punkteForm",
+                    view: "form",
+                    elementsConfig : { view : "text", labelWidth : 100, 
+                      on : { onChange : () => {
+                       $$("moduleAnlaesse-savePunkteButton")[$$("moduleAnlaesse-punkteForm").validate() ? "enable" : "disable"]();
+                        } 
+                      }
+                    },
+                    elements: []
+                  },
+                  { view : "toolbar",
+                    cols : [
+                      { width : 6 },
+                      { view : "button", label : "Zurück", width : "90",
+                        type : "icon", icon : "webix_icon mdi mdi-arrow-left",
+                        click : () => {
+                          $$("moduleAnlaesse-itemsCell").show();
+                        }
+                      },
+                      { },
+                      { view : "button", label : "Save", width : "80",
+                        type : "icon", icon : "webix_icon mdi mdi-content-save",
+                        id : "moduleAnlaesse-savePunkteButton", disabled : true,
+                        click : this.savePunkteForm.bind(this)
+                      },
+                      { width : 6 }
+                    ]
+                  } /* End anlass punkte toolbar. */
+                ]
+              }
+            }
+          ]
+        }
+       ]} /* End anlass punkte form. */
       ] /* End main layout cells. */
     };
 
@@ -262,6 +358,67 @@ custom_checkbox(obj, common, value){
 
   } /* End newHandler(). */
 
+
+  eventsEditing() {
+    const anlass = $$('moduleAnlaesse-items').getSelectedItem();
+
+    // Set flag to indicate editing an existing anlass and show the details.
+    this.isEditingExisting = true;
+    this.editingID = anlass.id;
+
+    // Show the form.  Note that this has to be done before the call to
+    // setValues() below otherwise we get an error due to setting the value of
+    // the richtext (my guess is it lazy-builds the DOM and it's not actually
+    // there until the show() executes.
+    $$("moduleAnlaesse-punkte").show();
+
+    // Special handling for dates.
+      anlass.datum = new Date(anlass.datum);
+
+      const url = "/Meisterschaft/data/?eventId=" + anlass.id;
+   
+       const promiseModule = fetch(url)
+         .then(function(response) {
+           //console.log(response);
+           return response.json();
+         }).catch(function(error) {
+           webix.message({ type:"error", text: error})
+     });
+     Promise.resolve(promiseModule)
+      .then(async function(dataItems) {
+        // Populate the list.
+        var longname = new Date(anlass.datum).toLocaleDateString() + ' ' + anlass.name;
+        $$("moduleAnlaesse-punkteEvent").setValue(longname);
+        $$("moduleAnlaesse-punkteList").clearAll();
+        var datas = [];
+        dataItems.forEach((eintrag) => {
+            eintrag.fullname = eintrag.teilnehmer.fullname;
+            $$("moduleAnlaesse-punkteList").add(eintrag);
+        });
+      })
+      .catch(function(error) {
+        webix.message({ type:"error", text: error})
+      });
+
+  } /* End eeventsEditing */
+
+
+  editPunkteForm() {
+
+  } /* End editPunkteForm */
+
+
+  deletePunkteForm() {
+
+  } /* End savePunkteForm */
+
+  addPunkteForm() {
+
+  } /* End savePunkteForm */
+
+  savePunkteForm() {
+
+  } /* End savePunkteForm */
 
   copyHandler() {
 
