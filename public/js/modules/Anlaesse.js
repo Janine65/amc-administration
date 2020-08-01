@@ -165,7 +165,7 @@ custom_checkbox(obj, common, value){
           rows : [
             /* Anlass details form. */
             { view : "form", id : "moduleAnlaesse-detailsForm", borderless : false, scroll: true,
-              elementsConfig : { view : "text", labelWidth : 100, 
+              elementsConfig : { labelWidth : 100, 
                 on : { onChange : () => {
                   $$("moduleAnlaesse-saveButton")[$$("moduleAnlaesse-detailsForm").validate() ?
                     "enable" : "disable"]();
@@ -227,95 +227,97 @@ custom_checkbox(obj, common, value){
           ] /* End anlass details cell rows. */
         }, /* End anlass details cells. */
         /* ---------- Anlass Punkte cell. ---------- */
-        { id: "moduleAnlaesse-punkte",
+        { id: "moduleAnlaesse-punkte", 
           rows: [
-        { view : "tabview", id: "moduleAnlaesse-punkteTab", borderless : false, scroll: true,
-          cells: [
-            {
-              header: "Teilnehmer", id: "moduleAnlaesse-punkteTabTeilnehmer",
-              body: 
-              {
-                rows : [ 
-                  { id : "moduleAnlaesse-punkteEvent", 
-                    view: "label",
-                    label: ""
-                  },
-                  { id: "moduleAnlaesse-punkteList",
+            {cols: [ 
+                { id : "moduleAnlaesse-punkteEvent", 
+                  view: "label",
+                  label: ""
+                },
+                { id : "moduleAnlaesse-punkteAnzahl", 
+                  view: "label",
+                  label: ""
+                }
+              ]
+            },
+            {height: 20},
+            {cols: [
+                  { id: "moduleAnlaesse-punkteList", 
                     view: "list", select: true,
                     data: [], 
-                    template: "#punkte# - #fullname#  (#id#)"
+                    template: "#punkte# - #fullname#",
+                    on : {
+                      onAfterSelect:function(selection, preserve){
+                        $$("moduleAnlaesse-editPunkteButton").enable();
+                        $$("moduleAnlaesse-deletePunkteButton").enable();
+                        $$("moduleAnlaesse-punkteForm").bind(this);
+                      }
+                    }
                   },
-                  /* Anlass punkte toolbar. */
-                  { view : "toolbar",
-                    cols : [
-                      { width : 6 },
-                      { view : "button", label : "Zurück", width : "90",
-                        type : "icon", icon : "webix_icon mdi mdi-arrow-left",
-                        click : () => {
-                          $$("moduleAnlaesse-itemsCell").show();
-                        }
-                      },
-                      { },
-                      { view : "button", label : "Add", width : "80",
-                        type : "icon", icon : "webix_icon mdi mdi-plus",
-                        id : "moduleAnlaesse-addPunkteButton", disabled : true,
-                        click : this.addPunkteForm.bind(this)
-                      },
-                      { view : "button", label : "Edit", width : "80",
-                        type : "icon", icon : "webix_icon mdi mdi-pencil",
-                        id : "moduleAnlaesse-editPunkteButton", disabled : true,
-                        click : this.editPunkteForm.bind(this)
-                      },
-                      { view : "button", label : "Delete", width : "80",
-                        type : "icon", icon : "webix_icon mdi mdi-delete",
-                        id : "moduleAnlaesse-deletePunkteButton", disabled : true,
-                        click : this.deletePunkteForm.bind(this)
-                      },
-                      { width : 6 }
-                    ]
-                  } /* End anlass punkte toolbar. */
-                ]
-              }
-            },
-            {
-              header: "Edit", id: "moduleAnlaesse-punkteTabEdit",
-              body: {
-                rows : [ 
-                  {},
-                  { id: "moduleAnlaesse-punkteForm",
-                    view: "form",
-                    elementsConfig : { view : "text", labelWidth : 100, 
+                  { id: "moduleAnlaesse-punkteForm", 
+                    view: "form", scroll: false, minHeight: 400,
+                    elementsConfig : { labelWidth: 100, 
                       on : { onChange : () => {
                        $$("moduleAnlaesse-savePunkteButton")[$$("moduleAnlaesse-punkteForm").validate() ? "enable" : "disable"]();
                         } 
                       }
                     },
-                    elements: []
-                  },
-                  { view : "toolbar",
-                    cols : [
-                      { width : 6 },
-                      { view : "button", label : "Zurück", width : "90",
-                        type : "icon", icon : "webix_icon mdi mdi-arrow-left",
-                        click : () => {
-                          $$("moduleAnlaesse-itemsCell").show();
+                    elements: [
+                      { view:"combo", suggest:"/data/getFkData", name:"mitgliedId", label:"Teilnehmer" },
+                      { view: "text", name: "punkte", label: "Punkte" },
+                      {view: "fieldset", label: "Kegelresultate", body: 
+                        { cols: [
+                          { view: "text", name: "wurf1", label: ""},
+                          { view: "text", name: "wurf2", label: ""},
+                          { view: "text", name: "wurf3", label: ""},
+                          { view: "text", name: "wurf4", label: ""},
+                          { view: "text", name: "wurf5", label: ""},
+                          { view: "text", name: "zusatz", label: "",  readonly: true},
+                          { view: "text", name: "total", label: "", readonly: true}
+                          ]
                         }
-                      },
-                      { },
-                      { view : "button", label : "Save", width : "80",
-                        type : "icon", icon : "webix_icon mdi mdi-content-save",
-                        id : "moduleAnlaesse-savePunkteButton", disabled : true,
-                        click : this.savePunkteForm.bind(this)
-                      },
-                      { width : 6 }
+                      }
                     ]
-                  } /* End anlass punkte toolbar. */
-                ]
-              }
-            }
+                  }
+                ] 
+            },
+            /* Anlass punkte toolbar. */
+            { view : "toolbar", 
+              cols : [
+                { width : 6 },
+                { view : "button", label : "Zurück", width : "90",
+                  type : "icon", icon : "webix_icon mdi mdi-arrow-left",
+                  click : () => {
+                    $$("moduleAnlaesse-itemsCell").show();
+                  }
+                },
+                { width: 6},
+                { view : "button", label : "Add", width : "80",
+                  type : "icon", icon : "webix_icon mdi mdi-plus",
+                  id : "moduleAnlaesse-addPunkteButton", disabled : false,
+                  click : this.addPunkteForm.bind(this)
+                },
+                { view : "button", label : "Edit", width : "80",
+                  type : "icon", icon : "webix_icon mdi mdi-pencil",
+                  id : "moduleAnlaesse-editPunkteButton", disabled : true,
+                  click : this.editPunkteForm.bind(this)
+                },
+                { view : "button", label : "Delete", width : "80",
+                  type : "icon", icon : "webix_icon mdi mdi-delete",
+                  id : "moduleAnlaesse-deletePunkteButton", disabled : true,
+                  click : this.deletePunkteForm.bind(this)
+                },
+                { width : 100 },
+                { view : "button", label : "Save", width : "80",
+                  type : "icon", icon : "webix_icon mdi mdi-content-save",
+                  id : "moduleAnlaesse-savePunkteButton", disabled : true,
+                  click : this.savePunkteForm.bind(this)
+                },
+                { width : 6 }
+              ]
+            } /* End anlass punkte toolbar. */
           ]
-        }
-       ]} /* End anlass punkte form. */
+        } /* End anlass punkte form. */
       ] /* End main layout cells. */
     };
 
@@ -371,6 +373,10 @@ custom_checkbox(obj, common, value){
     // the richtext (my guess is it lazy-builds the DOM and it's not actually
     // there until the show() executes.
     $$("moduleAnlaesse-punkte").show();
+    $$("moduleAnlaesse-punkteList").clearAll();
+    $$("moduleAnlaesse-punkteForm").clear();
+    var longname = new Date(anlass.datum).toLocaleDateString() + ' ' + anlass.name;
+    $$("moduleAnlaesse-punkteEvent").setValue("<div style='font-size:20px;'>" + longname + "</div>");
 
     // Special handling for dates.
       anlass.datum = new Date(anlass.datum);
@@ -387,14 +393,18 @@ custom_checkbox(obj, common, value){
      Promise.resolve(promiseModule)
       .then(async function(dataItems) {
         // Populate the list.
-        var longname = new Date(anlass.datum).toLocaleDateString() + ' ' + anlass.name;
-        $$("moduleAnlaesse-punkteEvent").setValue(longname);
-        $$("moduleAnlaesse-punkteList").clearAll();
-        var datas = [];
+        //webix.i18n.dateFormatStr
+        
         dataItems.forEach((eintrag) => {
             eintrag.fullname = eintrag.teilnehmer.fullname;
+            eintrag.mitgliedId = eintrag.teilnehmer.id;
             $$("moduleAnlaesse-punkteList").add(eintrag);
         });
+        $$("moduleAnlaesse-punkteAnzahl").setValue("<div style='font-size:20px;'>Anzahl " + $$("moduleAnlaesse-punkteList").count() + "</div>");
+        if(!$$("moduleAnlaesse-punkteList").count()){ // if there are no data items
+          webix.extend($$("moduleAnlaesse-punkteList"), webix.OverlayBox);
+          this.showOverlay("<div style='margin:75px; font-size:20px;'>There's no data</div>");
+        }
       })
       .catch(function(error) {
         webix.message({ type:"error", text: error})
