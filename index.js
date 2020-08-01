@@ -113,10 +113,10 @@ app.get('/Anlaesse/getOverviewData', anlaesse.getOverviewData);
 
 const meisterschaft = require("./public/js/controllers/meisterschaft");
 app.get('/Meisterschaft/data', meisterschaft.getData);
-app.post('/Meisterschaft/data', meisterschaft.updateData);
+app.post('/Meisterschaft/data', meisterschaft.addData);
 app.put('/Meisterschaft/data', meisterschaft.updateData);
 app.delete('/Meisterschaft/data', meisterschaft.removeData);
-app.delete('/Meisterschaft/data', meisterschaft.removeData);
+app.get('/Meisterschaft/getOneData', meisterschaft.getOneData);
 app.get('/Meisterschaft/getFkData', meisterschaft.getFKData);
 
 const parameter = require("./public/js/controllers/parameter");

@@ -1,4 +1,3 @@
-
 // "Register" this module with wxAMC.
 wxAMC.registeredModules.push("Anlaesse");
 
@@ -248,9 +247,14 @@ custom_checkbox(obj, common, value){
                     template: "#punkte# - #fullname#",
                     on : {
                       onAfterSelect:function(selection, preserve){
-                        $$("moduleAnlaesse-editPunkteButton").enable();
                         $$("moduleAnlaesse-deletePunkteButton").enable();
+                        $$("moduleAnlaesse-punkteForm").enable();
+                        $$("punkte")[wxAMC.modules['Anlaesse'].anlass.nachkegeln ? "disable" : "enable"]();
+                        $$("kegelresultate")[wxAMC.modules['Anlaesse'].anlass.istkegeln ? "show" : "hide"]();
                         $$("moduleAnlaesse-punkteForm").bind(this);
+                        $$("mitgliedId").show();
+                        $$("mitgliedListe").hide();
+                  
                       }
                     }
                   },
@@ -259,21 +263,24 @@ custom_checkbox(obj, common, value){
                     elementsConfig : { labelWidth: 100, 
                       on : { onChange : () => {
                        $$("moduleAnlaesse-savePunkteButton")[$$("moduleAnlaesse-punkteForm").validate() ? "enable" : "disable"]();
+                       this.calcTotal();
                         } 
                       }
                     },
                     elements: [
-                      { view:"combo", suggest:"/data/getFkData", name:"mitgliedId", label:"Teilnehmer" },
-                      { view: "text", name: "punkte", label: "Punkte" },
-                      {view: "fieldset", label: "Kegelresultate", body: 
+                      { view:"combo", suggest:"/Meisterschaft/getFkData", id: "mitgliedListe", name:"mitgliedId", label:"Teilnehmer", required: true, hidden: true },
+                      { view:"text", id: "mitgliedId", name:"fullname", label:"Teilnehmer", disabled: true },
+                      { view: "text", type:"number", id: "punkte", name: "punkte", label: "Punkte" },
+                      {view: "fieldset", id: "kegelresultate", label: "Kegelresultate", hidden: true,
+                      body: 
                         { cols: [
-                          { view: "text", name: "wurf1", label: ""},
-                          { view: "text", name: "wurf2", label: ""},
-                          { view: "text", name: "wurf3", label: ""},
-                          { view: "text", name: "wurf4", label: ""},
-                          { view: "text", name: "wurf5", label: ""},
-                          { view: "text", name: "zusatz", label: "",  readonly: true},
-                          { view: "text", name: "total", label: "", readonly: true}
+                          { view: "text", type:"number", name: "wurf1", label: ""},
+                          { view: "text", type:"number", name: "wurf2", label: ""},
+                          { view: "text", type:"number", name: "wurf3", label: ""},
+                          { view: "text", type:"number", name: "wurf4", label: ""},
+                          { view: "text", type:"number", name: "wurf5", label: ""},
+                          { view: "text", type:"number", name: "zusatz", label: "",  readonly: true},
+                          { view: "text", type:"number", id: "kegelTotal", name: "total", label: "", readonly: true}
                           ]
                         }
                       }
@@ -291,16 +298,11 @@ custom_checkbox(obj, common, value){
                     $$("moduleAnlaesse-itemsCell").show();
                   }
                 },
-                { width: 6},
+                { width: 60},
                 { view : "button", label : "Add", width : "80",
                   type : "icon", icon : "webix_icon mdi mdi-plus",
                   id : "moduleAnlaesse-addPunkteButton", disabled : false,
                   click : this.addPunkteForm.bind(this)
-                },
-                { view : "button", label : "Edit", width : "80",
-                  type : "icon", icon : "webix_icon mdi mdi-pencil",
-                  id : "moduleAnlaesse-editPunkteButton", disabled : true,
-                  click : this.editPunkteForm.bind(this)
                 },
                 { view : "button", label : "Delete", width : "80",
                   type : "icon", icon : "webix_icon mdi mdi-delete",
@@ -323,6 +325,14 @@ custom_checkbox(obj, common, value){
 
   } /* End getUIConfig(). */
 
+  calcTotal() {
+    var data = $$("moduleAnlaesse-punkteForm").getValues();
+
+    var total = Number(data.wurf1) + Number(data.wurf2) + Number(data.wurf3) + Number(data.wurf4) + Number(data.wurf5) + Number(data.zusatz);
+    $$("kegelTotal").setValue(total);
+
+
+  } /* End calcTotal */
 
   /**
    * Called whenever this module becomes active.
@@ -365,8 +375,9 @@ custom_checkbox(obj, common, value){
     const anlass = $$('moduleAnlaesse-items').getSelectedItem();
 
     // Set flag to indicate editing an existing anlass and show the details.
-    this.isEditingExisting = true;
-    this.editingID = anlass.id;
+    this.isEditingExisting = false;
+    this.editingID = 0;
+    this.anlass = anlass;
 
     // Show the form.  Note that this has to be done before the call to
     // setValues() below otherwise we get an error due to setting the value of
@@ -375,8 +386,13 @@ custom_checkbox(obj, common, value){
     $$("moduleAnlaesse-punkte").show();
     $$("moduleAnlaesse-punkteList").clearAll();
     $$("moduleAnlaesse-punkteForm").clear();
+    $$("moduleAnlaesse-punkteForm").disable();
     var longname = new Date(anlass.datum).toLocaleDateString() + ' ' + anlass.name;
     $$("moduleAnlaesse-punkteEvent").setValue("<div style='font-size:20px;'>" + longname + "</div>");
+
+    var zusatz = [this.anlass.istkegeln ? [this.anlass.nachkegeln ? 0 : 5] : 0];
+    $$("punkte")[this.anlass.nachkegeln ? "disable" : "enable"]();
+    $$("kegelresultate")[this.anlass.istkegeln ? "show" : "hide"]();
 
     // Special handling for dates.
       anlass.datum = new Date(anlass.datum);
@@ -398,12 +414,12 @@ custom_checkbox(obj, common, value){
         dataItems.forEach((eintrag) => {
             eintrag.fullname = eintrag.teilnehmer.fullname;
             eintrag.mitgliedId = eintrag.teilnehmer.id;
+            eintrag.zusatz = zusatz;
             $$("moduleAnlaesse-punkteList").add(eintrag);
         });
         $$("moduleAnlaesse-punkteAnzahl").setValue("<div style='font-size:20px;'>Anzahl " + $$("moduleAnlaesse-punkteList").count() + "</div>");
         if(!$$("moduleAnlaesse-punkteList").count()){ // if there are no data items
-          webix.extend($$("moduleAnlaesse-punkteList"), webix.OverlayBox);
-          this.showOverlay("<div style='margin:75px; font-size:20px;'>There's no data</div>");
+          webix.message({ type: "info", text: "no data found"});
         }
       })
       .catch(function(error) {
@@ -412,21 +428,127 @@ custom_checkbox(obj, common, value){
 
   } /* End eeventsEditing */
 
-
-  editPunkteForm() {
-
-  } /* End editPunkteForm */
-
-
   deletePunkteForm() {
+    var itemData = $$(`moduleAnlaesse-punkteList`).getSelectedItem();
+    const url = "/Meisterschaft/data";
+    var smethod = "DELETE";
+
+    fetch(url, {
+      method: smethod, // *GET, POST, PUT, DELETE, etc.
+      mode: 'cors', // no-cors, *cors, same-origin
+      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+      credentials: 'same-origin', // include, *same-origin, omit
+      headers: {
+        'Content-Type': 'application/json'
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      redirect: 'follow', // manual, *follow, error
+      referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+      body: JSON.stringify(itemData) // body data type must match "Content-Type" header
+    })
+    .then((response) => {
+      if (!response.ok) {                                  // ***
+        webix.message({ type:"error", text: "HTTP error " + response.status});  // ***
+      }
+      return response.json();
+    })
+    .then((data) => {
+      // Refresh the module's summary list and return to that list.
+      var idEntry = $$(`moduleAnlaesse-punkteList`).getSelectedId(); 
+      $$(`moduleAnlaesse-punkteList`).remove(idEntry);
+      $$("moduleAnlaesse-punkteForm").clear();
+      $$("moduleAnlaesse-punkteForm").disable();
+      $$("moduleAnlaesse-punkteAnzahl").setValue("<div style='font-size:20px;'>Anzahl " + $$("moduleAnlaesse-punkteList").count() + "</div>");
+
+      // Finally, show a completion message.
+      webix.message({ type : "success", text : "deleted" });
+    })
+    .catch((e) => webix.message({type : "error", text : e}));
+
+
 
   } /* End savePunkteForm */
 
   addPunkteForm() {
+    $$(`moduleAnlaesse-punkteList`).unselectAll();
+    $$("moduleAnlaesse-punkteForm").clear();
+    $$("moduleAnlaesse-punkteForm").enable();
+    var itemData = { id: 0, eventId: this.anlass.id, punkte: this.anlass.punkte, zusatz: [this.anlass.istkegeln ? [this.anlass.nachkegeln ? 0 : 5] : 0], wurf1: 0, wurf2: 0, wurf3: 0, wurf4: 0, wurf5: 0, streichresultat: 0 };
+    $$("moduleAnlaesse-punkteForm").setValues(itemData);
+    $$("punkte")[this.anlass.nachkegeln ? "disable" : "enable"]();
+    $$("kegelresultate")[this.anlass.istkegeln ? "show" : "hide"]();
+    $$("mitgliedId").hide();
+    $$("mitgliedListe").show();
+    $$("mitgliedListe").setValue("");
+    $$("mitgliedListe").focus(true);
+
 
   } /* End savePunkteForm */
 
   savePunkteForm() {
+    if (!$$("moduleAnlaesse-punkteForm").isDirty())
+      return;
+
+    var itemData = $$("moduleAnlaesse-punkteForm").getValues();
+
+    console.log("savePunkteForm: itemData: ",itemData);
+    const url = "/Meisterschaft/data";
+    $$("mitgliedId").show();
+    $$("mitgliedListe").hide();
+
+    var smethond = (itemData.id > 0 ? "PUT" : "POST");
+
+    fetch(url, {
+      method: smethond, // *GET, POST, PUT, DELETE, etc.
+      mode: 'cors', // no-cors, *cors, same-origin
+      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+      credentials: 'same-origin', // include, *same-origin, omit
+      headers: {
+        'Content-Type': 'application/json'
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      redirect: 'follow', // manual, *follow, error
+      referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+      body: JSON.stringify(itemData) // body data type must match "Content-Type" header
+    })
+    .then((response) => {
+      if (!response.ok) {                                  // ***
+        webix.message({ type:"error", text: "HTTP error " + response.status});  // ***
+      }
+      return response.json();
+    })
+    .then((data) => {
+      // Refresh the module's summary list and return to that list.
+      if (smethond == 'PUT') {
+        var idEntry = $$(`moduleAnlaesse-punkteList`).getSelectedId(); 
+        $$(`moduleAnlaesse-punkteList`).updateItem(idEntry, itemData);
+      } else {
+        console.log('after post', data);
+        const promiseModule = fetch('/Meisterschaft/getOneData/?id=' + data)
+          .then(function(response) {
+            return response.json();
+          })
+          .catch(function(error) {
+            webix.message({ type:"error", text: error})
+        });
+        Promise.resolve(promiseModule)
+          .then((dataItem) => { 
+            dataItem.fullname = dataItem.teilnehmer.fullname;
+            dataItem.mitgliedId = dataItem.teilnehmer.id;
+            $$(`moduleAnlaesse-punkteList`).add(dataItem);
+            $$(`moduleAnlaesse-punkteList`).sort("#fullname#", "asc");
+          })
+          .catch((e) => webix.message({type : "error", text : e}));
+      }
+      $$("moduleAnlaesse-punkteForm").clear();
+      $$("moduleAnlaesse-punkteForm").disable();
+      $$(`moduleAnlaesse-punkteList`).unselectAll();
+      $$("moduleAnlaesse-punkteAnzahl").setValue("<div style='font-size:20px;'>Anzahl " + $$("moduleAnlaesse-punkteList").count() + "</div>");
+
+      // Finally, show a completion message.
+      webix.message({ type : "success", text : "gesichert" });
+    })
+    .catch((e) => webix.message({type : "error", text : e}));
 
   } /* End savePunkteForm */
 

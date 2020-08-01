@@ -16,9 +16,6 @@ try {
 
 
 class Adressen extends Model {
-  getFullname() {
-    return [this.vorname, this.name].join(' ');
-  }
 }
 Adressen.init({
   id: {
@@ -114,7 +111,17 @@ Adressen.init({
     type:Sequelize.TINYINT,
     defaultValue: 0},
   notes: Sequelize.BLOB
-}, {
+  // fullname: {
+  //   type: Sequelize.VIRTUAL,
+  //   get() {
+  //     return `${this.vorname} ${this.name}`;
+  //   },
+  //   set(value) {
+  //     throw new Error('Do not try to set the `fullname` value!');
+  //   }
+  // }
+},
+{
   sequelize,
   tableName: 'adressen',
   modelName: 'adressen',
@@ -160,6 +167,15 @@ Anlaesse.init({
         this.setDataValue('anlaesseId', value);
     }
   },
+  longname: {
+    type: Sequelize.VIRTUAL,
+    get() {
+      return `${this.datum} ${this.name}`;
+    },
+    set(value) {
+      throw new Error('Do not try to set the `longname` value!');
+    }
+  },
   status: {type: Sequelize.TINYINT, allowNull: false, defaultValue: 1}
   }, 
   {
@@ -173,6 +189,13 @@ Anlaesse.init({
   class Meisterschaft extends Model {
   }
   Meisterschaft.init({
+    id: {
+      type: Sequelize.INTEGER, 
+      allowNull: true,
+      autoIncrement: true,
+      primaryKey: true,
+      defaultValue: 0
+    },
     mitgliedId: { 
       type: Sequelize.INTEGER,
       references: {
@@ -189,13 +212,34 @@ Anlaesse.init({
       type: Sequelize.INTEGER,
       defaultValue: 50
     },
-    wurf1: Sequelize.INTEGER,
-    wurf2: Sequelize.INTEGER,
-    wurf3: Sequelize.INTEGER,
-    wurf4: Sequelize.INTEGER,
-    wurf5: Sequelize.INTEGER,
-    zusatz: Sequelize.INTEGER,
-    streichresultat: Sequelize.INTEGER
+    wurf1: { 
+      type: Sequelize.INTEGER, 
+      defaultValue: 0
+    },
+    wurf2: { 
+      type: Sequelize.INTEGER, 
+      defaultValue: 0
+    },
+    wurf3: { 
+      type: Sequelize.INTEGER, 
+      defaultValue: 0
+    },
+    wurf4: { 
+      type: Sequelize.INTEGER, 
+      defaultValue: 0
+    },
+    wurf5: { 
+      type: Sequelize.INTEGER, 
+      defaultValue: 0
+    },
+    zusatz: { 
+      type: Sequelize.INTEGER, 
+      defaultValue: 0
+    },
+    streichresultat: { 
+      type: Sequelize.INTEGER, 
+      defaultValue: 0
+    },
   },
   {
     sequelize,
