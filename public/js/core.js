@@ -112,6 +112,15 @@ class WXAMC {
     // Populate the day-at-a-glance screen.
     wxAMC.dayAtAGlance();
 
+    for (let moduleName of wxAMC.registeredModules) {
+      console.log('hotkey: ',moduleName,wxAMC.modules[moduleName].getUIConfig().winHotkey);
+      webix.UIManager.addHotKey(wxAMC.modules[moduleName].getUIConfig().winHotkey, 
+        function(code, e) {
+          wxAMC.launchModule(moduleName);
+        }
+      );
+    }
+
   } /* End start(). */
 
 

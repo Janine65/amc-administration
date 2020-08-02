@@ -35,7 +35,7 @@ wxAMC.moduleClasses.Parameters = class {
     elements.push({ id: "USER", label: "Andere", type: "label"});
 
     return {
-      winWidth : 300, winHeight : 300, winLabel : "Parameters", winIcon : "mdi mdi-key",
+      winWidth : 300, winHeight : 300, winLabel : "Parameters Ctrl+P", winIcon : "mdi mdi-key", winHotkey: "ctrl+p",
       id : "moduleParameters-container",
       cells : [
         /* ---------- Param list cell. ---------- */

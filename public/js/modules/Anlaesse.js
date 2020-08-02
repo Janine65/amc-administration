@@ -48,7 +48,7 @@ custom_checkbox(obj, common, value){
   getUIConfig() {
 
     return {
-      winWidth : 1000, winHeight : 800, winLabel : "Anlässe", winIcon : "mdi mdi-calendar-check",
+      winWidth : 1000, winHeight : 800, winLabel : "Anlässe Ctrl+E", winIcon : "mdi mdi-calendar-check", winHotkey: "ctrl+e",
       id : "moduleAnlaesse-container",
       cells : [
         /* ---------- Anlass list cell. ---------- */
@@ -129,7 +129,7 @@ custom_checkbox(obj, common, value){
                 
               },
               onItemDblClick:function(selection, preserve){
-                wxAMC.modules['Anlaesse'].editExisting();
+                wxAMC.modules['Anlaesse'].eventsEditing();
               }
               }
             },
@@ -261,9 +261,33 @@ custom_checkbox(obj, common, value){
                   { id: "moduleAnlaesse-punkteForm", 
                     view: "form", scroll: false, minHeight: 400,
                     elementsConfig : { labelWidth: 100, 
-                      on : { onChange : () => {
-                       $$("moduleAnlaesse-savePunkteButton")[$$("moduleAnlaesse-punkteForm").validate() ? "enable" : "disable"]();
-                       this.calcTotal();
+                      on : { 
+                        onKeyPress: function(code, e) {
+                           if (e.code == "Digit5" && e.type == "keydown") {
+                              console.log("onKeyPress: ", code, e); 
+                              if (e.srcElement == $$("wurf1")) {
+                                $$("wurf1").blur();
+                                $$("wurf2").focus();
+                              }
+                              else if (e.srcElement == $$("wurf2")) {
+                                $$("wurf2").blur();
+                                $$("wurf3").focus();
+                              }
+                              else if (e.srcElement == $$("wurf3")) {
+                                $$("wurf3").blur();
+                                $$("wurf4").focus();
+                              }
+                              else if (e.srcElement == $$("wurf4")) {
+                                $$("wurf4").blur();
+                                $$("wurf5").focus();
+                              }
+                              else console.log("onKeyPress: ", code, e);   
+                           }
+
+                        },
+                        onChange : () => {
+                          $$("moduleAnlaesse-savePunkteButton")[$$("moduleAnlaesse-punkteForm").validate() ? "enable" : "disable"]();
+                          this.calcTotal();
                         } 
                       }
                     },
@@ -274,11 +298,11 @@ custom_checkbox(obj, common, value){
                       {view: "fieldset", id: "kegelresultate", label: "Kegelresultate", hidden: true,
                       body: 
                         { cols: [
-                          { view: "text", type:"number", name: "wurf1", label: ""},
-                          { view: "text", type:"number", name: "wurf2", label: ""},
-                          { view: "text", type:"number", name: "wurf3", label: ""},
-                          { view: "text", type:"number", name: "wurf4", label: ""},
-                          { view: "text", type:"number", name: "wurf5", label: ""},
+                          { view: "text", id:"wurf1", type:"number", name: "wurf1", label: "", attributes : { maxlength : 1 }},
+                          { view: "text", id:"wurf2", type:"number", name: "wurf2", label: "", attributes : { maxlength : 1 }},
+                          { view: "text", id:"wurf3", type:"number", name: "wurf3", label: "", attributes : { maxlength : 1 }},
+                          { view: "text", id:"wurf4", type:"number", name: "wurf4", label: "", attributes : { maxlength : 1 }},
+                          { view: "text", id:"wurf5", type:"number", name: "wurf5", label: "", attributes : { maxlength : 1 }},
                           { view: "text", name: "zusatz", label: "",  readonly: true},
                           { view: "text", id: "kegelTotal", name: "total", label: "", readonly: true, css: "markedbox"}
                           ]

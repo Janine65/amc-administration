@@ -40,7 +40,7 @@ wxAMC.moduleClasses.Adressen = class {
   getUIConfig() {
 
     return {
-      winWidth : 1200, winHeight : 800, winLabel : "Adressen", winIcon : "mdi mdi-contacts",
+      winWidth : 1200, winHeight : 800, winLabel : "Adressen Ctrl+A", winIcon : "mdi mdi-contacts", winHotkey: "ctrl+a",
       id : "moduleAdressen-container",
       cells : [
         /* ---------- Adresse list cell. ---------- */
