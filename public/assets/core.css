@@ -28,3 +28,7 @@
 .notchecked{
   color:lightgray;
 }
+
+.markedbox{
+  background-color: rgb(37, 15, 56);
+}

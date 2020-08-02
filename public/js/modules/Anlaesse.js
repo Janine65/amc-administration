@@ -279,8 +279,8 @@ custom_checkbox(obj, common, value){
                           { view: "text", type:"number", name: "wurf3", label: ""},
                           { view: "text", type:"number", name: "wurf4", label: ""},
                           { view: "text", type:"number", name: "wurf5", label: ""},
-                          { view: "text", type:"number", name: "zusatz", label: "",  readonly: true},
-                          { view: "text", type:"number", id: "kegelTotal", name: "total", label: "", readonly: true}
+                          { view: "text", name: "zusatz", label: "",  readonly: true},
+                          { view: "text", id: "kegelTotal", name: "total", label: "", readonly: true, css: "markedbox"}
                           ]
                         }
                       }

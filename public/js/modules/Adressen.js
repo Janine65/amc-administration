@@ -214,9 +214,9 @@ wxAMC.moduleClasses.Adressen = class {
                 elementsConfig : { view : "text", labelWidth : 100
               },
               elements:[ 
-                    { view:"textarea", name: "email_an", label:"TO:", height:80 },
-                    { view:"textarea", name: "email_cc", label:"CC:", height:80  },
-                    { view:"textarea", name: "email_bcc", label:"BCC:", height:80  },
+                    { view:"textarea", name: "email_an", label:"TO:", height:50 },
+                    { view:"textarea", name: "email_cc", label:"CC:", height:50  },
+                    { view:"textarea", name: "email_bcc", label:"BCC:", height:50  },
                     { view:"text", name: "email_subject", label:"Betreff:", required: true},
                     //{ view:"", name:"attachement", label:"Attachement" },
                       {
@@ -224,7 +224,7 @@ wxAMC.moduleClasses.Adressen = class {
                         config:{
                           fullPanel : true
                         },
-                        name: "email_body", label:"Meldung:", width:600, required: true}
+                        name: "email_body", label:"Meldung:", width:800, required: true}
                 ]
               }, // End Email form */
               /* Email details toolbar. */
