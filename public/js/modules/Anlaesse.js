@@ -1,7 +1,6 @@
 // "Register" this module with wxAMC.
 wxAMC.registeredModules.push("Anlaesse");
 
-
 wxAMC.moduleClasses.Anlaesse = class {
 
 
@@ -263,27 +262,35 @@ custom_checkbox(obj, common, value){
                     elementsConfig : { labelWidth: 100, 
                       on : { 
                         onKeyPress: function(code, e) {
-                           if (e.code == "Digit5" && e.type == "keydown") {
-                              console.log("onKeyPress: ", code, e); 
-                              if (e.srcElement == $$("wurf1")) {
-                                $$("wurf1").blur();
+                          if (e.type == "keydown" && (e.keyCode >= 48 && e.keyCode <= 57)) {
+                              if (e.srcElement.parentNode == $$("wurf1").$view.children[0]) {
+                                $$("wurf1").setValue(e.key);
                                 $$("wurf2").focus();
+                                //$$("wurf2").selectAll();
+                                return false;
                               }
-                              else if (e.srcElement == $$("wurf2")) {
-                                $$("wurf2").blur();
+                              else if (e.srcElement.parentNode == $$("wurf2").$view.children[0]) {
+                                $$("wurf2").setValue(e.key);
                                 $$("wurf3").focus();
+                                return false;
                               }
-                              else if (e.srcElement == $$("wurf3")) {
-                                $$("wurf3").blur();
+                              else if (e.srcElement.parentNode == $$("wurf3").$view.children[0]) {
+                                $$("wurf3").setValue(e.key);
                                 $$("wurf4").focus();
+                                return false;
                               }
-                              else if (e.srcElement == $$("wurf4")) {
-                                $$("wurf4").blur();
+                              else if (e.srcElement.parentNode == $$("wurf4").$view.children[0]) {
+                                $$("wurf4").setValue(e.key);
                                 $$("wurf5").focus();
+                                return false;
                               }
-                              else console.log("onKeyPress: ", code, e);   
-                           }
-
+                              else if (e.srcElement.parentNode == $$("wurf5").$view.children[0]) {
+                                $$("wurf5").setValue(e.key);
+                                $$("wurf1").focus();
+                                return false;
+                              }
+                           } 
+                           return true;
                         },
                         onChange : () => {
                           $$("moduleAnlaesse-savePunkteButton")[$$("moduleAnlaesse-punkteForm").validate() ? "enable" : "disable"]();
