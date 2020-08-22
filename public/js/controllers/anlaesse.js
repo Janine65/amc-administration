@@ -3,16 +3,39 @@ const { Op, Sequelize } = require("sequelize");
 
 module.exports = {
 	getData: function (req, res) {		
-		db.Anlaesse.findAll({
-			where: {datum: { [Op.gte]: new Date('01.01.'+(global.Parameter.get('CLUBJAHR') - 1 )) }},
-			attributes: { inlcude: ['longname']},
-			include: [
-				{ model: db.Anlaesse, as: 'linkedEvent', required: false, attributes: ['longname']}
-			 ],
-			 order: [
-				 ['datum', 'asc']
-			 ]
-		}).then(data => res.json(data));		
+		/*
+ 		db.Anlaesse.findAll({
+ 			where: {datum: { [Op.gte]: new Date('01.01.'+(global.Parameter.get('CLUBJAHR') - 1 )) }},
+ 			//attributes: { inlcude: ['longname']},
+ 			include: [
+ //				{ model: db.Anlaesse, as: 'linkedEvent', required: false, attributes: ['longname']}
+ 				{ model: db.Anlaesse, as: 'linkedEvent', required: false, attributes: { inlcude: ['longname']}}
+ 			 ],
+ 			 order: [
+ 				 ['datum', 'asc']
+ 			 ]
+		 }).then(data => res.json(data));		
+		 */
+		 /*
+				 SELECT `anlaesse`.`id`, `anlaesse`.`datum`, `anlaesse`.`name`, `anlaesse`.`beschreibung`, `anlaesse`.`punkte`, `anlaesse`.`istkegeln`, `anlaesse`.`nachkegeln`, `anlaesse`.`gaeste`, `anlaesse`.`anlaesseId`, `anlaesse`.`status`, `anlaesse`.`createdAt`, `anlaesse`.`updatedAt`, 
+				 `linkedEvent`.`id` AS `linkedEvent.id`, `linkedEvent`.`longname` AS `linkedEvent.longname`
+				  FROM `clubmeisterschaft` AS `anlaesse` LEFT OUTER JOIN `clubmeisterschaft` AS `linkedEvent` ON `anlaesse`.`anlaesseId` = `linkedEvent`.`id` 
+				  WHERE `anlaesse`.`datum` >= '2019-01-01' ORDER BY `anlaesse`.`datum` ASC;
+		 */
+		 var qrySelect = "SELECT `anlaesse`.`id`, `anlaesse`.`datum`, `anlaesse`.`name`, `anlaesse`.`beschreibung`, `anlaesse`.`punkte`, `anlaesse`.`istkegeln`, `anlaesse`.`nachkegeln`, `anlaesse`.`gaeste`, `anlaesse`.`anlaesseId`, `anlaesse`.`status`, `anlaesse`.`createdAt`, `anlaesse`.`updatedAt`, `linkedEvent`.`longname` as 'vorjahr'";
+		 qrySelect += " FROM `clubmeisterschaft` AS `anlaesse` LEFT OUTER JOIN `clubmeisterschaft` AS `linkedEvent` ON `anlaesse`.`anlaesseId` = `linkedEvent`.`id`";
+		 qrySelect += " WHERE YEAR(`anlaesse`.`datum`) >= ";
+		 qrySelect += global.Parameter.get('CLUBJAHR') - 1;
+		 qrySelect += " ORDER BY `anlaesse`.`datum` ASC;"
+
+		 sequelize.query(qrySelect, 
+		 	{ 
+		 		type: Sequelize.QueryTypes.SELECT,
+		 		plain: false,
+		 		logging: console.log,
+		 		raw: false
+		 	}
+		 ).then(data => res.json(data));					
 	},
 
 	getOverviewData: function (req, res) {

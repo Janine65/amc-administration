@@ -167,15 +167,14 @@ Anlaesse.init({
         this.setDataValue('anlaesseId', value);
     }
   },
-  longname: {
-    type: Sequelize.VIRTUAL,
-    get() {
-      return `${this.datum} ${this.name}`;
-    },
-    set(value) {
-      throw new Error('Do not try to set the `longname` value!');
-    }
-  },
+   longname: Sequelize.VIRTUAL,
+  //   get() {
+  //     return `${this.datum} ${this.name}`;
+  //   },
+  //   set(value) {
+  //     throw new Error('Do not try to set the `longname` value!');
+  //   }
+  // },
   status: {type: Sequelize.TINYINT, allowNull: false, defaultValue: 1}
   }, 
   {

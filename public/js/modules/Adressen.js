@@ -197,7 +197,7 @@ wxAMC.moduleClasses.Adressen = class {
                 },
                 { },
                 { view : "button", label : "Save", width : "80", type : "icon",
-                  icon : "mdi mdi-content-save", id : "moduleAdressen-saveButton", disabled : true,
+                  icon : "mdi mdi-content-save", id : "moduleAdressen-saveButton", disabled : true, hotkey: "enter",
                   click : () => { wxAMC.saveHandler("Adressen", "moduleAdressen-detailsForm")
                   }
                 },
@@ -499,7 +499,7 @@ wxAMC.moduleClasses.Adressen = class {
     // Add a section to the day-at-a-glance body for this module if there isn't one already.
     if (!$$("dayAtAGlanceScreen_Adressen")) {
       $$("dayAtAGlanceBody").addView({
-        view : "fieldset", label : "Adressen", 
+        view : "fieldset", label : "Adressen - Ctrl+A", 
         body : { id: "dayAtAGlanceScreen_Adressen", cols : [  ] }
       });
       $$("dayAtAGlanceBody").addView({ height : 20 });  

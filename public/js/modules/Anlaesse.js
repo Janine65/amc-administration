@@ -91,7 +91,8 @@ custom_checkbox(obj, common, value){
               { id:"istkegeln", css:{'text-align':'center'}, header:[{text:"Kegeln?"}], template:this.custom_checkbox},
               { id:"nachkegeln", css:{'text-align':'center'},header:[{text:"Nachkegeln?"}], template:this.custom_checkbox},		
               { id:"beschreibung", header:[{text:"Beschreibung"}], adjust:"header"},
-              { id:"longname", header:[{text:"Vorjahres Termin"}], adjust:true, template:this.show_vorjahr}  
+              { id:"vorjahr", header:[{text:"Vorjahres Termin"}], adjust:true}  
+//              { id:"longname", header:[{text:"Vorjahres Termin"}], adjust:true, template:this.show_vorjahr}  
             ],
             hover: "hoverline",
             on : {
@@ -102,6 +103,7 @@ custom_checkbox(obj, common, value){
                 this.showOverlay("Loading...");
               },
               onAfterLoad:function(){
+                console.log(this);
                 this.hideOverlay();
                 $$("count_anlass").setValue("Anzahl " + this.count());	  
                 $$("moduleAnlaesse-items").registerFilter(
@@ -214,7 +216,7 @@ custom_checkbox(obj, common, value){
                 { },
                 { view : "button", label : "Save", width : "80",
                   type : "icon", icon : "webix_icon mdi mdi-content-save",
-                  id : "moduleAnlaesse-saveButton", disabled : true,
+                  id : "moduleAnlaesse-saveButton", disabled : true, hotkey: "enter",
                   click : function() {
                     wxAMC.saveHandler("Anlaesse", "moduleAnlaesse-detailsForm");
                   }
@@ -265,8 +267,7 @@ custom_checkbox(obj, common, value){
                           if (e.type == "keydown" && (e.keyCode >= 48 && e.keyCode <= 57)) {
                               if (e.srcElement.parentNode == $$("wurf1").$view.children[0]) {
                                 $$("wurf1").setValue(e.key);
-                                $$("wurf2").focus();
-                                //$$("wurf2").selectAll();
+                                $$("wurf2").focus();                                
                                 return false;
                               }
                               else if (e.srcElement.parentNode == $$("wurf2").$view.children[0]) {
@@ -344,7 +345,7 @@ custom_checkbox(obj, common, value){
                 { view : "button", label : "Save", width : "80",
                   type : "icon", icon : "webix_icon mdi mdi-content-save",
                   id : "moduleAnlaesse-savePunkteButton", disabled : true,
-                  click : this.savePunkteForm.bind(this)
+                  click : this.savePunkteForm.bind(this), hotkey: "enter"
                 },
                 { width : 6 }
               ]
@@ -438,7 +439,7 @@ custom_checkbox(obj, common, value){
            webix.message({ type:"error", text: error})
      });
      Promise.resolve(promiseModule)
-      .then(async function(dataItems) {
+      .then(function(dataItems) {
         // Populate the list.
         //webix.i18n.dateFormatStr
         
@@ -451,12 +452,13 @@ custom_checkbox(obj, common, value){
         $$("moduleAnlaesse-punkteAnzahl").setValue("<div style='font-size:20px;'>Anzahl " + $$("moduleAnlaesse-punkteList").count() + "</div>");
         if(!$$("moduleAnlaesse-punkteList").count()){ // if there are no data items
           webix.message({ type: "info", text: "no data found"});
-        }
+        }        
       })
       .catch(function(error) {
         webix.message({ type:"error", text: error})
       });
-
+      this.addPunkteForm();
+      
   } /* End eeventsEditing */
 
   deletePunkteForm() {
@@ -524,10 +526,23 @@ custom_checkbox(obj, common, value){
 
     console.log("savePunkteForm: itemData: ",itemData);
     const url = "/Meisterschaft/data";
-    $$("mitgliedId").show();
-    $$("mitgliedListe").hide();
+    //$$("mitgliedId").show();
+    //$$("mitgliedListe").hide();
 
     var smethond = (itemData.id > 0 ? "PUT" : "POST");
+
+    if (itemData.id == 0 || itemData.id == null) {
+      // check duplicate
+      var fObj = $$(`moduleAnlaesse-punkteList`).find(function(obj)
+      {
+        return (obj.mitgliedId == itemData.mitgliedId)
+      },true);
+      if (fObj != null) {
+        // ERROR
+        webix.message({type: "error", text: "Für dieses Mitglied wurden bereits Ergebnisse erfasst!"})
+        return ;
+      }
+    }
 
     fetch(url, {
       method: smethond, // *GET, POST, PUT, DELETE, etc.
@@ -575,6 +590,7 @@ custom_checkbox(obj, common, value){
       $$("moduleAnlaesse-punkteForm").disable();
       $$(`moduleAnlaesse-punkteList`).unselectAll();
       $$("moduleAnlaesse-punkteAnzahl").setValue("<div style='font-size:20px;'>Anzahl " + $$("moduleAnlaesse-punkteList").count() + "</div>");
+      this.addPunkteForm();
 
       // Finally, show a completion message.
       webix.message({ type : "success", text : "gesichert" });
@@ -697,7 +713,7 @@ custom_checkbox(obj, common, value){
     // Add a section to the day-at-a-glance body for this module if there isn't one already.
     if (!$$("dayAtAGlanceScreen_Anlaesse")) {
       $$("dayAtAGlanceBody").addView({
-        view : "fieldset", label : "Anlässe", 
+        view : "fieldset", label : "Anlässe - Ctrl+E", 
         body : { id: "dayAtAGlanceScreen_Anlaesse", cols: [ ] }
       });
       $$("dayAtAGlanceBody").addView({ height : 20 });
