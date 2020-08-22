@@ -179,7 +179,7 @@ Anlaesse.init({
   }, 
   {
     sequelize,
-    tableName: 'clubmeisterschaft',
+    tableName: 'clubmeister',
     modelName: 'anlaesse',
     indexes: [{ unique: true, fields: ['datum','name'] }]  
   }
@@ -244,7 +244,59 @@ Anlaesse.init({
     sequelize,
     tableName: 'meisterschaft',
     modelName: 'meisterschaft' 
-  })
+  }
+  );
+  class Clubmeister extends Model {    
+  }
+  Clubmeister.init({
+    id: {
+      type: Sequelize.INTEGER, 
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
+      defaultValue: 0
+    },
+    jahr: {type: Sequelize.STRING, allowNull: false},
+    vorname: {type: Sequelize.STRING, allowNull: false},
+    nachname: {type: Sequelize.STRING, allowNull: false},
+    mnr: {type: Sequelize.INTEGER, allowNull: false},
+    punkte: {type: Sequelize.INTEGER, allowNull: false},
+    anlaesse: {type: Sequelize.INTEGER, allowNull: false},
+    werbungen: {type: Sequelize.INTEGER, allowNull: false},
+    mitglieddauer: {type: Sequelize.INTEGER, allowNull: false},
+  },
+  {
+    sequelize,
+    tableName: 'clubmeister',
+    modelName: 'clubmeister'
+  }
+  );
+
+
+  class Kegelmeister extends Model {    
+  }
+  Kegelmeister.init({
+    id: {
+      type: Sequelize.INTEGER, 
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
+      defaultValue: 0
+    },
+    jahr: {type: Sequelize.STRING, allowNull: false},
+    vorname: {type: Sequelize.STRING, allowNull: false},
+    nachname: {type: Sequelize.STRING, allowNull: false},
+    mnr: {type: Sequelize.INTEGER, allowNull: false},
+    punkte: {type: Sequelize.INTEGER, allowNull: false},
+    anlaesse: {type: Sequelize.INTEGER, allowNull: false},
+    babeli: {type: Sequelize.INTEGER, allowNull: false},
+  },
+  {
+    sequelize,
+    tableName: 'kegelmeister',
+    modelName: 'kegelmeister'
+  }
+  );
 
   class Parameter extends Model {
   }
@@ -268,5 +320,5 @@ Meisterschaft.belongsTo(Adressen, { as: 'teilnehmer', constraints: true, foreign
 
 
 module.exports = {
-  Adressen, Anlaesse, Parameter, Meisterschaft
+  Adressen, Anlaesse, Parameter, Meisterschaft, Clubmeister, Kegelmeister,
 };

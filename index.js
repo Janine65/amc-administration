@@ -119,6 +119,12 @@ app.delete('/Meisterschaft/data', meisterschaft.removeData);
 app.get('/Meisterschaft/getOneData', meisterschaft.getOneData);
 app.get('/Meisterschaft/getFkData', meisterschaft.getFKData);
 
+const clubmeister = require("./public/js/controllers/clubmeister");
+app.get('/Clubmeister/data', clubmeister.getData);
+const kegelmeister = require("./public/js/controllers/kegelmeister");
+app.get('/Kegelmeister/data', kegelmeister.getData);
+
+
 const parameter = require("./public/js/controllers/parameter");
 app.get('/Parameter/data', parameter.getData);
 app.post('/Parameter/data', upload.array(), parameter.updateData);
