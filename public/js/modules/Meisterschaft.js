@@ -27,7 +27,7 @@ wxAMC.moduleClasses.Meisterschaft = class {
   getUIConfig() {
 
     return {
-      winWidth : 1000, winHeight : 800, winLabel : "Meisterschaft Ctrl+M", winIcon : "mdi mdi-podium", winHotkey: "ctrl+m",
+      winWidth : 1000, winHeight : 800, winLabel : "Meisterschaft Ctrl+M", winIcon : "mdi mdi-order-numeric-ascending", winHotkey: "ctrl+m",
       id : "moduleMeisterschaft-container",
       cells : [
         /* ---------- Anlass list cell. ---------- */
@@ -43,13 +43,19 @@ wxAMC.moduleClasses.Meisterschaft = class {
               ],
               on: {
                 onViewShow: function() {
-                  $$("moduleMeisterschaft-items").filterByAll();
+                  $$("moduleMeisterschaft-Citems").filterByAll();
+                  $$("moduleMeisterschaft-Kitems").filterByAll();
                 },
                 onChange: function() {
-                  $$("moduleMeisterschaft-items").filterByAll();
+                  $$("moduleMeisterschaft-Citems").filterByAll();
+                  $$("moduleMeisterschaft-Kitems").filterByAll();
                 }
               }
             },
+            {cols: [
+              { view: "label", label: "<div style='font-size:20px;'>Clubmeisterschaft</div>"},
+              { view: "label", label: "<div style='font-size:20px;'>Kegelmeisterschaft</div>"}
+            ]},
             {cols: [
               { view : "datatable", id : "moduleMeisterschaft-Citems",
                 css:"webix_header_border webix_data_border", 
@@ -57,7 +63,8 @@ wxAMC.moduleClasses.Meisterschaft = class {
                 resizeColumn: { headerOnly:true},
                 scroll:true, 
                 editable:false, 
-                columns:[
+                columns:[ 
+                  { id:"rang", header:[{text:"Rang"}], adjust:true},
                   { id:"punkte", header:[{text:"Punkte"}], adjust:true},
                   { id:"vorname", header:[{text:"Vorname"}],  adjust:true},
                   { id:"nachname", header:[{text:"Nachname"}], adjust:true},
@@ -65,6 +72,11 @@ wxAMC.moduleClasses.Meisterschaft = class {
                   { id:"werbungen", header:[{text:"Werbungen"}],  adjust:true},
                   { id:"mitglieddauer", header:[{text:"Mitglieddauer"}], adjust: true},
                 ],
+                scheme:{
+                  $change:function(item){
+                    if (item.status == 0)
+                      item.$css = "inactiveLine";
+                  }},
                 hover: "hoverline",
                 on : {
                   onViewShow:function(){
@@ -76,10 +88,10 @@ wxAMC.moduleClasses.Meisterschaft = class {
                   onAfterLoad:function(){
                     console.log(this);
                     this.hideOverlay();
-                    //$$("moduleMeisterschaft-count").setValue("Anzahl " + this.count());	  
+                    $$("moduleMeisterschaft-Ccount").setValue("Anzahl " + this.count());	  
                     $$("moduleMeisterschaft-Citems").registerFilter(
                       $$("moduleMeisterschaftdatumSelect"),  
-                      { columnId:"datum" },
+                      { columnId:"jahr" },
                       {  
                         getValue:function(view){
                           return view.getValue();
@@ -91,9 +103,12 @@ wxAMC.moduleClasses.Meisterschaft = class {
                     );
                   },
                   onAfterFilter:function(){
-                    //$$("moduleMeisterschaft-count").setValue("Anzahl " + this.count());	  
+                    $$("moduleMeisterschaft-Ccount").setValue("Anzahl " + this.count());	  
                   }
                 }  
+              },
+              { view:"resizer",
+                id:"resizer" 
               },
               { view : "datatable", id : "moduleMeisterschaft-Kitems",
                 css:"webix_header_border webix_data_border", 
@@ -102,12 +117,18 @@ wxAMC.moduleClasses.Meisterschaft = class {
                 scroll:true, 
                 editable:false, 
                 columns:[
+                  { id:"rang", header:[{text:"Rang"}], adjust:true},
                   { id:"punkte", header:[{text:"Punkte"}], adjust:true},
                   { id:"vorname", header:[{text:"Vorname"}],  adjust:true},
                   { id:"nachname", header:[{text:"Nachname"}], adjust:true},
                   { id:"anlaesse", header:[{text:"Anlässe"}], adjust:true},
                   { id:"babeli", header:[{text:"Babeli"}],  adjust:true},
                 ],
+                scheme:{
+                  $change:function(item){
+                    if (item.status == 0)
+                      item.$css = "inactiveLine";
+                  }},
                 hover: "hoverline",
                 on : {
                   onViewShow:function(){
@@ -119,10 +140,10 @@ wxAMC.moduleClasses.Meisterschaft = class {
                   onAfterLoad:function(){
                     console.log(this);
                     this.hideOverlay();
-                    //$$("moduleMeisterschaft-count").setValue("Anzahl " + this.count());	  
+                    $$("moduleMeisterschaft-Kcount").setValue("Anzahl " + this.count());	  
                     $$("moduleMeisterschaft-Kitems").registerFilter(
                       $$("moduleMeisterschaftdatumSelect"),  
-                      { columnId:"datum" },
+                      { columnId:"jahr" },
                       {  
                         getValue:function(view){
                           return view.getValue();
@@ -134,7 +155,7 @@ wxAMC.moduleClasses.Meisterschaft = class {
                     );
                   },
                   onAfterFilter:function(){
-                    //$$("moduleMeisterschaft-count").setValue("Anzahl " + this.count());	  
+                    $$("moduleMeisterschaft-Kcount").setValue("Anzahl " + this.count());	  
                   }
                 }  
               }
@@ -143,9 +164,12 @@ wxAMC.moduleClasses.Meisterschaft = class {
             /* Anlass list toolbar. */
             { view : "toolbar",
             cols : [
-              { id: "moduleMeisterschaft-count", view : "label", label: "Anzahl 0"},
-              { },
-              { width : 6 }
+              { id: "moduleMeisterschaft-Ccount", view : "label", label: "Anzahl 0"},
+              { width : 6 },
+              { id: "moduleMeisterschaft-refreshButton", view : "button", default : true, label : "Refresh", width : "80", type : "icon", disabled: false,
+              icon : "webix_icon mdi mdi-refresh-circle", click : this.refreshMeister.bind(this)},
+              { width : 6 },
+              { id: "moduleMeisterschaft-Kcount", view : "label", label: "Anzahl 0", align: "left"},
             ] /* End toolbar items. */
             } /* End toolbar. */
           ] /* End anlass list rows. */
@@ -169,6 +193,16 @@ wxAMC.moduleClasses.Meisterschaft = class {
   deactivate() {
   } /* End deactivate(). */
 
+  async refreshMeister() {
+    var url = "/Clubmeister/refresh?jahr=" + $$("moduleMeisterschaftdatumSelect").getValue();
+    var promiseModule = await fetch(url)      
+      .catch(error => webix.message({ type:"error", text: error}));
+    url = "/Kegelmeister/refresh?jahr=" + $$("moduleMeisterschaftdatumSelect").getValue();
+    promiseModule = await fetch(url)      
+      .catch(error => webix.message({ type:"error", text: error}));
+    await this.refreshData();
+    webix.message({type: "info", text:"Ranglisten neu berechnet"});
+}
 
   /**
    * Refresh the meisterschaft list from local storage.
@@ -216,13 +250,13 @@ wxAMC.moduleClasses.Meisterschaft = class {
 
       await wxAMC.reloadParameters();
       
-      $$("datumSelect").options = [
+      $$("moduleMeisterschaftdatumSelect").options = [
         {"id":(parseInt(wxAMC.parameter.get('CLUBJAHR'))-1), value:parseInt(wxAMC.parameter.get('CLUBJAHR'))-1},
         {"id":parseInt(wxAMC.parameter.get('CLUBJAHR')), value:parseInt(wxAMC.parameter.get('CLUBJAHR'))},
         {"id":(parseInt(wxAMC.parameter.get('CLUBJAHR'))+1), value:parseInt(wxAMC.parameter.get('CLUBJAHR'))+1}
       ];
 
-      $$("datumSelect").setValue(sSelYear);
+      $$("moduleMeisterschaftdatumSelect").setValue(sSelYear);
       $$("moduleMeisterschaft-Citems").filterByAll();
       $$("moduleMeisterschaft-Kitems").filterByAll();
     });

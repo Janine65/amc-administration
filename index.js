@@ -121,8 +121,10 @@ app.get('/Meisterschaft/getFkData', meisterschaft.getFKData);
 
 const clubmeister = require("./public/js/controllers/clubmeister");
 app.get('/Clubmeister/data', clubmeister.getData);
+app.get('/Clubmeister/refresh', clubmeister.calcMeister);
 const kegelmeister = require("./public/js/controllers/kegelmeister");
 app.get('/Kegelmeister/data', kegelmeister.getData);
+app.get('/Kegelmeister/refresh', kegelmeister.calcMeister);
 
 
 const parameter = require("./public/js/controllers/parameter");

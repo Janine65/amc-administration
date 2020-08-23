@@ -257,13 +257,15 @@ Anlaesse.init({
       defaultValue: 0
     },
     jahr: {type: Sequelize.STRING, allowNull: false},
+    rang: {type: Sequelize.INTEGER, allowNull: false},
     vorname: {type: Sequelize.STRING, allowNull: false},
     nachname: {type: Sequelize.STRING, allowNull: false},
-    mnr: {type: Sequelize.INTEGER, allowNull: false},
+    mitgliedid: {type: Sequelize.INTEGER, allowNull: false},
     punkte: {type: Sequelize.INTEGER, allowNull: false},
     anlaesse: {type: Sequelize.INTEGER, allowNull: false},
     werbungen: {type: Sequelize.INTEGER, allowNull: false},
     mitglieddauer: {type: Sequelize.INTEGER, allowNull: false},
+    status: {type: Sequelize.INTEGER, allowNull: false},
   },
   {
     sequelize,
@@ -284,12 +286,14 @@ Anlaesse.init({
       defaultValue: 0
     },
     jahr: {type: Sequelize.STRING, allowNull: false},
+    rang: {type: Sequelize.INTEGER, allowNull: false},
     vorname: {type: Sequelize.STRING, allowNull: false},
     nachname: {type: Sequelize.STRING, allowNull: false},
-    mnr: {type: Sequelize.INTEGER, allowNull: false},
+    mitgliedid: {type: Sequelize.INTEGER, allowNull: false},
     punkte: {type: Sequelize.INTEGER, allowNull: false},
     anlaesse: {type: Sequelize.INTEGER, allowNull: false},
     babeli: {type: Sequelize.INTEGER, allowNull: false},
+    status: {type: Sequelize.INTEGER, allowNull: false},
   },
   {
     sequelize,
