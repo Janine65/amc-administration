@@ -2,14 +2,27 @@ var db = require("../db");
 const { Op, Sequelize } = require("sequelize");
 
 module.exports = {
-	getData: function (req, res) {	
+	getData: async function (req, res) {	
 		console.log("clubmeister.js/getData");	
-		db.Clubmeister.findAll({
+		await db.Clubmeister.findAll({
 			where: {jahr: { [Op.gte]: (global.Parameter.get('CLUBJAHR') - 1 ) }},
 			  order: [
 			 	 ['rang', 'asc']
 			 ]
 		}).then(data => res.json(data));		
+	},
+
+	getOverviewData: async function (req, res) {
+		var qrySelect = "SELECT 'Anzahl Personen in der Wertung der Clubmeisterschaft' as label, count(id) as value FROM clubmeister"
+		qrySelect += " WHERE jahr = " + global.Parameter.get('CLUBJAHR') + " and status = 1"
+		await sequelize.query(qrySelect, 
+			{ 
+				type: Sequelize.QueryTypes.SELECT,
+				plain: false,
+				logging: console.log,
+				raw: false
+			}
+		).then(data => res.json(data));					
 	},
 
 	calcMeister: async function (req, res) {

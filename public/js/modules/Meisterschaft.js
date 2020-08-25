@@ -278,15 +278,15 @@ wxAMC.moduleClasses.Meisterschaft = class {
       });
       $$("dayAtAGlanceBody").addView({ height : 20 });
     } 
-/*
+
     // Populate the day-at-a-glance screen.
     var rows = [ ];
 
-    const promiseModule = fetch("/Meisterschaft/getOverviewData")
+    var promiseModule = await fetch("/Clubmeister/getOverviewData")
       .then((response) => response.json())
       .catch((e) => webix.message({ type:"error", text: e}));
 
-    Promise.resolve(promiseModule)
+    await Promise.resolve(promiseModule)
     .then(totals => {
       totals.forEach(total => {
         rows.push(
@@ -299,10 +299,29 @@ wxAMC.moduleClasses.Meisterschaft = class {
     })
     .then(function(){
       //console.log(rows);
-      webix.ui (rows, $$("dayAtAGlanceScreen_Meisterschaft"));
     })
     .catch((e) => webix.message({ type:"error", text: e}));
-*/
+
+    promiseModule = await fetch("/Kegelmeister/getOverviewData")
+      .then((response) => response.json())
+      .catch((e) => webix.message({ type:"error", text: e}));
+
+    await Promise.resolve(promiseModule)
+    .then(totals => {
+      totals.forEach(total => {
+        rows.push(
+          { view:"fieldset", label: total.label, body: { 
+            rows : [ 
+              {view: "label", label : total.value}
+            ]}
+          });
+      })
+    })
+    .then(function(){
+      //console.log(rows);
+    })
+    .catch((e) => webix.message({ type:"error", text: e}));
+    webix.ui (rows, $$("dayAtAGlanceScreen_Meisterschaft"));
 
   } /* End dayAtAGlance(). */
 

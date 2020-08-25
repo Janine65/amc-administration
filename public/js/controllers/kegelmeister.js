@@ -12,18 +12,152 @@ module.exports = {
 		}).then(data => res.json(data));		
 	},
 
+	getOverviewData: async function (req, res) {
+		var qrySelect = "SELECT 'Anzahl Personen in der Wertung der Kegelmeisterschaft' as label, count(id) as value FROM kegelmeister"
+		qrySelect += " WHERE jahr = " + global.Parameter.get('CLUBJAHR') + " and status = 1"
+		await sequelize.query(qrySelect, 
+			{ 
+				type: Sequelize.QueryTypes.SELECT,
+				plain: false,
+				logging: console.log,
+				raw: false
+			}
+		).then(data => res.json(data));					
+	},
+
 	calcMeister: async function (req, res) {
 		// berechnet den Kegelmeister für das Jahr req.query.jahr
 
 		var arMeister = []
 		var allMitgliedId = []
+		var qrySelect = ""
+		var data = []
+
+		var qrySubSelect = "SELECT id FROM clubmeisterschaft where year(datum) = " + req.query.jahr + " AND istkegeln = 1"
+
+		// Streichresultate ermitteln - nur im aktuellen Clubjahr
+		if (req.query.jahr == global.Parameter.get('CLUBJAHR')) {
+			qrySelect = "SELECT count(id) as value from clubmeisterschaft where status = 1 and datum > NOW() and YEAR(`datum`) = " + global.Parameter.get('CLUBJAHR');
+			data = await sequelize.query(qrySelect, 
+				{ 
+					type: Sequelize.QueryTypes.SELECT,
+					plain: true,
+					logging: console.log,
+					raw: true
+				}
+			);
+			if (data.value == 0) {
+				// Streichresultate setzen
+				// Anzahl Ergebnisse = global.Parameter.get('ANZAHL_KEGEL')
+
+				// alle Ergebnisse auf Streichresultat = 0
+				qrySelect = "UPDATE meisterschaft set streichresultat = 0 where eventid in ( " + qrySubSelect + ")";
+				var result = await sequelize.query(qrySelect,
+					{
+						type: Sequelize.QueryTypes.UPDATE,
+						plain: false,
+						logging: console.log,
+						raw: true
+					}
+				);					
+			
+				// alle Ergebnisse auf Streichresultat = 1, wenn Wurf-Total = 0
+				qrySelect = "UPDATE meisterschaft set streichresultat = 1 where eventid in ( " + qrySubSelect + ")";
+				qrySelect += " AND (wurf1 + wurf2 + wurf3 + wurf4 + wurf5) = 0"
+				result = await sequelize.query(qrySelect,
+					{
+						type: Sequelize.QueryTypes.UPDATE,
+						plain: false,
+						logging: console.log,
+						raw: true
+					}
+				);					
+			
+				// alle Ergebnisse, die weniger als 'Anzahl Ergebnisse' haben, Streichresultat = 1
+				qrySelect = "SELECT mitgliedid, count(eventid) as anzahl FROM meisterschaft where eventid in ("
+				qrySelect += qrySubSelect
+				qrySelect += ") and streichresultat = 0 group by mitgliedid having anzahl < " + global.Parameter.get('ANZAHL_KEGEL')
+
+				data = await sequelize.query(qrySelect, 
+					{ 
+						type: Sequelize.QueryTypes.SELECT,
+						plain: false,
+						logging: console.log,
+						raw: true
+					}
+				);
+				if (data.length > 0) {
+					var iterator = data.entries();
+					for(let mitglied of iterator) {
+						allMitgliedId.push(mitglied[1].mitgliedid)
+					}
+					if (allMitgliedId.length > 0) {
+						qrySelect = "UPDATE meisterschaft SET streichresultat = 1 WHERE eventid in (" + qrySubSelect + ")"
+						qrySelect += " AND mitgliedid in (" + allMitgliedId.join(',') + ")"
+
+						result = await sequelize.query(qrySelect,
+							{
+								type: Sequelize.QueryTypes.UPDATE,
+								plain: false,
+								logging: console.log,
+								raw: true
+							}
+						);
+						
+						allMitgliedId = []
+					}
+				}
+				
+				// Update Ergebnisse, Rowid > ANZAHL_KEGELN => Streichresultat = 1
+				qrySelect = "SELECT id, mitgliedid, (wurf1 + wurf2 + wurf3 + wurf4 + wurf5 + zusatz) as total FROM meisterschaft where eventid in ("
+				qrySelect += qrySubSelect
+				qrySelect += ") and streichresultat = 0 order by 2, 3 desc"
+
+				data = await sequelize.query(qrySelect, 
+					{ 
+						type: Sequelize.QueryTypes.SELECT,
+						plain: false,
+						logging: console.log,
+						raw: true
+					}
+				);
+				if (data.length > 0) {
+					var zwmitgliedid = 0
+					var anzahl = 0
+					var iterator = data.entries();
+					for(let mitglied of iterator) {
+						if (zwmitgliedid != mitglied[1].mitgliedid) {
+							zwmitgliedid = mitglied[1].mitgliedid
+							anzahl = 0
+						}
+						anzahl++
+						if (anzahl > global.Parameter.get('ANZAHL_KEGEL'))
+							allMitgliedId.push(mitglied[1].id)
+					}
+					if (allMitgliedId.length > 0) {
+						qrySelect = "UPDATE meisterschaft SET streichresultat = 1 WHERE id in (" + allMitgliedId.join(',') + ")"
+
+						result = await sequelize.query(qrySelect,
+							{
+								type: Sequelize.QueryTypes.UPDATE,
+								plain: false,
+								logging: console.log,
+								raw: true
+							}
+						);
+						
+						allMitgliedId = []
+					}
+				}
+			} // keine offenen Kegelevents mehr
+		} // nur im aktuellen Jahr
 
 		// alle punkte aus den Anlässen einlesen (ohne Nachkegeln)
-		var qrySelect = "SELECT mitgliedid, sum(wurf1 + wurf2 + wurf3 + wurf4 + wurf5 + zusatz) as punkte, count(eventid) as anzahl FROM meisterschaft where eventid in ("
+		qrySelect = "SELECT mitgliedid, sum(wurf1 + wurf2 + wurf3 + wurf4 + wurf5 + zusatz) as punkte, count(eventid) as anzahl FROM meisterschaft where eventid in ("
 		qrySelect += "SELECT id FROM clubmeisterschaft where year(datum) = " + req.query.jahr + " AND istkegeln = 1 and nachkegeln = 0"
-		qrySelect += ") and punkte > 0 group by mitgliedid"
+		qrySelect += ") and streichresultat = 0 group by mitgliedid"
 
-		var data = await sequelize.query(qrySelect, 
+		data = await sequelize.query(qrySelect, 
 			{ 
 				type: Sequelize.QueryTypes.SELECT,
 				plain: false,
@@ -44,7 +178,7 @@ module.exports = {
 		// alle punkte aus den Nachkegeln lesen
 		qrySelect = "SELECT mitgliedid, sum(wurf1 + wurf2 + wurf3 + wurf4 + wurf5 + zusatz) as punkte FROM meisterschaft where eventid in ("
 		qrySelect += "SELECT id FROM clubmeisterschaft where year(datum) = " + req.query.jahr + " AND istkegeln = 1 and nachkegeln = 1"
-		qrySelect += ") and punkte > 0 group by mitgliedid"
+		qrySelect += ") and streichresultat = 0 group by mitgliedid"
 
 		data = await sequelize.query(qrySelect, 
 			{ 
@@ -61,7 +195,7 @@ module.exports = {
 				var ifound = arMeister.findIndex((element) => element.mitgliedid == mitglied[1].mitgliedid)
 				if (ifound > -1) {
 					var meister = arMeister[ifound]
-					meister.punkte += mitglied[1].punkte
+					meister.punkte += new Number(mitglied[1].punkte)
 					arMeister[ifound] = meister
 				} else {
 					allMitgliedId.push(mitglied[1].mitgliedid)
@@ -72,7 +206,6 @@ module.exports = {
 		}
 
 		// anzahl babeli ermitteln
-		var qrySubSelect = "SELECT id FROM clubmeisterschaft where year(datum) = " + req.query.jahr + " AND istkegeln = 1"
 		qrySelect = ""
 		for (let index = 1; index < 6; index++) {
 			if (index > 1)
@@ -151,7 +284,7 @@ module.exports = {
 
 		// bestehende Daten löschen
 		qrySelect = "DELETE FROM kegelmeister WHERE jahr = " + req.query.jahr;
-		var result = await sequelize.query(qrySelect,
+		result = await sequelize.query(qrySelect,
 			{
 				type: Sequelize.QueryTypes.DELETE,
 				plain: false,
