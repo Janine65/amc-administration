@@ -25,6 +25,7 @@
   "homepage": "https://github.com/Janine65/amc-administration",
   "dependencies": {
     "@mdi/font": "^5.3.45",
+    "@microsoft/office-js": "^1.1.43",
     "argon2": "^0.26.2",
     "body-parser": "^1.19.0",
     "connect-session-sequelize": "^7.0.0",
