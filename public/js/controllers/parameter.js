@@ -1,16 +1,27 @@
 var db = require("../db");
 const { Op, Sequelize } = require("sequelize");
-var getVersion = require("../../../index")
 
 module.exports = {
 	getData: function (req, res) {		
 		db.Parameter.findAll()
 		.then(data => {
 			console.log(data);
-			param = new db.Parameter({key: "Version", value: global.system.version});
-			data.push(param);
-			console.log(data);
-			return res.json(data)
+			var param = new db.Parameter({key: "Version", value: global.system.version});
+			data.push(param);			
+			return res.json(data);
+		})
+		.catch((e) => console.error(e));		
+	},
+
+	getGlobal: function () {		
+		db.Parameter.findAll()
+		.then(data => {
+			global.Parameter.set("Version", global.system.version);
+			data.forEach(param => {
+				global.Parameter.set(param.key, param.value);	
+			});
+			
+			return true;
 		})
 		.catch((e) => console.error(e));		
 	},
@@ -66,13 +77,3 @@ module.exports = {
 	},
 
 };
-
-global.Parameter = new Map();
-db.Parameter.findAll()
-.then(function(lparam){
-	lparam.forEach(param => {
-		global.Parameter.set(param.key, param.value);	
-	});
-})
-.catch((e) => console.error(e));
-

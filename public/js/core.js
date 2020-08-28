@@ -44,8 +44,6 @@ class WXAMC {
     webix.i18n.setLocale("de-DE");
 
     this.parameter = new Map();
-    this.reloadParameters();
-    console.log(this.parameter);
     
 
     // Custom window component so that by default windows will animated when opened and when hidden.
@@ -73,22 +71,19 @@ class WXAMC {
   async reloadParameters() {
 
     const url = "/Parameter/data";
-    const promiseModule = fetch(url)
+    const promiseModule = await fetch(url)
       .then((response) => response.json())
       .catch((error) => webix.message({ type:"error", text: "Fetch Parameter. " + error, expire: -1})
      );
-    Promise.resolve(promiseModule)
+    await Promise.resolve(promiseModule)
       .then((lparam) => {
         console.log('lparam: ',lparam);
         if (lparam != null) {
           wxAMC.version = lparam.pop().value;
           lparam.forEach(param => {
-            console.log(param);
             wxAMC.parameter.set(param.key, param.value);	
-          
-          });
+          })
         }
-        console.log(wxAMC.parameter);
       })
       .catch((e) => webix.message({ type:"error", text: "Resolve Parameter. " + e, expire: -1}));    
   } /* End reloadParameters */
@@ -96,12 +91,15 @@ class WXAMC {
   /**
    * Builds the UI app shell.
    */
-   start() {
+   async start() {
 
     // Instantiate modules.
     for (let moduleName of wxAMC.registeredModules) {
       wxAMC.modules[moduleName] = new wxAMC.moduleClasses[moduleName]();
     }
+
+    await this.reloadParameters();
+    console.log(this.parameter);
 
     // The base layout of the page.
     webix.ui(this.getBaseLayoutConfig());

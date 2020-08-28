@@ -135,7 +135,10 @@ app.post('/Parameter/data', upload.array(), parameter.updateData);
 app.put('/Parameter/data', upload.array(), parameter.updateData);
 app.get('/Parameter/getOneDataByKey', parameter.getOneDataByKey);
 
-console.log(global);
+global.Parameter = new Map();
+parameter.getGlobal();
+
+console.log(global.Parameter);
 
   /**
    * A common handler to deal with DB operation errors.  Returns a 500 and an error object.
