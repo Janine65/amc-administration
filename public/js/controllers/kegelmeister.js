@@ -33,11 +33,11 @@ module.exports = {
 		var qrySelect = ""
 		var data = []
 
-		var qrySubSelect = "SELECT id FROM clubmeisterschaft where year(datum) = " + req.query.jahr + " AND istkegeln = 1"
+		var qrySubSelect = "SELECT id FROM anlaesse where year(datum) = " + req.query.jahr + " AND istkegeln = 1"
 
 		// Streichresultate ermitteln - nur im aktuellen Clubjahr
 		if (req.query.jahr == global.Parameter.get('CLUBJAHR')) {
-			qrySelect = "SELECT count(id) as value from clubmeisterschaft where status = 1 and datum > NOW() and YEAR(`datum`) = " + global.Parameter.get('CLUBJAHR');
+			qrySelect = "SELECT count(id) as value from anlaesse where status = 1 and datum > NOW() and YEAR(`datum`) = " + global.Parameter.get('CLUBJAHR');
 			data = await sequelize.query(qrySelect, 
 				{ 
 					type: Sequelize.QueryTypes.SELECT,
@@ -154,7 +154,7 @@ module.exports = {
 
 		// alle punkte aus den Anlässen einlesen (ohne Nachkegeln)
 		qrySelect = "SELECT mitgliedid, sum(wurf1 + wurf2 + wurf3 + wurf4 + wurf5 + zusatz) as punkte, count(eventid) as anzahl FROM meisterschaft where eventid in ("
-		qrySelect += "SELECT id FROM clubmeisterschaft where year(datum) = " + req.query.jahr + " AND istkegeln = 1 and nachkegeln = 0"
+		qrySelect += "SELECT id FROM anlaesse where year(datum) = " + req.query.jahr + " AND istkegeln = 1 and nachkegeln = 0"
 		qrySelect += ") and streichresultat = 0 group by mitgliedid"
 
 		data = await sequelize.query(qrySelect, 
@@ -177,7 +177,7 @@ module.exports = {
 		
 		// alle punkte aus den Nachkegeln lesen
 		qrySelect = "SELECT mitgliedid, sum(wurf1 + wurf2 + wurf3 + wurf4 + wurf5 + zusatz) as punkte FROM meisterschaft where eventid in ("
-		qrySelect += "SELECT id FROM clubmeisterschaft where year(datum) = " + req.query.jahr + " AND istkegeln = 1 and nachkegeln = 1"
+		qrySelect += "SELECT id FROM anlaesse where year(datum) = " + req.query.jahr + " AND istkegeln = 1 and nachkegeln = 1"
 		qrySelect += ") and streichresultat = 0 group by mitgliedid"
 
 		data = await sequelize.query(qrySelect, 

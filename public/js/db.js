@@ -144,6 +144,7 @@ Anlaesse.init({
   punkte: {type: Sequelize.INTEGER, allowNull: false, defaultValue: 50},
   istkegeln: {type: Sequelize.TINYINT, allowNull: false, defaultValue: 0},
   nachkegeln: {type: Sequelize.TINYINT, allowNull: false, defaultValue: 0},
+  istsamanlass: {type: Sequelize.TINYINT, allowNull: false, defaultValue: 0},
   gaeste: {type: Sequelize.INTEGER, allowNull: true, defaultValue: null,
     set(value) {
       // einen empty String zu Null konvertieren
@@ -179,7 +180,7 @@ Anlaesse.init({
   }, 
   {
     sequelize,
-    tableName: 'clubmeister',
+    tableName: 'anlaesse',
     modelName: 'anlaesse',
     indexes: [{ unique: true, fields: ['datum','name'] }]  
   }

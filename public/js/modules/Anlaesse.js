@@ -90,9 +90,9 @@ custom_checkbox(obj, common, value){
               { id:"gaeste", header:[{text:"Gäste"}],  adjust:true},
               { id:"istkegeln", css:{'text-align':'center'}, header:[{text:"Kegeln?"}], template:this.custom_checkbox},
               { id:"nachkegeln", css:{'text-align':'center'},header:[{text:"Nachkegeln?"}], template:this.custom_checkbox},		
+              { id:"istsamanlass", css:{'text-align':'center'}, header:[{text:"SAM-Anlass?"}], template:this.custom_checkbox},
               { id:"beschreibung", header:[{text:"Beschreibung"}], adjust:"header"},
               { id:"vorjahr", header:[{text:"Vorjahres Termin"}], adjust:true}  
-//              { id:"longname", header:[{text:"Vorjahres Termin"}], adjust:true, template:this.show_vorjahr}  
             ],
             hover: "hoverline",
             on : {
@@ -195,6 +195,11 @@ custom_checkbox(obj, common, value){
                   ]
                 },
                 { view : "radio", name : "nachkegeln", label : "Nachkegeln?", value : "0",
+                  options : [
+                    { id : 0, value : "Nein" }, { id : 1, value : "Ja" }
+                  ]
+                },
+                { view : "radio", name : "istsamanlass", label : "SAM-Anlass?", value : "0",
                   options : [
                     { id : 0, value : "Nein" }, { id : 1, value : "Ja" }
                   ]
@@ -397,6 +402,7 @@ custom_checkbox(obj, common, value){
     $$("moduleAnlaesse-detailsForm").clear();
     $$("moduleAnlaesse-detailsForm").elements.istkegeln.data.value = 0;
     $$("moduleAnlaesse-detailsForm").elements.nachkegeln.data.value = 0;
+    $$("moduleAnlaesse-detailsForm").elements.istsamanlass.data.value = 0;
     $$("moduleAnlaesse-detailsForm").elements.punkte.data.value = 50;
     $$("moduleAnlaesse-deleteButton").disable();
 
@@ -616,6 +622,7 @@ custom_checkbox(obj, common, value){
     anlass.beschreibung = anlassOrig.beschreibung;
     anlass.istkegeln = anlassOrig.istkegeln;
     anlass.nachkegeln = anlassOrig.nachkegeln;
+    anlass.istsammanlass = anlassOrig.istsammanlass;
     anlass.punkte = anlassOrig.punkte;
     anlass.anlaesseId = anlassOrig.id;
 

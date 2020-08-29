@@ -33,7 +33,7 @@ module.exports = {
 
 		// alle punkte aus den Anlässen einlesen
 		var qrySelect = "SELECT mitgliedid, sum(punkte) as punkte, count(eventid) as anzahl FROM meisterschaft where eventid in ("
-		qrySelect += "SELECT id FROM clubmeisterschaft where year(datum) = " + req.query.jahr
+		qrySelect += "SELECT id FROM anlaesse where year(datum) = " + req.query.jahr
 		qrySelect += ") and punkte > 0 group by mitgliedid"
 
 		var data = await sequelize.query(qrySelect, 

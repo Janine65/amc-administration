@@ -19,11 +19,11 @@ module.exports = {
 		 /*
 				 SELECT `anlaesse`.`id`, `anlaesse`.`datum`, `anlaesse`.`name`, `anlaesse`.`beschreibung`, `anlaesse`.`punkte`, `anlaesse`.`istkegeln`, `anlaesse`.`nachkegeln`, `anlaesse`.`gaeste`, `anlaesse`.`anlaesseId`, `anlaesse`.`status`, `anlaesse`.`createdAt`, `anlaesse`.`updatedAt`, 
 				 `linkedEvent`.`id` AS `linkedEvent.id`, `linkedEvent`.`longname` AS `linkedEvent.longname`
-				  FROM `clubmeisterschaft` AS `anlaesse` LEFT OUTER JOIN `clubmeisterschaft` AS `linkedEvent` ON `anlaesse`.`anlaesseId` = `linkedEvent`.`id` 
+				  FROM `anlaesse` AS `anlaesse` LEFT OUTER JOIN `anlaesse` AS `linkedEvent` ON `anlaesse`.`anlaesseId` = `linkedEvent`.`id` 
 				  WHERE `anlaesse`.`datum` >= '2019-01-01' ORDER BY `anlaesse`.`datum` ASC;
 		 */
-		 var qrySelect = "SELECT `anlaesse`.`id`, `anlaesse`.`datum`, `anlaesse`.`name`, `anlaesse`.`beschreibung`, `anlaesse`.`punkte`, `anlaesse`.`istkegeln`, `anlaesse`.`nachkegeln`, `anlaesse`.`gaeste`, `anlaesse`.`anlaesseId`, `anlaesse`.`status`, `anlaesse`.`createdAt`, `anlaesse`.`updatedAt`, `linkedEvent`.`longname` as 'vorjahr'";
-		 qrySelect += " FROM `clubmeisterschaft` AS `anlaesse` LEFT OUTER JOIN `clubmeisterschaft` AS `linkedEvent` ON `anlaesse`.`anlaesseId` = `linkedEvent`.`id`";
+		 var qrySelect = "SELECT `anlaesse`.`id`, `anlaesse`.`datum`, `anlaesse`.`name`, `anlaesse`.`beschreibung`, `anlaesse`.`punkte`, `anlaesse`.`istkegeln`, `anlaesse`.`nachkegeln`, `anlaesse`.`istsamanlass`, `anlaesse`.`gaeste`, `anlaesse`.`anlaesseId`, `anlaesse`.`status`, `anlaesse`.`createdAt`, `anlaesse`.`updatedAt`, `linkedEvent`.`longname` as 'vorjahr'";
+		 qrySelect += " FROM `anlaesse` AS `anlaesse` LEFT OUTER JOIN `anlaesse` AS `linkedEvent` ON `anlaesse`.`anlaesseId` = `linkedEvent`.`id`";
 		 qrySelect += " WHERE YEAR(`anlaesse`.`datum`) >= ";
 		 qrySelect += global.Parameter.get('CLUBJAHR') - 1;
 		 qrySelect += " ORDER BY `anlaesse`.`datum` ASC;"
@@ -44,8 +44,10 @@ module.exports = {
 		// count of SAM_Mitglieder
 		// count of not SAM_Mitglieder
 		
-		var qrySelect = "SELECT 'Anzahl Anlässe im aktuellen Clubjahr' as label, count(id) as value from clubmeisterschaft where status = 1 and YEAR(`datum`) = " + global.Parameter.get('CLUBJAHR');
-		qrySelect += " UNION SELECT 'Anzahl zukünftiger Anlässe im aktuellen Clubjahr', count(id) from clubmeisterschaft where status = 1 and datum > NOW() and YEAR(`datum`) = " + global.Parameter.get('CLUBJAHR');
+		var qrySelect = "SELECT 'Anzahl Anlässe im aktuellen Clubjahr' as label, count(id) as value from anlaesse where status = 1 and YEAR(`datum`) = ";
+		qrySelect += global.Parameter.get('CLUBJAHR') + " AND istsamanlass = 0";
+		qrySelect += " UNION SELECT 'Anzahl zukünftiger Anlässe im aktuellen Clubjahr', count(id) from anlaesse where status = 1 and datum > NOW() and YEAR(`datum`) = ";
+		qrySelect += global.Parameter.get('CLUBJAHR') + " AND istsamanlass = 0";
 
 		sequelize.query(qrySelect, 
 			{ 
@@ -62,7 +64,7 @@ module.exports = {
 	},
 
 	getFKData: function(req, res) {
-		var qrySelect = "SELECT `id`, `longname` as value FROM `clubmeisterschaft` WHERE status = 1 " ;
+		var qrySelect = "SELECT `id`, `longname` as value FROM `anlaesse` WHERE status = 1 " ;
 		if (req.query.filter != null) {
 			var qfield = '%' + req.query.filter.value + '%';
 			qrySelect = qrySelect + " AND lower(`longname`) like '" + qfield + "'";
