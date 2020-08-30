@@ -13,7 +13,7 @@ module.exports = {
 	},
 
 	getOverviewData: async function (req, res) {
-		var qrySelect = "SELECT 'Anzahl Personen in der Wertung der Clubmeisterschaft' as label, count(id) as value FROM clubmeister"
+		var qrySelect = "SELECT 'Clubmeisterschaft' as label, count(id) as value FROM clubmeister"
 		qrySelect += " WHERE jahr = " + global.Parameter.get('CLUBJAHR') + " and status = 1"
 		await sequelize.query(qrySelect, 
 			{ 

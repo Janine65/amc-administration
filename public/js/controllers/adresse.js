@@ -16,9 +16,9 @@ module.exports = {
 		// count of SAM_Mitglieder
 		// count of not SAM_Mitglieder
 		
-		var qrySelect = "SELECT 'Anzahl aktive Mitglieder' as label, count(id) as anzahl FROM adressen  WHERE `austritt` > NOW()";
-		qrySelect += " UNION SELECT 'Anzahl SAM Mitglieder', count(id) FROM adressen WHERE  `austritt` > NOW() and sam_mitglied = 1";
-		qrySelect += " UNION SELECT 'Anzahl Freimitglieder', count(id) FROM adressen WHERE  `austritt` > NOW() and sam_mitglied = 0";
+		var qrySelect = "SELECT 'Aktive Mitglieder' as label, count(id) as anzahl FROM adressen  WHERE `austritt` > NOW()";
+		qrySelect += " UNION SELECT 'SAM Mitglieder', count(id) FROM adressen WHERE  `austritt` > NOW() and sam_mitglied = 1";
+		qrySelect += " UNION SELECT 'Freimitglieder', count(id) FROM adressen WHERE  `austritt` > NOW() and sam_mitglied = 0";
 
 		sequelize.query(qrySelect, 
 			{ 
