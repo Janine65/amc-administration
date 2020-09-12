@@ -12,6 +12,8 @@ const Sequelize = require("sequelize");
 const session = require("express-session");
 const SequelizeStore = require("connect-session-sequelize")(session.Store);
 const system = require("./public/js/system");
+const https = require("https");
+const fs = require('fs');
 //const argon = require("argon2");
 
 // environment variables
@@ -140,20 +142,34 @@ parameter.getGlobal();
 
 console.log(global.Parameter);
 
-  /**
-   * A common handler to deal with DB operation errors.  Returns a 500 and an error object.
-   *
-   * @param inError    Error object from the DB call.
-   * @param inResponse The response being serviced.
-   */
-  const commonErrorHandler = function(inError, inResponse) {
-  
-	console.log(inError);
-	inResponse.status(500);
-	inResponse.send(`{ "error" : "Server error" }`);
-  
-  }; /* End commonErrorHandler(). */
-  
-app.listen(global.gConfig.node_port, () => {
-    console.log('%s listening on port %d in %s mode - Version %s', global.gConfig.app_name, global.gConfig.node_port, app.settings.env, global.system.version);
+/**
+ * A common handler to deal with DB operation errors.  Returns a 500 and an error object.
+ *
+ * @param inError    Error object from the DB call.
+ * @param inResponse The response being serviced.
+ */
+const commonErrorHandler = function(inError, inResponse) {
+
+console.log(inError);
+inResponse.status(500);
+inResponse.send(`{ "error" : "Server error" }`);
+
+}; /* End commonErrorHandler(). */
+
+process.stdout.on('error', function( err ) {
+  if (err.code == "EPIPE") {
+      process.exit(0);
+  }
 });
+
+const options = {
+  key: fs.readFileSync('privkey.pem'),
+  cert: fs.readFileSync('cert.pem'),
+  ca: fs.readFileSync('chain.pem')
+};
+
+https.createServer(options, app).listen(global.gConfig.node_port);
+
+//app.listen(global.gConfig.node_port, () => {
+//    console.log('%s listening on port %d in %s mode - Version %s', global.gConfig.app_name, global.gConfig.node_port, app.settings.env, global.system.version);
+//});
