@@ -2,7 +2,3 @@
 .vscode/settings.json
 public/.DS_Store
 logs/*.txt
-cert.pem
-key.pem
-Swisscom_Saphir_CA_4_der.crt
-Swisscom_Saphir_CA_4_pem.pem
