@@ -60,9 +60,10 @@ app.use(helmet());
 app.use(
   session({
     secret: global.cipher.secret,
+    saveUninitialized: true,
     store: store,
     resave: false, // we support the touch method so per the express-session docs this should be set to false
-    proxy: false, // if you do SSL outside of node.
+    proxy: true, // if you do SSL outside of node.
   })
 );
 
@@ -164,12 +165,10 @@ process.stdout.on('error', function( err ) {
 
 const options = {
   key: fs.readFileSync('privkey.pem'),
-  cert: fs.readFileSync('cert.pem'),
-  ca: fs.readFileSync('chain.pem')
+  cert: fs.readFileSync('cert.pem')
 };
 
-https.createServer(options, app).listen(global.gConfig.node_port);
+https.createServer(options, app).listen(global.gConfig.node_port, () => {
+  console.log('%s listening on port %d in %s mode - Version %s', global.gConfig.app_name, global.gConfig.node_port, app.settings.env, global.system.version);
+});
 
-//app.listen(global.gConfig.node_port, () => {
-//    console.log('%s listening on port %d in %s mode - Version %s', global.gConfig.app_name, global.gConfig.node_port, app.settings.env, global.system.version);
-//});
