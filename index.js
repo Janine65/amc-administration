@@ -166,7 +166,7 @@ process.stdout.on('error', function( err ) {
 const options = {
   key: fs.readFileSync('privkey.pem'),
   cert: fs.readFileSync('cert.pem'),
-  ca: fs.readFileSync('server.key')
+  ca: fs.readFileSync('chain.pem')
 };
 
 https.createServer(options, app).listen(global.gConfig.node_port, () => {
