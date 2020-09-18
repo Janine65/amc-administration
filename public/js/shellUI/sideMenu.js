@@ -23,7 +23,7 @@ wxAMC.getSideMenuConfig = function() {
       rows : [
         { view : "list", scroll : true,
           select : false, type : { height : 40 }, id : "sidemenu_list",
-          template : `<span class="#icon#"></span> #value#`,
+          template : `<span class="#icon# auth-visible"></span> #value#`,
           data : listItems, click : wxAMC.launchModule
         },
         { height : 2, template : "<hr>" },

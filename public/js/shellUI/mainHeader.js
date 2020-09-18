@@ -28,7 +28,25 @@ wxAMC.getMainHeaderConfig = function() {
         { id : "headerLabel", view: "label",
           label : ""
         },
-        { view : "toolbar", id : "taskbar", borderless : true, elements : [ ] },
+        { view : "toolbar", id : "taskbar", borderless : true, 
+        elements : [ ] },
+        { view : "toolbar", id: "auth0", borderless : true, 
+          elements : [ 
+            // login - logoff
+            { view: "button", label : "Login", width : "80", type : "icon",
+              icon : "mdi mdi-login", id : "qsLoginBtn", 
+              click : function(){
+                login();
+              }, css:"auth-invisible"
+            },
+            { view: "button", label : "Logout", width : "80", type : "icon",
+              icon : "mdi mdi-logout", id : "qsLogoutBtn", 
+              click : function(){
+                logout();
+              }, css:"auth-visible"
+            }
+          ] 
+        },
       ]
     };
 

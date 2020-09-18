@@ -13,6 +13,7 @@ const session = require("express-session");
 const SequelizeStore = require("connect-session-sequelize")(session.Store);
 const system = require("./public/js/system");
 const https = require("https");
+const http = require("http");
 const fs = require('fs');
 //const argon = require("argon2");
 
@@ -66,6 +67,15 @@ app.use(
     proxy: true, // if you do SSL outside of node.
   })
 );
+
+app.get("/auth_config.json", (req, res) => {
+  if (process.env.NODE_ENV == 'development') {
+    res.sendFile(path.join(__dirname, "public/assets/auth_config_dev.json"));
+    console.log("auth_config.json: development")
+  }
+  else
+    res.sendFile(path.join(__dirname, "public/assets/auth_config.json"));
+});
 
 const adresse = require("./public/js/controllers/adresse");
 app.get('/Adressen/data', adresse.getData);
@@ -162,14 +172,19 @@ process.stdout.on('error', function( err ) {
       process.exit(0);
   }
 });
-
-const options = {
-  key: fs.readFileSync('privkey.pem'),
-  cert: fs.readFileSync('cert.pem'),
-  ca: fs.readFileSync('chain.pem')
-};
-
-https.createServer(options, app).listen(global.gConfig.node_port, () => {
-  console.log('%s listening on port %d in %s mode - Version %s', global.gConfig.app_name, global.gConfig.node_port, app.settings.env, global.system.version);
-});
+var options;
+if (process.env.NODE_ENV == 'development') {
+   http.createServer(null, app).listen(global.gConfig.node_port, () => {
+    console.log('%s listening on port %d in %s mode - Version %s', global.gConfig.app_name, global.gConfig.node_port, app.settings.env, global.system.version);
+  });
+} else {
+   options = {
+    key: fs.readFileSync('privkey.pem'),
+    cert: fs.readFileSync('cert.pem'),
+    ca: fs.readFileSync('chain.pem')
+  };
+  https.createServer(options, app).listen(global.gConfig.node_port, () => {
+    console.log('%s listening on port %d in %s mode - Version %s', global.gConfig.app_name, global.gConfig.node_port, app.settings.env, global.system.version);
+  });
+}  
 
