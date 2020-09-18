@@ -237,11 +237,18 @@ custom_checkbox(obj, common, value){
             {cols: [ 
                 { id : "moduleAnlaesse-punkteEvent", 
                   view: "label",
-                  label: ""
+                  label: "", css:"event_maxsize"
                 },
                 { id : "moduleAnlaesse-punkteAnzahl", 
                   view: "label",
-                  label: ""
+                  label: "", css:"event_maxsize"
+                },
+                { id: "moduleAnlaesse-anzahlGaeste",
+                  view: "label", 
+                  label: "", css:"event_maxsize"
+                },
+                { view : "button", default : false, label : "Edit", width : "80", type : "icon", disabled: false,
+                  icon : "webix_icon mdi mdi-pencil", click : this.editExisting.bind(this)
                 }
               ]
             },
@@ -308,14 +315,14 @@ custom_checkbox(obj, common, value){
                       { view:"combo", suggest:"/Meisterschaft/getFkData", id: "mitgliedListe", name:"mitgliedId", label:"Teilnehmer", required: true, hidden: true },
                       { view:"text", id: "mitgliedId", name:"fullname", label:"Teilnehmer", disabled: true },
                       { view: "text", type:"number", id: "punkte", name: "punkte", label: "Punkte" },
-                      {view: "fieldset", id: "kegelresultate", label: "Kegelresultate", hidden: true,
+                      { view: "fieldset", id: "kegelresultate", label: "Kegelresultate", hidden: true,
                       body: 
                         { cols: [
-                          { view: "text", id:"wurf1", type:"number", name: "wurf1", label: "", attributes : { maxlength : 1 }},
-                          { view: "text", id:"wurf2", type:"number", name: "wurf2", label: "", attributes : { maxlength : 1 }},
-                          { view: "text", id:"wurf3", type:"number", name: "wurf3", label: "", attributes : { maxlength : 1 }},
-                          { view: "text", id:"wurf4", type:"number", name: "wurf4", label: "", attributes : { maxlength : 1 }},
-                          { view: "text", id:"wurf5", type:"number", name: "wurf5", label: "", attributes : { maxlength : 1 }},
+                          { view: "text", id:"wurf1", name: "wurf1", label: "", attributes : { maxlength : 1 }, pattern: {mask: "#", allow:/[0-9]/g}},
+                          { view: "text", id:"wurf2", name: "wurf2", label: "", attributes : { maxlength : 1 }, pattern: {mask: "#", allow:/[0-9]/g}},
+                          { view: "text", id:"wurf3", name: "wurf3", label: "", attributes : { maxlength : 1 }, pattern: {mask: "#", allow:/[0-9]/g}},
+                          { view: "text", id:"wurf4", name: "wurf4", label: "", attributes : { maxlength : 1 }, pattern: {mask: "#", allow:/[0-9]/g}},
+                          { view: "text", id:"wurf5", name: "wurf5", label: "", attributes : { maxlength : 1 }, pattern: {mask: "#", allow:/[0-9]/g}},
                           { view: "text", name: "zusatz", label: "",  readonly: true},
                           { view: "text", id: "kegelTotal", name: "total", label: "", readonly: true, css: "markedbox"}
                           ]
@@ -427,6 +434,7 @@ custom_checkbox(obj, common, value){
     $$("moduleAnlaesse-punkteForm").disable();
     var longname = new Date(anlass.datum).toLocaleDateString() + ' ' + anlass.name;
     $$("moduleAnlaesse-punkteEvent").setValue("<div style='font-size:20px;'>" + longname + "</div>");
+    $$("moduleAnlaesse-anzahlGaeste").setValue("<div style='font-size:20px;'>Anzahl Gäste: " + anlass.gaeste + "</div>");
 
     var zusatz = [this.anlass.istkegeln ? [this.anlass.nachkegeln ? 0 : 5] : 0];
     $$("punkte")[this.anlass.nachkegeln ? "disable" : "enable"]();
