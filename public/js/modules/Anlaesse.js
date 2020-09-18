@@ -237,15 +237,15 @@ custom_checkbox(obj, common, value){
             {cols: [ 
                 { id : "moduleAnlaesse-punkteEvent", 
                   view: "label",
-                  label: "", css:"event_maxsize"
+                  label: ""
                 },
                 { id : "moduleAnlaesse-punkteAnzahl", 
                   view: "label",
-                  label: "", css:"event_maxsize"
+                  label: ""
                 },
                 { id: "moduleAnlaesse-anzahlGaeste",
                   view: "label", 
-                  label: "", css:"event_maxsize"
+                  label: ""
                 },
                 { view : "button", default : false, label : "Edit", width : "80", type : "icon", disabled: false,
                   icon : "webix_icon mdi mdi-pencil", click : this.editExisting.bind(this)
