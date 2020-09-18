@@ -32,14 +32,11 @@
 .markedbox{
   background-color: rgb(37, 15, 56);
 }
-<<<<<<< Updated upstream
 
 .event_maxsize{
   font-size: 20px;
 }
-=======
 .hidden {
   /* display: none; */
   font-style: italic;
 }
->>>>>>> Stashed changes
