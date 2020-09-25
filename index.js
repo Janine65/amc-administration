@@ -9,8 +9,8 @@ const _ = require("./public/js/cipher");
 const multer = require('multer') // v1.0.5
 const upload = multer() // for parsing multipart/form-data
 const Sequelize = require("sequelize");
-const session = require("express-session");
-const SequelizeStore = require("connect-session-sequelize")(session.Store);
+const expresssession = require("express-session");
+const SequelizeStore = require("connect-session-sequelize")(expresssession.Store);
 const system = require("./public/js/system");
 const https = require("https");
 const fs = require('fs');
@@ -50,7 +50,7 @@ app.use("/", express.static(path.join(__dirname, '/public')));
   
 app.use(helmet());
 app.use(
-  session({
+  expresssession({
     secret: global.cipher.secret,
     saveUninitialized: true,
     store: store,
@@ -84,7 +84,7 @@ function sendEmail(req, res) {
     }
   });
 
-  const info = transporter.sendMail({
+  transporter.sendMail({
         from: global.gConfig.email_from, // sender address
         to: (global.gConfig.email_to == "" ? email.email_to : global.gConfig.email_to), // list of receivers
         subject: email.email_subject, // Subject line
