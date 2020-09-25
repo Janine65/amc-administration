@@ -39,6 +39,7 @@
     "mysql2": "^1.7.0",
     "nedb": "^1.8.0",
     "nodemailer": "^6.4.11",
+    "password": "^0.1.1",
     "project-version": "^2.0.0",
     "sequelize": "^6.3.5",
     "webix": "^7.4.0"

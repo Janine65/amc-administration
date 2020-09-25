@@ -316,6 +316,40 @@ Anlaesse.init({
   }
 );
 
+class Session extends Model {    
+}
+Session.init({
+  sid: {
+    type: Sequelize.STRING
+  },
+  userId: Sequelize.STRING,
+  expires: Sequelize.DATE,
+  data: Sequelize.STRING(50000),
+},
+{
+  sequelize,
+  tableName: 'sessions',
+  modelName: 'Session' 
+});
+
+
+class User extends Model {    
+}
+User.init({
+  userid: Sequelize.STRING, 
+  name: Sequelize.STRING,
+  email: Sequelize.STRING,
+  salt: Sequelize.STRING,
+  password: Sequelize.STRING,
+  role: { type: Sequelize.STRING, default: 'user'}
+},
+{
+  sequelize,
+  tableName: 'user',
+  modelName: 'user' 
+});
+
+
 Adressen.belongsTo(Adressen);
 Adressen.hasMany(Adressen);
 
@@ -325,5 +359,5 @@ Meisterschaft.belongsTo(Adressen, { as: 'teilnehmer', constraints: true, foreign
 
 
 module.exports = {
-  Adressen, Anlaesse, Parameter, Meisterschaft, Clubmeister, Kegelmeister,
+  Adressen, Anlaesse, Parameter, Meisterschaft, Clubmeister, Kegelmeister, User, Session,
 };

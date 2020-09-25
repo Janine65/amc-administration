@@ -25,15 +25,7 @@ const config = require('./config/config.js');
 
 const db = require('./public/js/db')
 
-var Session = global.sequelize.define("Session", {
-  sid: {
-    type: Sequelize.STRING
-  },
-  userId: Sequelize.STRING,
-  expires: Sequelize.DATE,
-  data: Sequelize.STRING(50000),
-});
-
+var Session = db.Session;
 
 function extendDefaultFields(defaults, session) {
   return {
