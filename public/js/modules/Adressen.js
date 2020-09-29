@@ -26,7 +26,7 @@ wxAMC.moduleClasses.Adressen = class {
         return "<div class='webix_icon mdi mdi-checkbox-marked'></div>";
     else
         return "<div class='webix_icon mdi mdi-checkbox-blank-outline'></div>";
-  };
+  }
   
   show_geworben (value, config) {
     if (value.adressenId != "" && value.adressenId != null ) {
@@ -382,8 +382,8 @@ wxAMC.moduleClasses.Adressen = class {
         webix.message({ type:"error", text: "HTTP error " + response.status});  // ***
       }})
     .catch((e) => webix.message("Mail konnte nicht erfolgreich gesendet werden: " + e, "error"));
-    
     Promise.resolve(promiseModule)
+    
     .then((response) => {
       if (!response.ok) {                                  // ***
         webix.message({ type:"error", text: "HTTP error " + response.status});  // ***

@@ -21,11 +21,21 @@ wxAMC.getSideMenuConfig = function() {
     },
     body : {
       rows : [
+        { view : "label", id: "loggedUser", label: "not logged in", height : 20
+        },
+        { height : 2, template : "<hr>" },
         { view : "list", scroll : true,
           select : false, type : { height : 40 }, id : "sidemenu_list",
           template : `<span class="#icon#"></span> #value#`,
-          data : listItems, click : wxAMC.launchModule
+          data : listItems, click : wxAMC.launchModule, css: "authenticate_logged_in hidden"
         },
+        { height : 2, template : "<hr>" },
+        {view : "label", id: "MainMenulogin", label: "Login", icon: "webix_icon mdi mdi-login",
+          click: wxAMC.showLoginGui.bind(this), css: "authenticate_logged_out"},
+        {view : "label", id: "MainMenulogout", label: "Logout", icon: "webix_icon mdi mdi-logout",
+          click: wxAMC.doLogout.bind(this), css: "authenticate_logged_in hidden"},
+        {view : "label", id: "MainMenuregister", label: "Register", icon: "webix_icon mdi mdi-account-plus",
+          click: wxAMC.showRegistGui.bind(this), css: "authenticate_logged_in authenticate_admin hidden"},
         { height : 2, template : "<hr>" },
         { cols : [
           wxAMC.modeSwitchConfig,

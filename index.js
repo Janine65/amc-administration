@@ -14,7 +14,8 @@ const SequelizeStore = require("connect-session-sequelize")(expresssession.Store
 const system = require("./public/js/system");
 const https = require("https");
 const fs = require('fs');
-//const argon = require("argon2");
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
 
 // environment variables
 if (process.env.NODE_ENV == undefined)
@@ -47,17 +48,44 @@ const app = express();
 // 
 app.use(bodyParser.json());
 app.use("/", express.static(path.join(__dirname, '/public')));
-  
+
+var expireDate = new Date();
+expireDate.setDate(expireDate.getDate() + 1);
+
 app.use(helmet());
 app.use(
   expresssession({
     secret: global.cipher.secret,
     saveUninitialized: true,
     store: store,
-    resave: false, // we support the touch method so per the express-session docs this should be set to false
+    resave: true, // we support the touch method so per the express-session docs this should be set to false
     proxy: true, // if you do SSL outside of node.
+    cookie: { expires: expireDate }
   })
 );
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+const userRouter = require('./public/js/controllers/user');
+//renders register view
+app.get('/user/register', userRouter.registerView);
+app.post('/user/register', userRouter.registerPost);
+app.post('/user/login', userRouter.loginUser);
+app.post('/user/logout',function(req, res){
+  req.logout();
+  res.redirect('/');
+});
+
+
+passport.serializeUser(function(user, done) {
+  done(null, {id: user.id});
+});
+passport.deserializeUser(function(user, done) {
+  done(null, {id: user.id});
+});
+
+
 
 const adresse = require("./public/js/controllers/adresse");
 app.get('/Adressen/data', adresse.getData);

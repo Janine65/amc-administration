@@ -1,4 +1,7 @@
+const { request } = require('express');
 const { Sequelize, Model } = require('sequelize');
+const DataTypes = require('sequelize').DataTypes;
+const UUIDV4 = require('uuid').v4;
 
 const sequelize = new Sequelize(global.gConfig.database, global.gConfig.db_user, global.cipher.decrypt(global.gConfig.db_pwd), {
   host:"localhost", port:global.gConfig.port,
@@ -336,12 +339,15 @@ Session.init({
 class User extends Model {    
 }
 User.init({
-  userid: Sequelize.STRING, 
-  name: Sequelize.STRING,
-  email: Sequelize.STRING,
-  salt: Sequelize.STRING,
-  password: Sequelize.STRING,
-  role: { type: Sequelize.STRING, default: 'user'}
+  userid: { type: DataTypes.UUID,
+    allowNull: false
+  }, 
+  name: DataTypes.STRING,
+  email: DataTypes.STRING,
+  salt: DataTypes.STRING,
+  password: DataTypes.STRING,
+  role: { type: DataTypes.ENUM('user','admin'), default: 'user'},
+  last_login: DataTypes.DATE
 },
 {
   sequelize,

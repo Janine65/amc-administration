@@ -1,5 +1,4 @@
 
-
 class WXAMC {
 
   /**
@@ -45,6 +44,11 @@ class WXAMC {
 
     this.parameter = new Map();
     
+    this.registGui = null;
+    this.loginGui = null;
+    this.isAuthenticated = false;
+    this.loggedUser = "";
+    this.UserRole = "";
 
     // Custom window component so that by default windows will animated when opened and when hidden.
     webix.protoUI({
@@ -489,11 +493,66 @@ class WXAMC {
       // Rebuild the UI (also effectively resets all modules).
       wxAMC.start();
 
-  }; /* End switchMode(). */
+  } /* End switchMode(). */
 
+  showRegistGui() {
+    if (wxAMC.registGui == null)
+      return;
 
+    webix.ui(wxAMC.registGui).show();
+  }
+
+  showLoginGui() {
+    if (wxAMC.loginGui == null)
+      return;
+
+    webix.ui(wxAMC.loginGui).show();
+    $$("login-detailsform").focus("email"); 
+  }
+
+  doLogout() {
+    const url = "/user/logout";
+    fetch(url, {
+      method: 'POST' // *GET, POST, PUT, DELETE, etc.
+    })
+    .then(function(resp) {
+        if (resp.ok) {
+            webix.message("Bye bye " + wxAMC.loggedUser, "Info");
+            wxAMC.isAuthenticated = false;
+            wxAMC.loggedUser = "";
+            wxAMC.UserRole = "";
+            wxAMC.setHidden();
+        }
+    })
+    .catch((e) => console.error(e));  // ***
+  
+
+  } /* End doLogout */
+
+  
+  setHidden() {
+
+    if (wxAMC.isAuthenticated) {
+      eachElement(".authenticate_logged_out", (e) => e.classList.add("hidden"));
+      eachElement(".authenticate_logged_in", (e) => e.classList.remove("hidden"));
+      $$("loggedUser").setValue(wxAMC.loggedUser);
+
+      if (wxAMC.UserRole != "admin")
+        eachElement(".authenticate_admin", (e) => e.classList.add("hidden"));
+    } else {
+      eachElement(".authenticate_logged_in", (e) => e.classList.add("hidden"));
+      eachElement(".authenticate_logged_out", (e) => e.classList.remove("hidden"));
+      $$("loggedUser").setValue("not logged in");
+    }
+  } /* End setHidden */
 } /* End WXAMC. */
 
 
 // The one and only instance of WXAMC.
 const wxAMC = new WXAMC();
+const eachElement = (selector, fn) => {
+  for (let e of document.querySelectorAll(selector)) {
+    fn(e);
+  }
+}; /* End eachElement */
+

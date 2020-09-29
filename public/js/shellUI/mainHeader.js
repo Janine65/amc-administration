@@ -28,7 +28,9 @@ wxAMC.getMainHeaderConfig = function() {
         { id : "headerLabel", view: "label",
           label : ""
         },
-        { view : "toolbar", id : "taskbar", borderless : true, elements : [ ] },
+        { view : "toolbar", id : "taskbar", borderless : true, 
+          elements : [ 
+        ] },
       ]
     };
 
