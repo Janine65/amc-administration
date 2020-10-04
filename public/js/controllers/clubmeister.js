@@ -48,7 +48,7 @@ module.exports = {
 			var iterator = data.entries();
 			for(let mitglied of iterator) {
 				allMitgliedId.push(mitglied[1].mitgliedid)
-				var meister = {jahr: req.query.jahr, mitgliedid: mitglied[1].mitgliedid, punkte: new Number(mitglied[1].punkte), anlaesse: new Number(mitglied[1].anzahl), werbungen: 0, mitglieddauer: 0}
+				var meister = {jahr: req.query.jahr, mitgliedid: mitglied[1].mitgliedid, punkte: Number(mitglied[1].punkte), anlaesse: Number(mitglied[1].anzahl), werbungen: 0, mitglieddauer: 0}
 				arMeister.push(meister);
 			}
 		}
@@ -70,18 +70,18 @@ module.exports = {
 		);
 		
 		if (data.length > 0) {
-			var iterator = data.entries();
+			iterator = data.entries();
 			for(let mitglied of iterator) {
-				lPunkte = mitglied[1].anzahl * 50
+				let lPunkte = mitglied[1].anzahl * 50
 				var ifound = arMeister.findIndex((element) => element.mitgliedid == mitglied[1].mitgliedid)
 				if (ifound > -1) {
-					var meister = arMeister[ifound]
-					meister.werbungen = new Number(mitglied[1].anzahl)
+					meister = arMeister[ifound]
+					meister.werbungen = Number(mitglied[1].anzahl)
 					meister.punkte = mitglied[1].punkte + lPunkte
 					arMeister[ifound] = meister
 				} else {
 					allMitgliedId.push(mitglied[1].mitgliedid)
-					var meister = {jahr: req.query.jahr, mitgliedid: mitglied[1].mitgliedid, punkte: new Number(mitglied[1].punkte), anlaesse: 0, werbungen: new Number(mitglied[1].anzahl), mitglieddauer: 0}
+					meister = {jahr: req.query.jahr, mitgliedid: mitglied[1].mitgliedid, punkte: Number(mitglied[1].punkte), anlaesse: 0, werbungen: Number(mitglied[1].anzahl), mitglieddauer: 0}
 					arMeister.push(meister);
 				}
 			}
@@ -101,15 +101,15 @@ module.exports = {
 				}
 			);
 			if (data.length > 0) {
-				var iterator = data.entries();
+				iterator = data.entries();
 				for(let mitglied of iterator) {
-						var ifound = arMeister.findIndex((element) => element.mitgliedid == mitglied[1].id)
+						ifound = arMeister.findIndex((element) => element.mitgliedid == mitglied[1].id)
 					if (ifound > -1) {
-						var meister = arMeister[ifound]
+						meister = arMeister[ifound]
 						meister.mnr = mitglied[1].mnr
 						meister.vorname = mitglied[1].vorname
 						meister.nachname = mitglied[1].name
-						meister.mitglieddauer = new Number(mitglied[1].mitglieddauer)
+						meister.mitglieddauer = Number(mitglied[1].mitglieddauer)
 						arMeister[ifound] = meister
 					} else {
 						console.error('clubmeister.js/calcMeister: Beim Abfüllen der Mitglieddaten ist ein Fehler aufgetreten');
@@ -149,13 +149,13 @@ module.exports = {
 			qrySelect = "INSERT INTO clubmeister (jahr, rang, vorname, nachname, mitgliedid, punkte, anlaesse, werbungen, mitglieddauer, status) VALUES "
 			const cMinPunkte = arMeister[0].punkte * 0.4;
 			var status = 1;
-			arMeister.forEach((meister, ind) => {
+			arMeister.forEach((meister2, ind) => {
 				if (ind > 0) {
 					qrySelect += ","
-					status = meister.punkte >= cMinPunkte;
+					status = meister2.punkte >= cMinPunkte;
 				}
-				qrySelect += "(" + req.query.jahr + "," + (ind + 1) + ",'" + meister.vorname + "','" + meister.nachname + "'," + meister.mitgliedid
-				qrySelect += "," + meister.punkte + "," + meister.anlaesse + "," + meister.werbungen + "," + meister.mitglieddauer + "," + status + ")"			
+				qrySelect += "(" + req.query.jahr + "," + (ind + 1) + ",'" + meister2.vorname + "','" + meister2.nachname + "'," + meister2.mitgliedid
+				qrySelect += "," + meister2.punkte + "," + meister2.anlaesse + "," + meister2.werbungen + "," + meister2.mitglieddauer + "," + status + ")"			
 			});
 			result = await sequelize.query(qrySelect,
 				{

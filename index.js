@@ -55,10 +55,11 @@ expireDate.setDate(expireDate.getDate() + 1);
 app.use(helmet());
 app.use(
   expresssession({
+    key: 'user_sid',
     secret: global.cipher.secret,
     saveUninitialized: true,
     store: store,
-    resave: true, // we support the touch method so per the express-session docs this should be set to false
+    resave: false, // we support the touch method so per the express-session docs this should be set to false
     proxy: true, // if you do SSL outside of node.
     cookie: { expires: expireDate }
   })
@@ -112,8 +113,19 @@ function sendEmail(req, res) {
     }
   });
 
+  let email_from = global.gConfig.email_from;
+  if (email.email_signature != "") {
+    let email_signature = fs.readFileSync("./public/assets/" + email.email_signature + ".html")
+    email.email_body += "<p>" + email_signature + "</p>";
+
+    if (email.email_signature == "JanineFranken") {
+      email_from = "janine@automoto-sr.info"
+    }
+  }
+  // console.log(email);
+
   transporter.sendMail({
-        from: global.gConfig.email_from, // sender address
+        from: email_from, // sender address
         to: (global.gConfig.email_to == "" ? email.email_to : global.gConfig.email_to), // list of receivers
         subject: email.email_subject, // Subject line
         text: decodeURI(email.email_body), // plain text body

@@ -2,3 +2,4 @@
 .vscode/settings.json
 public/.DS_Store
 logs/*.txt
+*.log

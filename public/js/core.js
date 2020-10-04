@@ -1,33 +1,36 @@
-
 class WXAMC {
 
   /**
    * Constructor.
    */
-   constructor() {
+  constructor() {
 
     // The predefined Webix isNumber and isEmail validation functions count a blank field as invalid, but in some cases
     // we don't want that, we want blank to be considered valid, so we'll provide a new validation function here.
-    webix.rules.isNumberOrBlank = function(inValue) {
-      if (inValue == "") { return true; }
+    webix.rules.isNumberOrBlank = function (inValue) {
+      if (inValue == "") {
+        return true;
+      }
       return webix.rules.isNumber(inValue);
     };
-    webix.rules.isEmailOrBlank = function(inValue) {
-      if (inValue == "") { return true; }
+    webix.rules.isEmailOrBlank = function (inValue) {
+      if (inValue == "") {
+        return true;
+      }
       return webix.rules.isEmail(inValue);
     };
 
     // Module classes.
-    this.moduleClasses = { };
+    this.moduleClasses = {};
 
     // Loaded modules.
-    this.modules = { };
+    this.modules = {};
 
     // The currently active module, if any.
     this.activeModule = null;
 
     // Every module "registers" itself with wxAMC by adding itself here.
-    this.registeredModules = [ ];
+    this.registeredModules = [];
 
     // The current UI type ("mobile" or "desktop").
     if (webix.env.mobile) {
@@ -43,7 +46,7 @@ class WXAMC {
     webix.i18n.setLocale("de-DE");
 
     this.parameter = new Map();
-    
+
     this.registGui = null;
     this.loginGui = null;
     this.isAuthenticated = false;
@@ -52,14 +55,14 @@ class WXAMC {
 
     // Custom window component so that by default windows will animated when opened and when hidden.
     webix.protoUI({
-      name : "ani-window",
-      $init : function() {
-        this.$ready.push(function() {
-          this.attachEvent("onShow", function() {
+      name: "ani-window",
+      $init: function () {
+        this.$ready.push(function () {
+          this.attachEvent("onShow", function () {
             let base = this.$view.className.split("animated")[0];
             this.$view.className = base + " animated bounceIn";
           });
-          this.attachEvent("onHide", function() {
+          this.attachEvent("onHide", function () {
             this.$view.style.display = "block";
             this.$view.className = this.$view.className + " animated bounceOut";
           });
@@ -77,25 +80,32 @@ class WXAMC {
     const url = "/Parameter/data";
     const promiseModule = await fetch(url)
       .then((response) => response.json())
-      .catch((error) => webix.message({ type:"error", text: "Fetch Parameter. " + error, expire: -1})
-     );
+      .catch((error) => webix.message({
+        type: "error",
+        text: "Fetch Parameter. " + error,
+        expire: -1
+      }));
     await Promise.resolve(promiseModule)
       .then((lparam) => {
-        console.log('lparam: ',lparam);
+        console.log('lparam: ', lparam);
         if (lparam != null) {
           wxAMC.version = lparam.pop().value;
           lparam.forEach(param => {
-            wxAMC.parameter.set(param.key, param.value);	
+            wxAMC.parameter.set(param.key, param.value);
           })
         }
       })
-      .catch((e) => webix.message({ type:"error", text: "Resolve Parameter. " + e, expire: -1}));    
+      .catch((e) => webix.message({
+        type: "error",
+        text: "Resolve Parameter. " + e,
+        expire: -1
+      }));
   } /* End reloadParameters */
-    
+
   /**
    * Builds the UI app shell.
    */
-   async start() {
+  async start() {
 
     // Instantiate modules.
     for (let moduleName of wxAMC.registeredModules) {
@@ -114,6 +124,27 @@ class WXAMC {
     // Populate the day-at-a-glance screen.
     wxAMC.dayAtAGlance();
 
+    if (window.PasswordCredential) {
+      if (!wxAMC.isAuthenticated) {
+        navigator.credentials.get({
+          password: true,
+          mediation: 'silent'
+        }).then(c => {
+          if (c) {
+            if (c.type == 'password')
+              return doLogin(c);
+          }
+          return Promise.resolve();
+        }).then(profile => {
+          if (profile) {
+            doLogin(profile);
+          }
+        }).catch(error => {
+          console.log('Sign-in Failed');
+        });
+      }
+    }
+
   } /* End start(). */
 
 
@@ -125,7 +156,9 @@ class WXAMC {
   async launchModule(inModuleName) {
 
     // Don't trigger on initial click of the top-level menu item.
-    if (inModuleName === "Modules") { return; }
+    if (inModuleName === "Modules") {
+      return;
+    }
 
     // Mobile mode.
     if (wxAMC.uiType === "mobile") {
@@ -149,7 +182,7 @@ class WXAMC {
       $$(`module${inModuleName}-itemsCell`).show();
       $$(`module${inModuleName}-container`).show();
 
-    // Desktop mode.
+      // Desktop mode.
     } else {
 
       // Hide sidemenu.
@@ -163,7 +196,7 @@ class WXAMC {
         moduleWindow.show();
         return;
 
-      // Module window doesn't exist yet, built it.
+        // Module window doesn't exist yet, built it.
       } else {
 
         // Get module's app config.
@@ -188,23 +221,36 @@ class WXAMC {
 
         // Create a window with the app's layout inside it.
         webix.ui({
-          view : "ani-window", move : true, width : winWidth, height : winHeight,
-          left : centerX, top : centerY,
-          resize : true, id : `moduleWindow-${inModuleName}`, toFront : true,
-          fullscreen : false,
-          head : {
-            view : "toolbar",
-            cols : [
-              { view : "label", id: inModuleName,  label: moduleUIConfig.winLabel },
-              { view : "icon", icon : "webix_icon mdi mdi-window-minimize",
-                click : function() {
+          view: "ani-window",
+          move: true,
+          width: winWidth,
+          height: winHeight,
+          left: centerX,
+          top: centerY,
+          resize: true,
+          id: `moduleWindow-${inModuleName}`,
+          toFront: true,
+          fullscreen: false,
+          head: {
+            view: "toolbar",
+            cols: [{
+                view: "label",
+                id: inModuleName,
+                label: moduleUIConfig.winLabel
+              },
+              {
+                view: "icon",
+                icon: "webix_icon mdi mdi-window-minimize",
+                click: function () {
                   // Hide the window and toggle it's taskbar button.
                   $$(`moduleWindow-${inModuleName}`).hide();
                   $$(`moduleTasbbarButton-${inModuleName}`).toggle();
                 }
               },
-              { view : "icon", icon : "webix_icon mdi mdi-window-maximize",
-                click : function() {
+              {
+                view: "icon",
+                icon: "webix_icon mdi mdi-window-maximize",
+                click: function () {
                   // Reconfigure the module's window to be full-screen and resize it.
                   const win = $$(`moduleWindow-${inModuleName}`);
                   win.config.fullscreen = !win.config.fullscreen;
@@ -224,8 +270,10 @@ class WXAMC {
                   this.blur();
                 }
               },
-              { view : "icon", icon : "webix_icon mdi mdi-window-close",
-                click : function() {
+              {
+                view: "icon",
+                icon: "webix_icon mdi mdi-window-close",
+                click: function () {
                   // Close the window and remove taskbar button.
                   $$(`moduleWindow-${inModuleName}`).close();
                   $$("taskbar").removeView(`moduleTasbbarButton-${inModuleName}`);
@@ -233,18 +281,22 @@ class WXAMC {
               }
             ]
           },
-          body : moduleUIConfig
+          body: moduleUIConfig
         }).show();
 
         // Add a taskbar button for this module.
         const taskbar = $$("taskbar");
         const moduleButton = webix.ui({
-          id : `moduleTasbbarButton-${inModuleName}`,
-          view : "toggle", type : "icon", width : 140, height : 50,
-          icon : moduleUIConfig.winIcon, label : moduleUIConfig.winLabel,
-          click : function() {
+          id: `moduleTasbbarButton-${inModuleName}`,
+          view: "toggle",
+          type: "icon",
+          width: 140,
+          height: 50,
+          icon: moduleUIConfig.winIcon,
+          label: moduleUIConfig.winLabel,
+          click: function () {
             // Hide or show the module's window based on the CURRENT state of the button.
-            const moduleName =  this.config.id.split('-')[1];
+            const moduleName = this.config.id.split('-')[1];
             if (this.getValue() === 1) {
               $$(`moduleWindow-${moduleName}`).hide();
             } else {
@@ -318,7 +370,7 @@ class WXAMC {
    */
   objectAsArray(inObject) {
 
-    const array = [ ];
+    const array = [];
 
     for (const key in inObject) {
       if (inObject.hasOwnProperty(key)) {
@@ -338,15 +390,18 @@ class WXAMC {
    * @return           The data as an object.
    */
   async getModuleData(inModuleName) {
-  
-    const url = "/"+inModuleName+"/data";
+
+    const url = "/" + inModuleName + "/data";
 
     fetch(url)
-      .then(function(response) {
-      //  console.log(response);
+      .then(function (response) {
+        //  console.log(response);
         return response.json();
-      }).catch(function(error) {
-        webix.message({type : "error", text : error});
+      }).catch(function (error) {
+        webix.message({
+          type: "error",
+          text: error
+        });
       });
 
   } /* End getModuleData(). */
@@ -361,48 +416,61 @@ class WXAMC {
   async saveHandler(inModuleName, inFormID) {
     var itemData;
     // Merge all forms together.  Usually there's just one, but some modules may have more than one.
-      if ($$(inFormID).isDirty()) {
-        itemData = $$(inFormID).getValues();
-      } else {
-        webix.message({type : "info", text : "Keine Änderungen vorgenommen"});
-        $$(`module${inModuleName}-itemsCell`).show();
-        return;
-      }
+    if ($$(inFormID).isDirty()) {
+      itemData = $$(inFormID).getValues();
+    } else {
+      webix.message({
+        type: "info",
+        text: "Keine Änderungen vorgenommen"
+      });
+      $$(`module${inModuleName}-itemsCell`).show();
+      return;
+    }
 
-    console.log("saveHandler: itemData: ",itemData);
-    const url = "/"+inModuleName+"/data";
+    console.log("saveHandler: itemData: ", itemData);
+    const url = "/" + inModuleName + "/data";
 
     var smethond = (wxAMC.modules[inModuleName].editingID > 0 ? "PUT" : "POST");
 
     fetch(url, {
-      method: smethond, // *GET, POST, PUT, DELETE, etc.
-      mode: 'cors', // no-cors, *cors, same-origin
-      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-      credentials: 'same-origin', // include, *same-origin, omit
-      headers: {
-        'Content-Type': 'application/json'
-        // 'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      redirect: 'follow', // manual, *follow, error
-      referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-      body: JSON.stringify(itemData) // body data type must match "Content-Type" header
-    })
-    .then((response) => {
-      if (!response.ok) {                                  // ***
-        webix.message({ type:"error", text: "HTTP error " + response.status});  // ***
-      }})
-    .then(function(){
-      // Refresh the module's summary list and return to that list.
-      wxAMC.modules[inModuleName].refreshData();
-      $$(`module${inModuleName}-itemsCell`).show();
+        method: smethond, // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, *cors, same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'same-origin', // include, *same-origin, omit
+        headers: {
+          'Content-Type': 'application/json'
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        redirect: 'follow', // manual, *follow, error
+        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+        body: JSON.stringify(itemData) // body data type must match "Content-Type" header
+      })
+      .then((response) => {
+        if (!response.ok) { // ***
+          webix.message({
+            type: "error",
+            text: "HTTP error " + response.status
+          }); // ***
+        }
+      })
+      .then(function () {
+        // Refresh the module's summary list and return to that list.
+        wxAMC.modules[inModuleName].refreshData();
+        $$(`module${inModuleName}-itemsCell`).show();
 
-      // Give the day-at-a-glance screen a chance to update (needed for desktop mode).
-      wxAMC.dayAtAGlance();
+        // Give the day-at-a-glance screen a chance to update (needed for desktop mode).
+        wxAMC.dayAtAGlance();
 
-      // Finally, show a completion message.
-      webix.message({ type : "success", text : "gesichert" });
-    })
-    .catch((e) => webix.message({type : "error", text : e}));
+        // Finally, show a completion message.
+        webix.message({
+          type: "success",
+          text: "gesichert"
+        });
+      })
+      .catch((e) => webix.message({
+        type: "error",
+        text: e
+      }));
 
   } /* End saveHandler(). */
 
@@ -414,38 +482,52 @@ class WXAMC {
   async deleteHandler(inModuleName) {
 
     webix.html.addCss(webix.confirm({
-      title : `Please Confirm`, ok : "Yes", cancel : "No", type : "confirm-warning",
-      text : `Are you sure you want to delete this item?`, width : 300,
-      callback : function(inResult) {
+      title: `Please Confirm`,
+      ok: "Yes",
+      cancel: "No",
+      type: "confirm-warning",
+      text: `Are you sure you want to delete this item?`,
+      width: 300,
+      callback: function (inResult) {
         // Delete confirmed.
         if (inResult) {
-          const url = "/"+inModuleName+"/data/";
+          const url = "/" + inModuleName + "/data/";
           var anlass = $$(`module${inModuleName}-items`).getSelectedItem();
           fetch(url, {
-            method: 'DELETE', // *GET, POST, PUT, DELETE, etc.
-            mode: 'cors', // no-cors, *cors, same-origin
-            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: 'same-origin', // include, *same-origin, omit
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            redirect: 'follow', // manual, *follow, error
-            referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-            body: JSON.stringify(anlass) // body data type must match "Content-Type" header
-          })
-          .then((response) => {
-            if (!response.ok) {                                  // ***
-              webix.message({ type:"error", text: "HTTP error " + response.status});  // ***
-            }})
-        .then(function(){
+              method: 'DELETE', // *GET, POST, PUT, DELETE, etc.
+              mode: 'cors', // no-cors, *cors, same-origin
+              cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+              credentials: 'same-origin', // include, *same-origin, omit
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              redirect: 'follow', // manual, *follow, error
+              referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+              body: JSON.stringify(anlass) // body data type must match "Content-Type" header
+            })
+            .then((response) => {
+              if (!response.ok) { // ***
+                webix.message({
+                  type: "error",
+                  text: "HTTP error " + response.status
+                }); // ***
+              }
+            })
+            .then(function () {
               // Refresh the module's summary list and return to that list.
               wxAMC.modules[inModuleName].refreshData();
               // Give the day-at-a-glance screen a chance to update (needed for desktop mode).
               wxAMC.dayAtAGlance();
               // Finally, show a completion message.
-              webix.message({ type : "success", text : "gelöscht" });
+              webix.message({
+                type: "success",
+                text: "gelöscht"
+              });
             })
-          .catch((e) => webix.message({ type:"error", text: e}));      
+            .catch((e) => webix.message({
+              type: "error",
+              text: e
+            }));
         }
       }
     }), "animated bounceIn");
@@ -458,31 +540,37 @@ class WXAMC {
    */
   switchMode() {
 
-      // Hide the sidemenu (whether it's showing or even valid in the current mode or not).
-      $$("sidemenu").hide();
+    // Hide the sidemenu (whether it's showing or even valid in the current mode or not).
+    $$("sidemenu").hide();
 
-      // Destroy any existing module windows.
-      for (let moduleName of wxAMC.registeredModules) {
-        let moduleWindow = $$(`moduleWindow-${moduleName}`);
-        if (moduleWindow) { moduleWindow.close(); }
+    // Destroy any existing module windows.
+    for (let moduleName of wxAMC.registeredModules) {
+      let moduleWindow = $$(`moduleWindow-${moduleName}`);
+      if (moduleWindow) {
+        moduleWindow.close();
       }
+    }
 
-      // Make sure there's no active module.
-      wxAMC.activeModule = null;
+    // Make sure there's no active module.
+    wxAMC.activeModule = null;
 
-      // Destroy existing base layout.
-      $$("baseLayout").destructor();
-      $$("sidemenu").destructor();
+    // Destroy existing base layout.
+    $$("baseLayout").destructor();
+    $$("sidemenu").destructor();
 
 
-      // Switch UI type.
-      switch (this.getValue()) {
-        case 0 : wxAMC.uiType = "mobile"; break;
-        case 1 : wxAMC.uiType = "desktop"; break;
-      }
+    // Switch UI type.
+    switch (this.getValue()) {
+      case 0:
+        wxAMC.uiType = "mobile";
+        break;
+      case 1:
+        wxAMC.uiType = "desktop";
+        break;
+    }
 
-      // Rebuild the UI (also effectively resets all modules).
-      wxAMC.start();
+    // Rebuild the UI (also effectively resets all modules).
+    wxAMC.start();
 
   } /* End switchMode(). */
 
@@ -497,30 +585,131 @@ class WXAMC {
     if (wxAMC.loginGui == null)
       return;
 
+    // Hide the sidemenu (whether it's showing or even valid in the current mode or not).
+    $$("sidemenu").hide();
+
+    if (window.PasswordCredential) {
+      if (!wxAMC.isAuthenticated) {
+        navigator.credentials.get({
+          password: true,
+          mediation: 'silent'
+        }).then(c => {
+          if (c) {
+            if (c.type == 'password')
+              return doLogin(c);
+          }
+          return Promise.resolve();
+        }).then(profile => {
+          if (profile) {
+            doLogin(profile);
+          }
+        }).catch(error => {
+          showError('Sign-in Failed');
+        });
+      }
+    }
+
     webix.ui(wxAMC.loginGui).show();
-    $$("login-detailsform").focus("email"); 
   }
 
+
   doLogout() {
+    // Hide the sidemenu (whether it's showing or even valid in the current mode or not).
+    $$("sidemenu").hide();
+
     const url = "/user/logout";
     fetch(url, {
-      method: 'POST' // *GET, POST, PUT, DELETE, etc.
-    })
-    .then(function(resp) {
+        method: 'POST' // *GET, POST, PUT, DELETE, etc.
+      })
+      .then(function (resp) {
         if (resp.ok) {
-            webix.message("Bye bye " + wxAMC.loggedUser, "Info");
-            wxAMC.isAuthenticated = false;
-            wxAMC.loggedUser = "";
-            wxAMC.UserRole = "";
-            wxAMC.setHidden();
+          webix.message("Bye bye " + wxAMC.loggedUser, "Info");
+          wxAMC.isAuthenticated = false;
+          wxAMC.loggedUser = "";
+          wxAMC.UserRole = "";
+          wxAMC.setHidden();
+          if (navigator.credentials && navigator.credentials.preventSilentAccess) {
+            navigator.credentials.preventSilentAccess();
+          }
         }
-    })
-    .catch((e) => console.error(e));  // ***
-  
+      })
+      .catch((e) => console.error(e)); // ***
+
 
   } /* End doLogout */
 
-  
+  doLogin(cred) {
+    var user;
+
+    if (cred === undefined || typeof cred == 'string') {
+      user = $$("login-detailsform").getValues();
+
+      if (user.username == "" || user.password == "") {
+        $$("message").setValue("Not all fields are filled");
+        return;
+      }
+      user.email = user.username;
+    } else {
+      console.log(cred);
+    }
+
+    const url = "/user/login";
+
+    $$("message").setValue("")
+
+    const promiseModule = fetch(url, {
+        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, *cors, same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'include', // include, *same-origin, omit
+        headers: {
+          'Content-Type': 'application/json'
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        redirect: 'follow', // manual, *follow, error
+        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+        body: JSON.stringify(user) // body data type must match "Content-Type" header
+      })
+      .then(resp => {
+        if (!resp.ok) {
+          $$("message").setValue("an error occurred while creating user");
+        }
+        return resp.json();
+      })
+      .catch((e) => $$("message").setValue(e)); // ***
+
+    Promise.resolve(promiseModule)
+      .then(function (resp) {
+        if (resp.status == 'error') {
+          $$("message").setValue(resp.message);
+        } else {
+          wxAMC.isAuthenticated = true;
+          wxAMC.loggedUser = resp.name;
+          wxAMC.UserRole = resp.role;
+          webix.message("Welcome " + wxAMC.loggedUser, "Info");
+          wxAMC.setHidden();
+          if (window.PasswordCredential) {
+            var data = {
+              id: resp.email,
+              name: resp.name,
+              password: resp.password
+            }
+            var creds = new PasswordCredential(data);
+            navigator.credentials.store(creds)
+              .then(
+                closeWindow()
+              )
+          } else {
+            closeWindow();
+            return Promise.resolve(resp);
+          }
+        }
+      })
+      .catch((e) => $$("message").setValue(e)); // ***;
+
+  }
+
+
   setHidden() {
 
     if (wxAMC.isAuthenticated) {
@@ -529,14 +718,14 @@ class WXAMC {
       $$("loggedUser").setValue(wxAMC.loggedUser);
 
       for (let moduleName of wxAMC.registeredModules) {
-        console.log('hotkey: ',moduleName,wxAMC.modules[moduleName].getUIConfig().winHotkey);
-        webix.UIManager.addHotKey(wxAMC.modules[moduleName].getUIConfig().winHotkey, 
-          function(code, e) {
+        console.log('hotkey: ', moduleName, wxAMC.modules[moduleName].getUIConfig().winHotkey);
+        webix.UIManager.addHotKey(wxAMC.modules[moduleName].getUIConfig().winHotkey,
+          function (code, e) {
             wxAMC.launchModule(moduleName);
           }
         );
       }
-  
+
       if (wxAMC.UserRole != "admin")
         eachElement(".authenticate_admin", (e) => e.classList.add("hidden"));
     } else {
@@ -544,14 +733,14 @@ class WXAMC {
       eachElement(".authenticate_logged_out", (e) => e.classList.remove("hidden"));
       $$("loggedUser").setValue("not logged in");
       for (let moduleName of wxAMC.registeredModules) {
-        console.log('hotkey: ',moduleName,wxAMC.modules[moduleName].getUIConfig().winHotkey);
-        webix.UIManager.removeHotKey(wxAMC.modules[moduleName].getUIConfig().winHotkey, 
-          function(code, e) {
+        console.log('hotkey: ', moduleName, wxAMC.modules[moduleName].getUIConfig().winHotkey);
+        webix.UIManager.removeHotKey(wxAMC.modules[moduleName].getUIConfig().winHotkey,
+          function (code, e) {
             wxAMC.launchModule(moduleName);
           }
         );
       }
-      }
+    }
   } /* End setHidden */
 } /* End WXAMC. */
 
@@ -563,4 +752,3 @@ const eachElement = (selector, fn) => {
     fn(e);
   }
 }; /* End eachElement */
-

@@ -60,6 +60,7 @@ module.exports = {
           
           user.update({last_login: user.last_login})
           .catch((e) => console.error(e));
+          req.session.user = user;
           return res.json(user);
         });
       })(req, res, next);
