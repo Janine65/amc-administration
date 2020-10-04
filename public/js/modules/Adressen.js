@@ -211,7 +211,7 @@ wxAMC.moduleClasses.Adressen = class {
             rows : [
               /* Adresse details form. */
               { view : "form", id : "moduleAdressen-emailForm", borderless : false, scroll: true,
-                elementsConfig : { view : "text", labelWidth : 100
+                elementsConfig : { labelWidth : 100
               },
               elements:[ 
                     { view:"textarea", name: "email_an", label:"TO:", height:50 },
@@ -224,7 +224,10 @@ wxAMC.moduleClasses.Adressen = class {
                         config:{
                           fullPanel : true
                         },
-                        name: "email_body", label:"Meldung:", width:800, required: true}
+                        name: "email_body", label:"Meldung:", width:800, required: true},
+                      {view:"select",
+                      name: "email_signature", label:"Signatur",
+                      value: "HansjoergDutler", options: [{id: "HansjoergDutler", value: "HansjoergDutler.html"},{id: "JanineFranken", value: "JanineFranken.html"}]}
                 ]
               }, // End Email form */
               /* Email details toolbar. */
