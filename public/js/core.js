@@ -475,6 +475,46 @@ class WXAMC {
   } /* End saveHandler(). */
 
   /**
+   * Handles clicks of the save button for modules.
+   *
+   * @param inModuleName The name of the module.
+   * @param inFormIDs    An array of form IDs.
+   */
+  async excelDatasheet(objSave) {
+
+    const url = "/Anlaesse/sheet";
+
+    fetch(url, {
+        method: "POST", // *GET, POST, PUT, DELETE, etc.
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        redirect: 'follow', // manual, *follow, error
+        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+        body: JSON.stringify(objSave) // body data type must match "Content-Type" header
+      })
+      .then((response) => {
+        if (!response.ok) { // ***
+          webix.message({
+            type: "error",
+            text: "HTTP error " + response.status
+          }); // ***
+        }
+      })
+      .then(function () {
+        webix.message({
+          type: "success",
+          text: "gesichert"
+        });
+      })
+      .catch((e) => webix.message({
+        type: "error",
+        text: e
+      }));
+
+  } /* End excelDatasheet(). */
+
+  /**
    * Handles clicks of the delete button for modules.
    *
    * @param inModuleName The name of the module.

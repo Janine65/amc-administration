@@ -1,5 +1,6 @@
 var db = require("../db");
 const { Op, Sequelize } = require("sequelize");
+const ExcelJS = require('exceljs');
 
 module.exports = {
 	getData: function (req, res) {		
@@ -121,5 +122,52 @@ module.exports = {
 			.catch((e) => console.error(e));
 		}
 	},
+
+	writeExcelTemplate: async function(req, res) {
+		console.log('writeExcelTemplate');
+		const workbook = new ExcelJS.Workbook();
+		workbook.creator = 'Janine Franken';
+		workbook.created = new Date();
+		workbook.modified = new Date();
+		workbook.lastPrinted = new Date();
+
+		// Force workbook calculation on load
+		workbook.calcProperties.fullCalcOnLoad = true;
+
+		const sheet = workbook.addWorksheet('Template', {
+			pageSetup:{ fitToPage: true, fitToHeight: 1, fitToWidth: 1}});
+
+		let header = "Auto-Moto-Club Swissair - Template";
+		let cell = sheet.getCell(1,1);
+		cell.value = header;
+		cell.font = {bold = true, size: 12};
+
+
+		let row = 2;
+		cell = sheet.getCell(row,1);
+		cell.value = "CLUB/KEGELMEISTERSCHAFT";
+		cell.font = {bold = true, size: 12};
+
+		// read all events
+		db.Anlaesse.findAll({
+			where: {datum: { [Op.gte]: new Date('01.01.'+(global.Parameter.get('CLUBJAHR') - 1 )) }},
+			order: [
+				['datum', 'asc']
+			]
+	   	}).then(dbEvents => {
+			   
+		   });
+
+
+
+
+		const filename = "./amcTemplate.xlsx";
+		await workbook.xlsx.writeFile(filename);
+		
+		await workbook.commit();
+
+		res.json({type: "info", message: "Excelfile erstellt"})
+
+	}
 
 };
