@@ -122,7 +122,9 @@ function sendEmail(req, res) {
 
   transporter.sendMail({
         from: emailConfig.email_from, // sender address
-        to: (global.gConfig.email_to == "" ? email.email_to : global.gConfig.email_to), // list of receivers
+        to: email.email_an, // list of receivers
+        cc: email.email_cc,
+        bcc: email.email_bcc,
         subject: email.email_subject, // Subject line
         text: decodeURI(email.email_body), // plain text body
         html: email.email_body, // html body
