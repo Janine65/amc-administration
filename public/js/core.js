@@ -732,13 +732,18 @@ class WXAMC {
       eachElement(".authenticate_logged_in", (e) => e.classList.add("hidden"));
       eachElement(".authenticate_logged_out", (e) => e.classList.remove("hidden"));
       $$("loggedUser").setValue("not logged in");
+
+      // disable hotkeys
       for (let moduleName of wxAMC.registeredModules) {
-        console.log('hotkey: ', moduleName, wxAMC.modules[moduleName].getUIConfig().winHotkey);
-        webix.UIManager.removeHotKey(wxAMC.modules[moduleName].getUIConfig().winHotkey,
-          function (code, e) {
-            wxAMC.launchModule(moduleName);
-          }
-        );
+        let moduleWindow = $$(`moduleWindow-${moduleName}`);
+
+        // Module window already exists, just show it.
+        if (moduleWindow) {
+            moduleWindow.close();
+            $$("taskbar").removeView(`moduleTasbbarButton-${moduleName}`);
+        }
+
+        webix.UIManager.removeHotKey(wxAMC.modules[moduleName].getUIConfig().winHotkey);
       }
     }
   } /* End setHidden */
