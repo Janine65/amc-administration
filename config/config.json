@@ -10,7 +10,6 @@
         "db_pwd": "U2FsdGVkX1+91tP1h+l1dhQgbJOZ1PZllUtwQPzcdnk=",
         "port": "3306",
         "dbtype": "mysql",
-        "email_to": "janine@olconet.com",
         "defaultEmail" : "JanineFranken",
         "JanineFranken" : {
             "smtp": "smtp.zoho.com",
@@ -36,7 +35,6 @@
         "db_pwd_alt": "MGKlMb-MShwOeSN7u",
         "port": "3307",
         "dbtype": "mariadb",
-        "email_to": "",
         "defaultEmail" : "HansjoergDutler"
     }
 }
