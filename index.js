@@ -3,19 +3,16 @@ const express = require('express');
 const helmet = require('helmet');
 const bodyParser = require('body-parser');
 const path = require("path");
-const nedb = require("nedb");
 const nodemailer = require("nodemailer");
 const _ = require("./public/js/cipher");
 const multer = require('multer') // v1.0.5
 const upload = multer() // for parsing multipart/form-data
-const Sequelize = require("sequelize");
 const expresssession = require("express-session");
 const SequelizeStore = require("connect-session-sequelize")(expresssession.Store);
 const system = require("./public/js/system");
 const https = require("https");
 const fs = require('fs');
 const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
 
 // environment variables
 if (process.env.NODE_ENV == undefined)
@@ -102,30 +99,29 @@ app.post('/Adressen/email', sendEmail);
 function sendEmail(req, res) {
   const email = req.body;
 
+  let email_from = global.gConfig.defaultEmail;
+  if (email.email_signature != "") {
+    email_from = email.email_signature;
+    let email_signature = fs.readFileSync("./public/assets/" + email.email_signature + ".html")
+    email.email_body += "<p>" + email_signature + "</p>";
+  }
+  // console.log(email);
+  let emailConfig = global.gConfig[email_from];
+  console.log(emailConfig);
+
   // create reusable transporter object using the default SMTP transport
   const transporter = nodemailer.createTransport({
-    host: global.gConfig.smtp,
-    port: global.gConfig.smtp_port,
+    host: emailConfig.smtp,
+    port: emailConfig.smtp_port,
     secure: true, // true for 465, false for other ports
     auth: {
-      user: global.gConfig.smtp_user, // generated ethereal user
-      pass: global.cipher.decrypt(global.gConfig.smtp_pwd), // generated ethereal password
+      user: emailConfig.smtp_user, // generated ethereal user
+      pass: global.cipher.decrypt(emailConfig.smtp_pwd), // generated ethereal password
     }
   });
 
-  let email_from = global.gConfig.email_from;
-  if (email.email_signature != "") {
-    let email_signature = fs.readFileSync("./public/assets/" + email.email_signature + ".html")
-    email.email_body += "<p>" + email_signature + "</p>";
-
-    if (email.email_signature == "JanineFranken") {
-      email_from = "janine@automoto-sr.info"
-    }
-  }
-  // console.log(email);
-
   transporter.sendMail({
-        from: email_from, // sender address
+        from: emailConfig.email_from, // sender address
         to: (global.gConfig.email_to == "" ? email.email_to : global.gConfig.email_to), // list of receivers
         subject: email.email_subject, // Subject line
         text: decodeURI(email.email_body), // plain text body
