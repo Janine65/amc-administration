@@ -483,6 +483,7 @@ class WXAMC {
   async excelDatasheet(objSave) {
 
     const url = "/Anlaesse/sheet";
+    objSave.year = $$("datumSelect").getValue();
 
     fetch(url, {
         method: "POST", // *GET, POST, PUT, DELETE, etc.
