@@ -143,7 +143,7 @@ custom_checkbox(obj, common, value){
                 icon : "webix_icon mdi mdi-calendar-multiple-check", click : this.eventsEditing.bind(this)
               },
               { id: "moduleAnlaesse-printButton", view : "button", default : true, label : "Datenblatt", width : "80", type : "icon", disabled: false,
-                icon : "webix_icon mdi mdi-file-excel", click : () => { wxAMC.excelDatasheet({id:0, type: 0}); }
+                icon : "webix_icon mdi mdi-file-excel-outline", click : () => { wxAMC.excelDatasheet({id:0, type: 0}); }
               },
               { },
               { id: "moduleAnlaesse-editButton", view : "button", default : false, label : "Edit", width : "80", type : "icon", disabled: true,

@@ -1,28 +1,32 @@
 var db = require("../db");
-const { Op, Sequelize } = require("sequelize");
+const {
+  Op,
+  Sequelize
+} = require("sequelize");
 const ExcelJS = require("exceljs");
+const adresse = require("./adresse");
 
 module.exports = {
   getData: function (req, res) {
     /*
- 		db.Anlaesse.findAll({
- 			where: {datum: { [Op.gte]: new Date('01.01.'+(global.Parameter.get('CLUBJAHR') - 1 )) }},
- 			//attributes: { inlcude: ['longname']},
- 			include: [
+      db.Anlaesse.findAll({
+        where: {datum: { [Op.gte]: new Date('01.01.'+(global.Parameter.get('CLUBJAHR') - 1 )) }},
+        //attributes: { inlcude: ['longname']},
+        include: [
  //				{ model: db.Anlaesse, as: 'linkedEvent', required: false, attributes: ['longname']}
- 				{ model: db.Anlaesse, as: 'linkedEvent', required: false, attributes: { inlcude: ['longname']}}
- 			 ],
- 			 order: [
- 				 ['datum', 'asc']
- 			 ]
-		 }).then(data => res.json(data));		
-		 */
+          { model: db.Anlaesse, as: 'linkedEvent', required: false, attributes: { inlcude: ['longname']}}
+         ],
+         order: [
+           ['datum', 'asc']
+         ]
+     }).then(data => res.json(data));		
+     */
     /*
-				 SELECT `anlaesse`.`id`, `anlaesse`.`datum`, `anlaesse`.`name`, `anlaesse`.`beschreibung`, `anlaesse`.`punkte`, `anlaesse`.`istkegeln`, `anlaesse`.`nachkegeln`, `anlaesse`.`gaeste`, `anlaesse`.`anlaesseId`, `anlaesse`.`status`, `anlaesse`.`createdAt`, `anlaesse`.`updatedAt`, 
-				 `linkedEvent`.`id` AS `linkedEvent.id`, `linkedEvent`.`longname` AS `linkedEvent.longname`
-				  FROM `anlaesse` AS `anlaesse` LEFT OUTER JOIN `anlaesse` AS `linkedEvent` ON `anlaesse`.`anlaesseId` = `linkedEvent`.`id` 
-				  WHERE `anlaesse`.`datum` >= '2019-01-01' ORDER BY `anlaesse`.`datum` ASC;
-		 */
+         SELECT `anlaesse`.`id`, `anlaesse`.`datum`, `anlaesse`.`name`, `anlaesse`.`beschreibung`, `anlaesse`.`punkte`, `anlaesse`.`istkegeln`, `anlaesse`.`nachkegeln`, `anlaesse`.`gaeste`, `anlaesse`.`anlaesseId`, `anlaesse`.`status`, `anlaesse`.`createdAt`, `anlaesse`.`updatedAt`, 
+         `linkedEvent`.`id` AS `linkedEvent.id`, `linkedEvent`.`longname` AS `linkedEvent.longname`
+          FROM `anlaesse` AS `anlaesse` LEFT OUTER JOIN `anlaesse` AS `linkedEvent` ON `anlaesse`.`anlaesseId` = `linkedEvent`.`id` 
+          WHERE `anlaesse`.`datum` >= '2019-01-01' ORDER BY `anlaesse`.`datum` ASC;
+     */
     var qrySelect =
       "SELECT `anlaesse`.`id`, `anlaesse`.`datum`, `anlaesse`.`name`, `anlaesse`.`beschreibung`, `anlaesse`.`punkte`, `anlaesse`.`istkegeln`, `anlaesse`.`nachkegeln`, `anlaesse`.`istsamanlass`, `anlaesse`.`gaeste`, `anlaesse`.`anlaesseId`, `anlaesse`.`status`, `anlaesse`.`createdAt`, `anlaesse`.`updatedAt`, `linkedEvent`.`longname` as 'vorjahr'";
     qrySelect +=
@@ -100,13 +104,13 @@ module.exports = {
     db.Anlaesse.findByPk(data.id)
       .then((anlass) =>
         anlass
-          .destroy()
-          .then((obj) =>
-            res.json({
-              id: obj.id,
-            })
-          )
-          .catch((e) => console.error(e))
+        .destroy()
+        .then((obj) =>
+          res.json({
+            id: obj.id,
+          })
+        )
+        .catch((e) => console.error(e))
       )
       .catch((e) => console.log(e));
   },
@@ -142,13 +146,13 @@ module.exports = {
       db.Anlaesse.findByPk(data.id)
         .then((anlass) =>
           anlass
-            .update(data)
-            .then((obj) =>
-              res.json({
-                id: obj.id,
-              })
-            )
-            .catch((e) => console.error(e))
+          .update(data)
+          .then((obj) =>
+            res.json({
+              id: obj.id,
+            })
+          )
+          .catch((e) => console.error(e))
         )
         .catch((e) => console.error(e));
     }
@@ -162,23 +166,127 @@ module.exports = {
     // Force workbook calculation on load
     workbook.calcProperties.fullCalcOnLoad = true;
 
-    const sheet = workbook.addWorksheet("Template", {
-      pageSetup: {
-        fitToPage: true,
-        fitToHeight: 1,
-        fitToWidth: 1,
-      },
-    });
+    let sheet
+    let oneAdresse
 
-    await createTemplate(res, req.body.year, sheet).catch((e) => {
-      console.error(e);
-      res.json({
-        type: "error",
-        message: e,
-      });
-    });
+    var objSave = req.body;
 
-    const filename = "./amcTemplate.xlsx";
+    switch (objSave.type) {
+      case 0:
+        // Datenblatt leer
+        sheet = workbook.addWorksheet("Template", {
+          pageSetup: {
+            fitToPage: true,
+            fitToHeight: 1,
+            fitToWidth: 1,
+          },
+        });
+        await createTemplate(objSave.year, sheet);
+        //sheet.commit();
+        break;
+
+      case 1:
+        // Datenblatt leer für Adressen
+        if (objSave.id == 0) {
+          // für alle aktiven Mitglieder
+          let dbAdressen = await db.Adressen.findAll({
+              where: {
+                austritt: {
+                  [Op.gte]: new Date()
+                }
+              }
+            })
+            .catch((e) => console.error(e));
+          Promise.resolve(dbAdressen)
+            .catch((e) => console.error(e));
+
+          for (const adress of dbAdressen) {
+            sheet = workbook.addWorksheet(adress.vorname + " " + adress.name, {
+              pageSetup: {
+                fitToPage: true,
+                fitToHeight: 1,
+                fitToWidth: 1,
+              },
+            });
+            await createTemplate(objSave.year, sheet);
+            await fillName(sheet, adress);
+            //sheet.commit();
+          }
+
+        } else {
+          // für ein Mitglied
+          oneAdresse = await db.Adressen.findByPk(objSave.id)
+            .catch((e) => console.error(e));
+          Promise.resolve(oneAdresse)
+            .catch((e) => console.error(e));
+          sheet = workbook.addWorksheet(oneAdresse.vorname + " " + oneAdresse.name, {
+            pageSetup: {
+              fitToPage: true,
+              fitToHeight: 1,
+              fitToWidth: 1,
+            },
+          });
+          await createTemplate(objSave.year, sheet);
+          await fillName(sheet, oneAdresse);
+          //sheet.commit();
+        }
+        break;
+
+      case 2:
+        // Datenblatt gefüllt für Adressen
+        if (objSave.id == 0) {
+          // für alle aktiven Mitglieder
+          let dbAdressen = await db.Adressen.findAll({
+              where: {
+                austritt: {
+                  [Op.gte]: new Date()
+                }
+              }
+            })
+            .catch((e) => console.error(e));
+          Promise.resolve(dbAdressen)
+            .catch((e) => console.error(e));
+
+          for (const adress of dbAdressen) {
+            sheet = workbook.addWorksheet(adress.vorname + " " + adress.name, {
+              pageSetup: {
+                fitToPage: true,
+                fitToHeight: 1,
+                fitToWidth: 1,
+              },
+            });
+            await createTemplate(objSave.year, sheet);
+            await fillName(sheet, adress);
+            await fillTemplate(sheet, adress.id, objSave.year);
+            //sheet.commit();
+          }
+
+        } else {
+          // für ein Mitglied
+          oneAdresse = await db.Adressen.findByPk(objSave.id)
+            .catch((e) => console.error(e));
+          Promise.resolve(oneAdresse)
+            .catch((e) => console.error(e));
+
+          sheet = workbook.addWorksheet(oneAdresse.vorname + " " + oneAdresse.name, {
+            pageSetup: {
+              fitToPage: true,
+              fitToHeight: 1,
+              fitToWidth: 1,
+            },
+          });
+          await createTemplate(objSave.year, sheet);
+          await fillName(sheet, oneAdresse);
+          await fillTemplate(sheet, oneAdresse.id, objSave.year);
+          //sheet.commit;
+        }
+        break;
+
+      default:
+        break;
+    }
+
+    const filename = "./public/Stammblätter.xlsx";
     await workbook.xlsx.writeFile(filename).catch((e) => {
       console.error(e);
       res.json({
@@ -187,15 +295,86 @@ module.exports = {
       });
     });
 
-    //res.json({type: "info", message: "Excelfile erstellt"})
+    return res.json({
+      type: "info",
+      message: "Excelfile erstellt",
+      filename: filename
+    });
   },
 };
+async function fillTemplate(sheet, id, syear) {
+  var qrySelect = "SELECT * FROM meisterschaft where eventid in (";
+  qrySelect += "SELECT id FROM anlaesse where year(datum) = " + syear;
+  qrySelect += ") and mitgliedid = " + id;
 
-async function createTemplate(res, syear, sheet) {
+  var data = await sequelize.query(qrySelect, {
+    type: Sequelize.QueryTypes.SELECT,
+    plain: false,
+    logging: console.log,
+    raw: true
+  });
+  var clubPunkte = 0;
+  var kegelSumme = 0
+
+  if (data.length > 0) {
+    var iterator = data.entries();
+    var cols = sheet.getColumn('K');
+
+    cols.eachCell(function (cell, row) {
+      if (cell.value != "") {
+        for (let meisterschaft of iterator) {
+          var kegelTotal = 0;
+
+          if (cell.value == meisterschaft[1].eventid) {
+            clubPunkte += meisterschaft[1].punkte;
+
+            sheet.getCell('A' + cell.row).value = meisterschaft[1].punkte;
+            if (meisterschaft[1].wurf1 > 0 || meisterschaft[1].wurf2 > 0 || meisterschaft[1].wurf3 > 0 || meisterschaft[1].wurf4 > 0 || meisterschaft[1].wurf5 > 0) {
+              // Kegelresultat
+              kegelTotal = meisterschaft[1].wurf1 + meisterschaft[1].wurf2 + meisterschaft[1].wurf3 + meisterschaft[1].wurf4 + meisterschaft[1].wurf5 + sheet.getCell('H' + row).value;
+              sheet.getCell('C' + cell.row).value = meisterschaft[1].wurf1;
+              sheet.getCell('D' + cell.row).value = meisterschaft[1].wurf2;
+              sheet.getCell('E' + cell.row).value = meisterschaft[1].wurf3;
+              sheet.getCell('F' + cell.row).value = meisterschaft[1].wurf4;
+              sheet.getCell('G' + cell.row).value = meisterschaft[1].wurf5;
+              sheet.getCell('I' + cell.row).value = kegelTotal;
+              if (meisterschaft[1].streichresultat == 0) {
+                kegelSumme += kegelTotal;
+              } else {
+                // setzte diagonale Linie - > Streichresultat
+                sheet.getRow(row).border = {
+                  diagonal: {
+                    up: true,
+                    down: true,
+                    style: 'thick',
+                    color: {
+                      argb: 'FFFF0000'
+                    }
+                  }
+                };
+              }
+            }
+            break;
+          }
+        }
+      }
+    });
+  }
+
+}
+
+async function fillName(sheet, adress) {
+
+  let cell = sheet.getCell('C6')
+  cell.value = adress.name;
+  cell = sheet.getCell('C7')
+  cell.value = adress.vorname;
+}
+
+async function createTemplate(syear, sheet) {
   // read all events
   let dbEvents = await db.Anlaesse.findAll({
-
-	where: sequelize.where(sequelize.fn('YEAR', sequelize.col('datum')), syear),
+    where: sequelize.where(sequelize.fn('YEAR', sequelize.col('datum')), syear),
     order: [
       ["istkegeln", "desc"],
       ["datum", "asc"],
@@ -203,15 +382,10 @@ async function createTemplate(res, syear, sheet) {
     ],
   }).catch((e) => {
     console.error(e);
-    res.json({
-      type: "error",
-      message: e,
-    });
   });
 
-  sheet.mergeCells("A2:I2");
+  setCellValueFormat(sheet, "A2", "CLUB/KEGELMEISTERSCHAFT", false, "A2:I2");
   let cell = sheet.getCell("A2");
-  cell.value = "CLUB/KEGELMEISTERSCHAFT";
   cell.font = {
     bold: true,
     size: 12,
@@ -221,380 +395,142 @@ async function createTemplate(res, syear, sheet) {
     horizontal: "center",
   };
 
+  setCellValueFormat(sheet, "A4", syear, false, "A4:I4");
+
   cell = sheet.getCell("A4");
-  cell.value = syear;
   cell.font = {
     bold: true,
     size: 12,
   };
-  sheet.mergeCells("A4:I4");
   cell.alignment = {
     vertical: "middle",
     horizontal: "center",
   };
 
   sheet.getCell("B6").value = "Name:";
-  sheet.getCell("C6").name = "Nachname";
-  sheet.getCell("B6:C6").font = {
+  sheet.getCell("B6").font = {
+    bold: true,
+  };
+  sheet.getCell("C6").font = {
     bold: true,
   };
   sheet.getCell("B7").value = "Vorname:";
-  sheet.getCell("C7").name = "Vorname";
 
-  sheet.getCell("C11").value = "KEGELMEISTERSCHAFT";
+  setCellValueFormat(sheet, "C11", "Kegelmeisterschaft", true, "C11:E11");
   sheet.getCell("C11").font = {
     bold: true,
   };
-  sheet.mergeCells("C11:E11");
-  sheet.getCell("C11:E11").border = {
-    top: {
-      style: "thin",
-    },
-    left: {
-      style: "thin",
-    },
-    bottom: {
-      style: "thin",
-    },
-    right: {
-      style: "thin",
-    },
-  };
 
   let row = 12;
-  sheet.getCell("A" + row).value = "Club";
-  sheet.getCell("A" + row).border = {
-    top: {
-      style: "thin",
-    },
-    left: {
-      style: "thin",
-    },
-    bottom: {
-      style: "thin",
-    },
-    right: {
-      style: "thin",
-    },
-  };
-  sheet.getCell("B" + row).value = "Datum";
-  sheet.getCell("B" + row).border = {
-    top: {
-      style: "thin",
-    },
-    left: {
-      style: "thin",
-    },
-    bottom: {
-      style: "thin",
-    },
-    right: {
-      style: "thin",
-    },
-  };
-  sheet.getCell("C" + row).value = "Resultate";
-  sheet.mergeCells("C" + row + ":G" + row);
-  sheet.getCell("C" + row).border = {
-    top: {
-      style: "thin",
-    },
-    left: {
-      style: "thin",
-    },
-    bottom: {
-      style: "thin",
-    },
-    right: {
-      style: "thin",
-    },
-  };
-  sheet.getCell("H" + row).value = "z Pkt.";
-  sheet.getCell("H" + row).border = {
-    top: {
-      style: "thin",
-    },
-    left: {
-      style: "thin",
-    },
-    bottom: {
-      style: "thin",
-    },
-    right: {
-      style: "thin",
-    },
-  };
-  sheet.getCell("I" + row).value = "Total";
-  sheet.getCell("I" + row).border = {
-    top: {
-      style: "thin",
-    },
-    left: {
-      style: "thin",
-    },
-    bottom: {
-      style: "thin",
-    },
-    right: {
-      style: "thin",
-    },
-  };
-  sheet.getCell("J" + row).value = "Visum";
-  sheet.getCell("J" + row).border = {
-    top: {
-      style: "thin",
-    },
-    left: {
-      style: "thin",
-    },
-    bottom: {
-      style: "thin",
-    },
-    right: {
-      style: "thin",
-    },
-  };
-  sheet.getCell("K" + row).value = "eventId";
+  setCellValueFormat(sheet, "A" + row, "Club", true, "");
+  setCellValueFormat(sheet, "B" + row, "Datum", true, "");
+  setCellValueFormat(sheet, "C" + row, "Resultate", true, "C" + row + ":G" + row);
+  setCellValueFormat(sheet, "H" + row, "z Pkt.", true, "");
+  setCellValueFormat(sheet, "I" + row, "Total", true, "");
+  setCellValueFormat(sheet, "J" + row, "Visum", true, "");
+  setCellValueFormat(sheet, "K" + row, "eventId", false, "");
 
-  row = 27;
-  sheet.getCell("F" + row).value = "Total Kegeln";
-  sheet.mergeCells("F" + row + ":H" + row);
-  sheet.getCell("F" + row + ":H" + row).border = {
-    top: {
-      style: "thin",
-    },
-    left: {
-      style: "thin",
-    },
-    bottom: {
-      style: "thin",
-    },
-    right: {
-      style: "thin",
-    },
-  };
-  sheet.getCell("I" + row).value = "=SUM(I13:I26)";
-  sheet.getCell("I" + row).border = {
-    top: {
-      style: "thin",
-    },
-    left: {
-      style: "thin",
-    },
-    bottom: {
-      style: "thin",
-    },
-    right: {
-      style: "thin",
-    },
-  };
+  let clubTotal = 0;
 
-  row = 29;
-  sheet.getCell("C29").value = "CLUBMEISTERSCHAFT";
-  sheet.getCell("C29").font = {
-    bold: true,
-  };
-  sheet.mergeCells("C29:E29");
-  sheet.getCell("C29:E29").border = {
-    top: {
-      style: "thin",
-    },
-    left: {
-      style: "thin",
-    },
-    bottom: {
-      style: "thin",
-    },
-    right: {
-      style: "thin",
-    },
-  };
-
-  row = 30;
-  sheet.getCell("A" + row).value = "Club";
-  sheet.getCell("A" + row ).border = {
-    top: {
-      style: "thin",
-    },
-    left: {
-      style: "thin",
-    },
-    bottom: {
-      style: "thin",
-    },
-    right: {
-      style: "thin",
-    },
-  };
-  sheet.getCell("B" + row).value = "Datum";
-  sheet.getCell("B" + row ).border = {
-    top: {
-      style: "thin",
-    },
-    left: {
-      style: "thin",
-    },
-    bottom: {
-      style: "thin",
-    },
-    right: {
-      style: "thin",
-    },
-  };
-  sheet.getCell("K" + row).value = "eventId";
-
-  row = 12;
-  dbEvents.forEach((event) => {
-    row++;
+  for (const event of dbEvents) {
 
     if (event.istkegeln == 1) {
       // clubevent einfache Liste
-      sheet.getCell("A" + row).value = event.punkte;
-      sheet.getCell("A" + row).border = {
-        top: {
-          style: "thin",
-        },
-        left: {
-          style: "thin",
-        },
-        bottom: {
-          style: "thin",
-        },
-        right: {
-          style: "thin",
-        },
-      };
-      sheet.getCell("B" + row).value = event.datum;
-      sheet.getCell("B" + row).border = {
-        top: {
-          style: "thin",
-        },
-        left: {
-          style: "thin",
-        },
-        bottom: {
-          style: "thin",
-        },
-        right: {
-          style: "thin",
-        },
-      };
-      sheet.getCell("C" + row).border = {
-        top: {
-          style: "thin",
-        },
-        left: {
-          style: "thin",
-        },
-        bottom: {
-          style: "thin",
-        },
-        right: {
-          style: "thin",
-        },
-      };
-      sheet.getCell("D" + row).border = {
-        top: {
-          style: "thin",
-        },
-        left: {
-          style: "thin",
-        },
-        bottom: {
-          style: "thin",
-        },
-        right: {
-          style: "thin",
-        },
-      };
-      sheet.getCell("E" + row).border = {
-        top: {
-          style: "thin",
-        },
-        left: {
-          style: "thin",
-        },
-        bottom: {
-          style: "thin",
-        },
-        right: {
-          style: "thin",
-        },
-      };
-      sheet.getCell("F" + row).border = {
-        top: {
-          style: "thin",
-        },
-        left: {
-          style: "thin",
-        },
-        bottom: {
-          style: "thin",
-        },
-        right: {
-          style: "thin",
-        },
-      };
-      sheet.getCell("G" + row).border = {
-        top: {
-          style: "thin",
-        },
-        left: {
-          style: "thin",
-        },
-        bottom: {
-          style: "thin",
-        },
-        right: {
-          style: "thin",
-        },
-      };
-      sheet.getCell("H" + row).value = event.zusatz;
-      sheet.getCell("H" + row).border = {
-        top: {
-          style: "thin",
-        },
-        left: {
-          style: "thin",
-        },
-        bottom: {
-          style: "thin",
-        },
-        right: {
-          style: "thin",
-        },
-      };
-      sheet.getCell("I" + row).value = "";
-      sheet.getCell("I" + row).border = {
-        top: {
-          style: "thin",
-        },
-        left: {
-          style: "thin",
-        },
-        bottom: {
-          style: "thin",
-        },
-        right: {
-          style: "thin",
-        },
-      };
-      sheet.getCell("J" + row).border = {
-        top: {
-          style: "thin",
-        },
-        left: {
-          style: "thin",
-        },
-        bottom: {
-          style: "thin",
-        },
-        right: {
-          style: "thin",
-        },
-      };
-      sheet.getCell("K" + row).value = event.id;
-    } else {
-      // clubevent 
+      row++;
+      if (event.status == 1) {
+        clubTotal += event.punkte;
+        setCellValueFormat(sheet, "A" + row, event.punkte, true, "");
+      } else {
+        sheet.getCell("B" + row).font = {
+          strike: true
+        };
+        setCellValueFormat(sheet, "A" + row, "", true, "");
+      }
+
+      setCellValueFormat(sheet, "B" + row, event.datum, true, "");
+      setCellValueFormat(sheet, "C" + row, "", true, "");
+      setCellValueFormat(sheet, "D" + row, "", true, "");
+      setCellValueFormat(sheet, "E" + row, "", true, "");
+      setCellValueFormat(sheet, "F" + row, "", true, "");
+      setCellValueFormat(sheet, "G" + row, "", true, "");
+      setCellValueFormat(sheet, "H" + row, (event.nachkegeln == 0 ? 5 : 0), true, "");
+      setCellValueFormat(sheet, "I" + row, "", true, "");
+      setCellValueFormat(sheet, "J" + row, "", true, "");
+      setCellValueFormat(sheet, "K" + row, event.id, false, "");
     }
+  }
+
+  row++;
+  setCellValueFormat(sheet, "F" + row, "Total Kegeln", true, "F" + row + ":H" + row);
+  setCellValueFormat(sheet, "I" + row, "", true, "");
+  row++;
+  row++;
+
+  setCellValueFormat(sheet, "C" + row, "Clubmeisterschaft", true, "C" + row + ":E" + row);
+  sheet.getCell("C" + row).font = {
+    bold: true,
+  };
+
+  row++;
+  setCellValueFormat(sheet, "A" + row, "Club", true, "");
+  setCellValueFormat(sheet, "B" + row, "Datum", true, "");
+  setCellValueFormat(sheet, "C" + row, "Bezeichnung", true, "C" + row + ":I" + row);
+
+  for (const event of dbEvents) {
+
+    if (event.istkegeln != 1) {
+      row++;
+      // clubevent einfache Liste
+      if (event.status > 0) {
+        clubTotal += event.punkte;
+        setCellValueFormat(sheet, "A" + row, event.punkte, true, "");
+      } else {
+        setCellValueFormat(sheet, "A" + row, "", true, "");
+        sheet.getCell("B" + row).font = {
+          strike: true
+        };
+      }
+      setCellValueFormat(sheet, "B" + row, event.datum, true, "");
+      setCellValueFormat(sheet, "C" + row, event.name, true, "C" + row + ":I" + row);
+      setCellValueFormat(sheet, "K" + row, event.id, false, "");
+    }
+  }
+
+  row++;
+  setCellValueFormat(sheet, "B" + row, "Total Club", true, "");
+  setCellValueFormat(sheet, "A" + row, clubTotal, true, "");
+
+  sheet.getColumn("K").hidden = true;
+  sheet.getColumn("J").width = 17;
+  // Iterate over all rows (including empty rows) in a worksheet
+  sheet.eachRow({
+    includeEmpty: true
+  }, function (rowData, rowNumber) {
+    rowData.height = 15;
   });
+
+}
+
+function setCellValueFormat(sheet, cell, value, border, merge) {
+  sheet.getCell(cell).value = value;
+  if (merge != "") {
+    sheet.mergeCells(merge);
+  }
+
+  if (border)
+    sheet.getCell(cell).border = {
+      top: {
+        style: "thin",
+      },
+      left: {
+        style: "thin",
+      },
+      bottom: {
+        style: "thin",
+      },
+      right: {
+        style: "thin",
+      }
+    };
+
 }

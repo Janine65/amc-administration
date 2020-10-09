@@ -1,3 +1,4 @@
+
 class WXAMC {
 
   /**
@@ -483,7 +484,10 @@ class WXAMC {
   async excelDatasheet(objSave) {
 
     const url = "/Anlaesse/sheet";
-    objSave.year = $$("datumSelect").getValue();
+    if ($$("datumSelect"))
+      objSave.year = $$("datumSelect").getValue();
+    else
+      objSave.year = wxAMC.parameter.get('CLUBJAHR');
 
     fetch(url, {
         method: "POST", // *GET, POST, PUT, DELETE, etc.
@@ -505,8 +509,10 @@ class WXAMC {
       .then(function () {
         webix.message({
           type: "success",
-          text: "gesichert"
+          text: "gesichert und downloaded"
         });
+        // download file
+        webix.send("./Stammblätter.xlsx",{},"GET","_blank");
       })
       .catch((e) => webix.message({
         type: "error",
