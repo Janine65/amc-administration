@@ -143,6 +143,7 @@ app.delete('/Anlaesse/data', anlaesse.removeData);
 app.get('/Anlaesse/getFkData', anlaesse.getFKData);
 app.get('/Anlaesse/data/:id', anlaesse.getOneData);
 app.get('/Anlaesse/getOverviewData', anlaesse.getOverviewData);
+app.post('/Anlaesse/sheet', anlaesse.writeExcelTemplate);
 
 const meisterschaft = require("./public/js/controllers/meisterschaft");
 app.get('/Meisterschaft/data', meisterschaft.getData);

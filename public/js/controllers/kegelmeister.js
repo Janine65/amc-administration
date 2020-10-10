@@ -52,7 +52,7 @@ module.exports = {
 
 				// alle Ergebnisse auf Streichresultat = 0
 				qrySelect = "UPDATE meisterschaft set streichresultat = 0 where eventid in ( " + qrySubSelect + ")";
-				var result = await sequelize.query(qrySelect,
+				await sequelize.query(qrySelect,
 					{
 						type: Sequelize.QueryTypes.UPDATE,
 						plain: false,
@@ -64,7 +64,7 @@ module.exports = {
 				// alle Ergebnisse auf Streichresultat = 1, wenn Wurf-Total = 0
 				qrySelect = "UPDATE meisterschaft set streichresultat = 1 where eventid in ( " + qrySubSelect + ")";
 				qrySelect += " AND (wurf1 + wurf2 + wurf3 + wurf4 + wurf5) = 0"
-				result = await sequelize.query(qrySelect,
+				await sequelize.query(qrySelect,
 					{
 						type: Sequelize.QueryTypes.UPDATE,
 						plain: false,
@@ -95,7 +95,7 @@ module.exports = {
 						qrySelect = "UPDATE meisterschaft SET streichresultat = 1 WHERE eventid in (" + qrySubSelect + ")"
 						qrySelect += " AND mitgliedid in (" + allMitgliedId.join(',') + ")"
 
-						result = await sequelize.query(qrySelect,
+						await sequelize.query(qrySelect,
 							{
 								type: Sequelize.QueryTypes.UPDATE,
 								plain: false,
@@ -124,7 +124,7 @@ module.exports = {
 				if (data.length > 0) {
 					var zwmitgliedid = 0
 					var anzahl = 0
-					var iterator = data.entries();
+					iterator = data.entries();
 					for(let mitglied of iterator) {
 						if (zwmitgliedid != mitglied[1].mitgliedid) {
 							zwmitgliedid = mitglied[1].mitgliedid
@@ -137,7 +137,7 @@ module.exports = {
 					if (allMitgliedId.length > 0) {
 						qrySelect = "UPDATE meisterschaft SET streichresultat = 1 WHERE id in (" + allMitgliedId.join(',') + ")"
 
-						result = await sequelize.query(qrySelect,
+						await sequelize.query(qrySelect,
 							{
 								type: Sequelize.QueryTypes.UPDATE,
 								plain: false,
@@ -166,10 +166,10 @@ module.exports = {
 			}
 		);
 		if (data.length > 0) {
-			var iterator = data.entries();
+			iterator = data.entries();
 			for(let mitglied of iterator) {
 				allMitgliedId.push(mitglied[1].mitgliedid)
-				var meister = {jahr: req.query.jahr, mitgliedid: mitglied[1].mitgliedid, punkte: new Number(mitglied[1].punkte), anlaesse: new Number(mitglied[1].anzahl), babeli: 0}
+				meister = {jahr: req.query.jahr, mitgliedid: mitglied[1].mitgliedid, punkte: Number(mitglied[1].punkte), anlaesse: Number(mitglied[1].anzahl), babeli: 0}
 				arMeister.push(meister);
 			}
 		}
@@ -190,16 +190,16 @@ module.exports = {
 		);
 		
 		if (data.length > 0) {
-			var iterator = data.entries();
+			iterator = data.entries();
 			for(let mitglied of iterator) {
 				var ifound = arMeister.findIndex((element) => element.mitgliedid == mitglied[1].mitgliedid)
 				if (ifound > -1) {
-					var meister = arMeister[ifound]
-					meister.punkte += new Number(mitglied[1].punkte)
+					meister = arMeister[ifound]
+					meister.punkte += Number(mitglied[1].punkte)
 					arMeister[ifound] = meister
 				} else {
 					allMitgliedId.push(mitglied[1].mitgliedid)
-					var meister = {jahr: req.query.jahr, mitgliedid: mitglied[1].mitgliedid, punkte: new Number(mitglied[1].punkte), anlaesse: 0, babeli: 0}
+					meister = {jahr: req.query.jahr, mitgliedid: mitglied[1].mitgliedid, punkte: Number(mitglied[1].punkte), anlaesse: 0, babeli: 0}
 					arMeister.push(meister);
 				}
 			}
@@ -224,14 +224,13 @@ module.exports = {
 		);
 		
 		if (data.length > 0) {
-			var iterator = data.entries();
+			iterator = data.entries();
 			for(let mitglied of iterator) {
-				var ifound = arMeister.findIndex((element) => element.mitgliedid == mitglied[1].mitgliedid)
+				ifound = arMeister.findIndex((element) => element.mitgliedid == mitglied[1].mitgliedid)
 				if (ifound > -1) {
-					var meister = arMeister[ifound]
-					meister.babeli += new Number (mitglied[1].babeli)
-					arMeister[ifound] = meister
-				} else {
+					meister = arMeister[ifound]
+					meister.babeli +=  Number (mitglied[1].babeli)
+					arMeister[ifound] = meister				
 				}
 			}
 		}
@@ -250,9 +249,9 @@ module.exports = {
 				}
 			);
 			if (data.length > 0) {
-				var iterator = data.entries();
+				iterator = data.entries();
 				for(let mitglied of iterator) {
-						var ifound = arMeister.findIndex((element) => element.mitgliedid == mitglied[1].id)
+						ifound = arMeister.findIndex((element) => element.mitgliedid == mitglied[1].id)
 					if (ifound > -1) {
 						var meister = arMeister[ifound]
 						meister.mnr = mitglied[1].mnr
@@ -284,7 +283,7 @@ module.exports = {
 
 		// bestehende Daten löschen
 		qrySelect = "DELETE FROM kegelmeister WHERE jahr = " + req.query.jahr;
-		result = await sequelize.query(qrySelect,
+		await sequelize.query(qrySelect,
 			{
 				type: Sequelize.QueryTypes.DELETE,
 				plain: false,
@@ -298,15 +297,15 @@ module.exports = {
 			qrySelect = "INSERT INTO kegelmeister (jahr, rang, vorname, nachname, mitgliedid, punkte, anlaesse, babeli, status) VALUES "
 			const cMinPunkte = arMeister[0].punkte * 0.4;
 			var status = 1;
-			arMeister.forEach((meister, ind) => {
+			for (meister of arMeister) {
 				if (ind > 0) {
 					qrySelect += ","
 					status = meister.punkte >= cMinPunkte;
 				}
 				qrySelect += "(" + req.query.jahr + "," + (ind + 1) + ",'" + meister.vorname + "','" + meister.nachname + "'," + meister.mitgliedid
 				qrySelect += "," + meister.punkte + "," + meister.anlaesse + "," + meister.babeli + "," + status + ")"			
-			});
-			result = await sequelize.query(qrySelect,
+			}
+			await sequelize.query(qrySelect,
 				{
 					type: Sequelize.QueryTypes.INSERT,
 					plain: false,

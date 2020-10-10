@@ -32,14 +32,14 @@ wxAMC.moduleClasses.Anlaesse = class {
         return "<div class=' custom checked'> Aktiv </div>";
     else
         return "<div class=' custom notchecked'> Inaktiv </div>";
-};
+}
 
 custom_checkbox(obj, common, value){
   if (value)
       return "<div class='webix_icon mdi mdi-checkbox-marked'></div>";
   else
       return "<div class='webix_icon mdi mdi-checkbox-blank-outline'></div>";
-};
+}
 
 /**
    * Return the module's UI config object.
@@ -141,6 +141,9 @@ custom_checkbox(obj, common, value){
               { },
               { id: "moduleAnlaesse-eventButton", view : "button", default : true, label : "Event", width : "80", type : "icon", disabled: true,
                 icon : "webix_icon mdi mdi-calendar-multiple-check", click : this.eventsEditing.bind(this)
+              },
+              { id: "moduleAnlaesse-printButton", view : "button", default : true, label : "Datenblatt", width : "80", type : "icon", disabled: false,
+                icon : "webix_icon mdi mdi-file-excel-outline", click : () => { wxAMC.excelDatasheet({id:0, type: 0}); }
               },
               { },
               { id: "moduleAnlaesse-editButton", view : "button", default : false, label : "Edit", width : "80", type : "icon", disabled: true,

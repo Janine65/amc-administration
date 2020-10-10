@@ -112,6 +112,12 @@ wxAMC.moduleClasses.Adressen = class {
               cols : [
                 { id: "count_adr", view : "label", label: "Anzahl 0"},
                 { },
+                { id: "moduleAdressen-printButton1", view : "button", default : true, label : "leer", width : "80", type : "icon", disabled: false,
+                icon : "webix_icon mdi mdi-file-excel-box", click : () => { wxAMC.excelDatasheet({id:0, type: 1}); }
+                },
+                { id: "moduleAdressen-printButton2", view : "button", default : true, label : "voll", width : "80", type : "icon", disabled: false,
+                icon : "webix_icon mdi mdi-file-excel", click : () => { wxAMC.excelDatasheet({id:0, type: 2}); }
+                },
                 { id: "moduleAdressen-emailAllButton", view : "button", label : "Email", width : "80", type : "icon", 
                   icon : "webix_icon mdi mdi-email-plus", click : this.showEmailFormAll.bind(this)
                 },
@@ -190,6 +196,12 @@ wxAMC.moduleClasses.Adressen = class {
                   }
                 },
                 { },
+                { id: "moduleAdressen-printButton3", view : "button", default : true, label : "leer", width : "80", type : "icon", disabled: false,
+                icon : "webix_icon mdi mdi-file-excel-box", click : () => { wxAMC.excelDatasheet({id:this.editingID, type: 1}); }
+                },
+                { id: "moduleAdressen-printButton4", view : "button", default : true, label : "voll", width : "80", type : "icon", disabled: false,
+                icon : "webix_icon mdi mdi-file-excel", click : () => { wxAMC.excelDatasheet({id:this.editingID, type: 2}); }
+                },
                 { id : "moduleAdressen-emailButton", view : "button", label : "Email",
                   width : "80", type : "icon",
                   icon : "webix_icon mdi mdi-email-plus", disabled : true, 
