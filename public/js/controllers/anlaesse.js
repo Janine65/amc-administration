@@ -5,6 +5,7 @@ const {
 } = require("sequelize");
 const ExcelJS = require("exceljs");
 const adresse = require("./adresse");
+const { Meisterschaft } = require("../db");
 
 module.exports = {
   getData: function (req, res) {
@@ -181,7 +182,7 @@ module.exports = {
             fitToWidth: 1,
           },
         });
-        await createTemplate(objSave.year, sheet);
+        await createTemplate(objSave.year, sheet, true);
         //sheet.commit();
         break;
 
@@ -208,7 +209,7 @@ module.exports = {
                 fitToWidth: 1,
               },
             });
-            await createTemplate(objSave.year, sheet);
+            await createTemplate(objSave.year, sheet, true);
             await fillName(sheet, adress);
             //sheet.commit();
           }
@@ -226,7 +227,7 @@ module.exports = {
               fitToWidth: 1,
             },
           });
-          await createTemplate(objSave.year, sheet);
+          await createTemplate(objSave.year, sheet, true);
           await fillName(sheet, oneAdresse);
           //sheet.commit();
         }
@@ -255,7 +256,7 @@ module.exports = {
                 fitToWidth: 1,
               },
             });
-            await createTemplate(objSave.year, sheet);
+            await createTemplate(objSave.year, sheet, false);
             await fillName(sheet, adress);
             await fillTemplate(sheet, adress.id, objSave.year);
             //sheet.commit();
@@ -275,7 +276,7 @@ module.exports = {
               fitToWidth: 1,
             },
           });
-          await createTemplate(objSave.year, sheet);
+          await createTemplate(objSave.year, sheet, false);
           await fillName(sheet, oneAdresse);
           await fillTemplate(sheet, oneAdresse.id, objSave.year);
           //sheet.commit;
@@ -302,44 +303,47 @@ module.exports = {
     });
   },
 };
+
+
 async function fillTemplate(sheet, id, syear) {
   var qrySelect = "SELECT * FROM meisterschaft where eventid in (";
   qrySelect += "SELECT id FROM anlaesse where year(datum) = " + syear;
-  qrySelect += ") and mitgliedid = " + id;
+  qrySelect += ") and mitgliedid = " + id + " order by id";
 
-  var data = await sequelize.query(qrySelect, {
+  const data = await sequelize.query(qrySelect, {
     type: Sequelize.QueryTypes.SELECT,
+    model: Meisterschaft,
+    mapToModel: true,
     plain: false,
     logging: console.log,
-    raw: true
+    raw: false
   });
-  var clubPunkte = 0;
-  var kegelSumme = 0
 
   if (data.length > 0) {
-    var iterator = data.entries();
     var cols = sheet.getColumn('K');
 
+    var clubTotal = 0
+    var kegelTotal = 0
+
     cols.eachCell(function (cell, row) {
-      if (cell.value != "") {
-        for (let meisterschaft of iterator) {
-          var kegelTotal = 0;
+      if (cell.value != null && cell.value != "eventId") {
+        for (let meisterschaft of data.entries()) {
 
-          if (cell.value == meisterschaft[1].eventid) {
-            clubPunkte += meisterschaft[1].punkte;
-
+          if (cell.value == meisterschaft[1].eventId) {
             sheet.getCell('A' + cell.row).value = meisterschaft[1].punkte;
+            clubTotal += meisterschaft[1].punkte;
+
             if (meisterschaft[1].wurf1 > 0 || meisterschaft[1].wurf2 > 0 || meisterschaft[1].wurf3 > 0 || meisterschaft[1].wurf4 > 0 || meisterschaft[1].wurf5 > 0) {
               // Kegelresultat
-              kegelTotal = meisterschaft[1].wurf1 + meisterschaft[1].wurf2 + meisterschaft[1].wurf3 + meisterschaft[1].wurf4 + meisterschaft[1].wurf5 + sheet.getCell('H' + row).value;
+              var kegelSumme = meisterschaft[1].wurf1 + meisterschaft[1].wurf2 + meisterschaft[1].wurf3 + meisterschaft[1].wurf4 + meisterschaft[1].wurf5 + meisterschaft[1].zusatz;
               sheet.getCell('C' + cell.row).value = meisterschaft[1].wurf1;
               sheet.getCell('D' + cell.row).value = meisterschaft[1].wurf2;
               sheet.getCell('E' + cell.row).value = meisterschaft[1].wurf3;
               sheet.getCell('F' + cell.row).value = meisterschaft[1].wurf4;
               sheet.getCell('G' + cell.row).value = meisterschaft[1].wurf5;
-              sheet.getCell('I' + cell.row).value = kegelTotal;
+              sheet.getCell('I' + cell.row).value = kegelSumme;
               if (meisterschaft[1].streichresultat == 0) {
-                kegelSumme += kegelTotal;
+                kegelTotal += kegelSumme;
               } else {
                 // setzte diagonale Linie - > Streichresultat
                 sheet.getRow(row).border = {
@@ -359,6 +363,23 @@ async function fillTemplate(sheet, id, syear) {
         }
       }
     });
+
+    // Jetzt noch die Totals schreiben
+    //var range = sheet.lastRow.number - 13;
+    const rows = []
+    for (let i = 13; i <= sheet.lastRow.number; i++) {
+      rows.push(sheet.getRow(i))
+    }
+    //const rows = sheet.getRows(13, range);
+    for (let row of rows) {
+      if (row.getCell('F').value == "Total Kegeln") {
+        row.getCell('I').value = kegelTotal;
+      } else if (row.getCell('B').value == "Total Club") {
+        row.getCell('A').value = clubTotal;
+      }
+    }
+
+
   }
 
 }
@@ -371,7 +392,7 @@ async function fillName(sheet, adress) {
   cell.value = adress.vorname;
 }
 
-async function createTemplate(syear, sheet) {
+async function createTemplate(syear, sheet, inclPoints) {
   // read all events
   let dbEvents = await db.Anlaesse.findAll({
     where: sequelize.where(sequelize.fn('YEAR', sequelize.col('datum')), syear),
@@ -439,7 +460,7 @@ async function createTemplate(syear, sheet) {
       row++;
       if (event.status == 1) {
         clubTotal += event.punkte;
-        setCellValueFormat(sheet, "A" + row, event.punkte, true, "");
+        setCellValueFormat(sheet, "A" + row, (inclPoints ? event.punkte : ""), true, "");
       } else {
         sheet.getCell("B" + row).font = {
           strike: true
@@ -462,7 +483,7 @@ async function createTemplate(syear, sheet) {
 
   row++;
   setCellValueFormat(sheet, "F" + row, "Total Kegeln", true, "F" + row + ":H" + row);
-  setCellValueFormat(sheet, "I" + row, "", true, "");
+  setCellValueFormat(sheet, "I" + row, 0, true, "");
   row++;
   row++;
 
@@ -483,7 +504,7 @@ async function createTemplate(syear, sheet) {
       // clubevent einfache Liste
       if (event.status > 0) {
         clubTotal += event.punkte;
-        setCellValueFormat(sheet, "A" + row, event.punkte, true, "");
+        setCellValueFormat(sheet, "A" + row, (inclPoints ? event.punkte : ""), true, "");
       } else {
         setCellValueFormat(sheet, "A" + row, "", true, "");
         sheet.getCell("B" + row).font = {
@@ -498,7 +519,8 @@ async function createTemplate(syear, sheet) {
 
   row++;
   setCellValueFormat(sheet, "B" + row, "Total Club", true, "");
-  setCellValueFormat(sheet, "A" + row, clubTotal, true, "");
+  setCellValueFormat(sheet, "A" + row, (inclPoints ? clubTotal : 0), true, "");
+
 
   sheet.getColumn("K").hidden = true;
   sheet.getColumn("J").width = 17;
