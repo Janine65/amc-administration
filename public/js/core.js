@@ -509,7 +509,7 @@ class WXAMC {
       .then(function () {
         webix.message({
           type: "success",
-          text: "gesichert und downloaded"
+          text: "erstellt und downloaded"
         });
         // download file
         webix.send("./Stammblätter.xlsx",{},"GET","_blank");

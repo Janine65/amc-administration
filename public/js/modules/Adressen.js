@@ -113,7 +113,7 @@ wxAMC.moduleClasses.Adressen = class {
                 { id: "count_adr", view : "label", label: "Anzahl 0"},
                 { },
                 { id: "moduleAdressen-printButton1", view : "button", default : true, label : "leer", width : "80", type : "icon", disabled: false,
-                icon : "webix_icon mdi mdi-file-excel-box", click : () => { wxAMC.excelDatasheet({id:0, type: 1}); }
+                icon : "webix_icon mdi mdi-file-excel", click : () => { wxAMC.excelDatasheet({id:0, type: 1}); }
                 },
                 { id: "moduleAdressen-printButton2", view : "button", default : true, label : "voll", width : "80", type : "icon", disabled: false,
                 icon : "webix_icon mdi mdi-file-excel", click : () => { wxAMC.excelDatasheet({id:0, type: 2}); }
@@ -197,7 +197,7 @@ wxAMC.moduleClasses.Adressen = class {
                 },
                 { },
                 { id: "moduleAdressen-printButton3", view : "button", default : true, label : "leer", width : "80", type : "icon", disabled: false,
-                icon : "webix_icon mdi mdi-file-excel-box", click : () => { wxAMC.excelDatasheet({id:this.editingID, type: 1}); }
+                icon : "webix_icon mdi mdi-file-excel", click : () => { wxAMC.excelDatasheet({id:this.editingID, type: 1}); }
                 },
                 { id: "moduleAdressen-printButton4", view : "button", default : true, label : "voll", width : "80", type : "icon", disabled: false,
                 icon : "webix_icon mdi mdi-file-excel", click : () => { wxAMC.excelDatasheet({id:this.editingID, type: 2}); }
