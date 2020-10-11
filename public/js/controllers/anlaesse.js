@@ -5,7 +5,10 @@ const {
 } = require("sequelize");
 const ExcelJS = require("exceljs");
 const adresse = require("./adresse");
-const { Meisterschaft } = require("../db");
+const { Meisterschaft, Adressen } = require("../db");
+const cName = "C6";
+const cVorname = "C7";
+const sFirstRow = 13;
 
 module.exports = {
   getData: function (req, res) {
@@ -195,7 +198,8 @@ module.exports = {
                 austritt: {
                   [Op.gte]: new Date()
                 }
-              }
+              },
+              order: [["name", "asc"],["vorname", "asc"]]
             })
             .catch((e) => console.error(e));
           Promise.resolve(dbAdressen)
@@ -237,17 +241,17 @@ module.exports = {
         // Datenblatt gefüllt für Adressen
         if (objSave.id == 0) {
           // für alle aktiven Mitglieder
-          let dbAdressen = await db.Adressen.findAll({
-              where: {
-                austritt: {
-                  [Op.gte]: new Date()
-                }
-              }
-            })
-            .catch((e) => console.error(e));
-          Promise.resolve(dbAdressen)
-            .catch((e) => console.error(e));
-
+          var qrySelect = "SELECT * FROM adressen where austritt > now() and id in (";
+          qrySelect += "SELECT m.mitgliedid FROM meisterschaft m join anlaesse a on (m.eventid = a.id and year(a.datum) = " + objSave.year;
+          qrySelect += ")) order by name, vorname";
+        
+          const dbAdressen = await sequelize.query(qrySelect, {
+            type: Sequelize.QueryTypes.SELECT,
+            model: Adressen,
+            mapToModel: true,
+            logging: console.log
+          });
+        
           for (const adress of dbAdressen) {
             sheet = workbook.addWorksheet(adress.vorname + " " + adress.name, {
               pageSetup: {
@@ -314,9 +318,7 @@ async function fillTemplate(sheet, id, syear) {
     type: Sequelize.QueryTypes.SELECT,
     model: Meisterschaft,
     mapToModel: true,
-    plain: false,
-    logging: console.log,
-    raw: false
+    logging: console.log
   });
 
   if (data.length > 0) {
@@ -327,22 +329,22 @@ async function fillTemplate(sheet, id, syear) {
 
     cols.eachCell(function (cell, row) {
       if (cell.value != null && cell.value != "eventId") {
-        for (let meisterschaft of data.entries()) {
+        for (let meisterschaft of data) {
 
-          if (cell.value == meisterschaft[1].eventId) {
-            sheet.getCell('A' + cell.row).value = meisterschaft[1].punkte;
-            clubTotal += meisterschaft[1].punkte;
+          if (cell.value == meisterschaft.eventId) {
+            sheet.getCell('A' + cell.row).value = meisterschaft.punkte;
+            clubTotal += meisterschaft.punkte;
 
-            if (meisterschaft[1].wurf1 > 0 || meisterschaft[1].wurf2 > 0 || meisterschaft[1].wurf3 > 0 || meisterschaft[1].wurf4 > 0 || meisterschaft[1].wurf5 > 0) {
+            if (meisterschaft.wurf1 > 0 || meisterschaft.wurf2 > 0 || meisterschaft.wurf3 > 0 || meisterschaft.wurf4 > 0 || meisterschaft.wurf5 > 0) {
               // Kegelresultat
-              var kegelSumme = meisterschaft[1].wurf1 + meisterschaft[1].wurf2 + meisterschaft[1].wurf3 + meisterschaft[1].wurf4 + meisterschaft[1].wurf5 + meisterschaft[1].zusatz;
-              sheet.getCell('C' + cell.row).value = meisterschaft[1].wurf1;
-              sheet.getCell('D' + cell.row).value = meisterschaft[1].wurf2;
-              sheet.getCell('E' + cell.row).value = meisterschaft[1].wurf3;
-              sheet.getCell('F' + cell.row).value = meisterschaft[1].wurf4;
-              sheet.getCell('G' + cell.row).value = meisterschaft[1].wurf5;
+              var kegelSumme = meisterschaft.wurf1 + meisterschaft.wurf2 + meisterschaft.wurf3 + meisterschaft.wurf4 + meisterschaft.wurf5 + meisterschaft.zusatz;
+              sheet.getCell('C' + cell.row).value = meisterschaft.wurf1;
+              sheet.getCell('D' + cell.row).value = meisterschaft.wurf2;
+              sheet.getCell('E' + cell.row).value = meisterschaft.wurf3;
+              sheet.getCell('F' + cell.row).value = meisterschaft.wurf4;
+              sheet.getCell('G' + cell.row).value = meisterschaft.wurf5;
               sheet.getCell('I' + cell.row).value = kegelSumme;
-              if (meisterschaft[1].streichresultat == 0) {
+              if (meisterschaft.streichresultat == 0) {
                 kegelTotal += kegelSumme;
               } else {
                 // setzte diagonale Linie - > Streichresultat
@@ -365,13 +367,8 @@ async function fillTemplate(sheet, id, syear) {
     });
 
     // Jetzt noch die Totals schreiben
-    //var range = sheet.lastRow.number - 13;
-    const rows = []
-    for (let i = 13; i <= sheet.lastRow.number; i++) {
-      rows.push(sheet.getRow(i))
-    }
-    //const rows = sheet.getRows(13, range);
-    for (let row of rows) {
+    for (let i = sFirstRow; i <= sheet.lastRow.number; i++) {
+      const row = sheet.getRow(i);
       if (row.getCell('F').value == "Total Kegeln") {
         row.getCell('I').value = kegelTotal;
       } else if (row.getCell('B').value == "Total Club") {
@@ -386,9 +383,9 @@ async function fillTemplate(sheet, id, syear) {
 
 async function fillName(sheet, adress) {
 
-  let cell = sheet.getCell('C6')
+  let cell = sheet.getCell(cName)
   cell.value = adress.name;
-  cell = sheet.getCell('C7')
+  cell = sheet.getCell(cVorname)
   cell.value = adress.vorname;
 }
 
@@ -432,7 +429,7 @@ async function createTemplate(syear, sheet, inclPoints) {
   sheet.getCell("B6").font = {
     bold: true,
   };
-  sheet.getCell("C6").font = {
+  sheet.getCell(cName).font = {
     bold: true,
   };
   sheet.getCell("B7").value = "Vorname:";
@@ -442,7 +439,7 @@ async function createTemplate(syear, sheet, inclPoints) {
     bold: true,
   };
 
-  let row = 12;
+  let row = sFirstRow - 1;
   setCellValueFormat(sheet, "A" + row, "Club", true, "");
   setCellValueFormat(sheet, "B" + row, "Datum", true, "");
   setCellValueFormat(sheet, "C" + row, "Resultate", true, "C" + row + ":G" + row);
