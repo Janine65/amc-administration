@@ -40,7 +40,7 @@ wxAMC.moduleClasses.Adressen = class {
   getUIConfig() {
 
     return {
-      winWidth : 1200, winHeight : 800, winLabel : "Adressen Ctrl+A", winIcon : "mdi mdi-contacts", winHotkey: "ctrl+a",
+      winWidth : 1200, winHeight : 800, winLabel : "Adressen Ctrl+L", winIcon : "mdi mdi-contacts", winHotkey: "ctrl+l",
       id : "moduleAdressen-container",
       cells : [
         /* ---------- Adresse list cell. ---------- */
@@ -514,7 +514,7 @@ wxAMC.moduleClasses.Adressen = class {
     // Add a section to the day-at-a-glance body for this module if there isn't one already.
     if (!$$("dayAtAGlanceScreen_Adressen")) {
       $$("dayAtAGlanceBody").addView({
-        view : "fieldset", label : "Adressen - Ctrl+A", 
+        view : "fieldset", label : "Adressen - Ctrl+L", 
         body : { id: "dayAtAGlanceScreen_Adressen", cols : [  ] }
       });
       $$("dayAtAGlanceBody").addView({ height : 20 });  
