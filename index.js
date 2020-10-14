@@ -152,6 +152,7 @@ app.put('/Meisterschaft/data', meisterschaft.updateData);
 app.delete('/Meisterschaft/data', meisterschaft.removeData);
 app.get('/Meisterschaft/getOneData', meisterschaft.getOneData);
 app.get('/Meisterschaft/getFkData', meisterschaft.getFKData);
+app.get('/Meisterschaft/mitglied', meisterschaft.getMitgliedData);
 
 const clubmeister = require("./public/js/controllers/clubmeister");
 app.get('/Clubmeister/data', clubmeister.getData);
