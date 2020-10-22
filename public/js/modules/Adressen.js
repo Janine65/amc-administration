@@ -268,19 +268,39 @@ wxAMC.moduleClasses.Adressen = class {
                 rows: [
                   /* Adresse details form. */
                   {
-                    view: "datatable", id: "moduleAdressen-Anlaesseitems",
+                    view: "treetable", id: "moduleAdressen-Anlaesseitems",
                     css: "webix_header_border webix_data_border",
                     select: true, autofit: true,
                     resizeColumn: { headerOnly: true },
                     scroll: true,
                     editable: false,
+                    autowidth:false, 
                     columns: [
-                      {view: "text", header: "Datum", id: "datum"},
-                      {view: "text", header: "Bezeichnung", id: "name"},
-                      {view: "text", header: "Punkte", id: "punkte"},
-                      {view: "text", header: "Total Kegeln", id: "total_kegeln"},
-                      {view: "text", header: "Streichresulutat", id: "streichresultat"}
-                    ]      
+                      {view: "text", header: "Datum", id: "datum", adjust:true, 
+                      template:function(obj, common){
+                        if (obj.$group) return common.treetable(obj, common) + obj.jahr;
+                        return webix.i18n.dateFormatStr(obj.datum);
+                      }},
+                      {view: "text", header: "Bezeichnung", id: "name", fillspace:true},
+                      {view: "text", header: "Punkte", id: "punkte", adjust:true},
+                      {view: "text", header: "Total Kegeln", id: "total_kegeln", adjust:true},
+                      {view: "text", header: "Streichresulutat", id: "streichresultat", adjust:true, hidden:true}
+                    ],
+                    on:{
+                      "data->onGroupCreated":function(id, value, data){
+                        this.getItem(id).value = "Jahr "+value;
+                      }
+                    },
+                    scheme:{
+                      $group:{
+                        by:"jahr",
+                        map:{
+                          punkte:["punkte", "sum"],
+                          total_kegeln:["total_kegeln", "sum"]
+                        }
+                      },
+                      $sort:{ by:"datum", as:"date", dir:"desc" }
+                    }                                    
                   },
                   {
                     view: "toolbar",
@@ -458,6 +478,7 @@ wxAMC.moduleClasses.Adressen = class {
           if (!response.ok) {                                  // ***
             webix.message({ type: "error", text: "HTTP error " + response.status });  // ***
           }
+          return response.json();
         })
         .catch((e) => webix.message("Daten konnten nicht geladen werden: " + e, "error", -1));
       await Promise.resolve(promiseModule)
@@ -508,6 +529,7 @@ wxAMC.moduleClasses.Adressen = class {
         if (!response.ok) {                                  // ***
           webix.message({ type: "error", text: "HTTP error " + response.status });  // ***
         }
+        return response.json();
       })
       .catch((e) => webix.message("Mail konnte nicht erfolgreich gesendet werden: " + e, "error", -1));
     Promise.resolve(promiseModule)

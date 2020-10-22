@@ -125,6 +125,8 @@ class WXAMC {
     // Populate the day-at-a-glance screen.
     wxAMC.dayAtAGlance();
 
+    wxAMC.setHidden();
+
     if (window.PasswordCredential) {
       if (!wxAMC.isAuthenticated) {
         navigator.credentials.get({
@@ -775,7 +777,9 @@ class WXAMC {
 
       if (wxAMC.UserRole != "admin")
         eachElement(".authenticate_admin", (e) => e.classList.add("hidden"));
-    } else {
+      webix.UIManager.removeHotKey("ctrl+i");
+      webix.UIManager.addHotKey("ctrl+o",wxAMC.doLogout);
+      } else {
       eachElement(".authenticate_logged_in", (e) => e.classList.add("hidden"));
       eachElement(".authenticate_logged_out", (e) => e.classList.remove("hidden"));
       $$("loggedUser").setValue("not logged in");
@@ -791,7 +795,9 @@ class WXAMC {
         }
 
         webix.UIManager.removeHotKey(wxAMC.modules[moduleName].getUIConfig().winHotkey);
-      }
+        webix.UIManager.removeHotKey("ctrl+o");
+        webix.UIManager.addHotKey("ctrl+i",$$("MainMenulogin").click);
+        }
     }
   } /* End setHidden */
 } /* End WXAMC. */
