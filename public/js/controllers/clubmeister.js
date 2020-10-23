@@ -135,7 +135,7 @@ module.exports = {
 
 		// bestehende Daten löschen
 		qrySelect = "DELETE FROM clubmeister WHERE jahr = " + req.query.jahr;
-		var result = await sequelize.query(qrySelect,
+		await sequelize.query(qrySelect,
 			{
 				type: Sequelize.QueryTypes.DELETE,
 				plain: false,
@@ -157,7 +157,7 @@ module.exports = {
 				qrySelect += "(" + req.query.jahr + "," + (ind + 1) + ",'" + meister2.vorname + "','" + meister2.nachname + "'," + meister2.mitgliedid
 				qrySelect += "," + meister2.punkte + "," + meister2.anlaesse + "," + meister2.werbungen + "," + meister2.mitglieddauer + "," + status + ")"			
 			});
-			result = await sequelize.query(qrySelect,
+			await sequelize.query(qrySelect,
 				{
 					type: Sequelize.QueryTypes.INSERT,
 					plain: false,
@@ -166,7 +166,7 @@ module.exports = {
 				}
 			);			
 		}
-		res.json(result);		
+		res.json({ok: true});		
 	},
 
 };

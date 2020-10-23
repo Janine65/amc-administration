@@ -24,6 +24,27 @@ module.exports = {
 		}).then(data => res.json(data));
 	},
 
+	getMitgliedData: function(req, res) {
+		var qrySelect = "SELECT year(a.datum) as jahr, a.datum, a.name, m.punkte,";
+		qrySelect += " (case when a.istkegeln = 1 and m.streichresultat = 0 and (m.wurf1 + m.wurf2 + m.wurf3 + m.wurf4 + m.wurf5 > 0) then (m.wurf1 + m.wurf2 + m.wurf3 + m.wurf4 + m.wurf5 + m.zusatz) WHEN a.istkegeln = 0 then NULL else 0 end) as total_kegeln,";
+		qrySelect += " (case when a.istkegeln = 1 then m.streichresultat else null end) as streichresultat";
+		qrySelect += " FROM meisterschaft m join anlaesse a on (m.eventid = a.id)";
+		qrySelect += " WHERE m.mitgliedid = " + req.query.id;
+		qrySelect += " AND year(a.datum) <= " + global.Parameter.get("CLUBJAHR");
+		qrySelect += " ORDER BY datum asc"
+
+		sequelize.query(qrySelect, 
+			{ 
+				type: Sequelize.QueryTypes.SELECT,
+				plain: false,
+				logging: console.log,
+				raw: false
+			}
+		).then(data => res.json(data))
+		.catch(error => console.error(error));					
+
+	},
+
 	getFKData: function(req, res) {
 		var qrySelect = "SELECT `id`, `fullname` as value FROM `adressen` WHERE `austritt` > NOW()" ;
 		if (req.query.filter != null) {

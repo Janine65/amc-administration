@@ -297,8 +297,9 @@ module.exports = {
 			qrySelect = "INSERT INTO kegelmeister (jahr, rang, vorname, nachname, mitgliedid, punkte, anlaesse, babeli, status) VALUES "
 			const cMinPunkte = arMeister[0].punkte * 0.4;
 			var status = 1;
+			var ind = 0;
 			for (meister of arMeister) {
-				if (ind > 0) {
+				if (ind++ > 0) {
 					qrySelect += ","
 					status = meister.punkte >= cMinPunkte;
 				}
@@ -314,7 +315,7 @@ module.exports = {
 				}
 			);			
 		}
-		res.json(result);		
+		res.json({ok: true});		
 	},
 
 };
