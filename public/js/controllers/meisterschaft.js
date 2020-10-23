@@ -31,7 +31,7 @@ module.exports = {
 		qrySelect += " FROM meisterschaft m join anlaesse a on (m.eventid = a.id)";
 		qrySelect += " WHERE m.mitgliedid = " + req.query.id;
 		qrySelect += " AND year(a.datum) <= " + global.Parameter.get("CLUBJAHR");
-		qrySelect += " ORDER BY datum desc"
+		qrySelect += " ORDER BY datum asc"
 
 		sequelize.query(qrySelect, 
 			{ 

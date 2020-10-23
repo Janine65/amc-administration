@@ -795,9 +795,9 @@ class WXAMC {
         }
 
         webix.UIManager.removeHotKey(wxAMC.modules[moduleName].getUIConfig().winHotkey);
-        webix.UIManager.removeHotKey("ctrl+o");
-        webix.UIManager.addHotKey("ctrl+i",$$("MainMenulogin").click);
         }
+        webix.UIManager.removeHotKey("ctrl+o");
+        webix.UIManager.addHotKey("ctrl+i",this.showLoginGui);
     }
   } /* End setHidden */
 } /* End WXAMC. */

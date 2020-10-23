@@ -274,14 +274,14 @@ wxAMC.moduleClasses.Adressen = class {
                     resizeColumn: { headerOnly: true },
                     scroll: true,
                     editable: false,
-                    autowidth:false, 
+                    autowidth:true, 
                     columns: [
-                      {view: "text", header: "Datum", id: "datum", adjust:true, 
+                      {view: "text", header: "Datum", id: "datum", fillspace:true, 
                       template:function(obj, common){
                         if (obj.$group) return common.treetable(obj, common) + obj.jahr;
                         return webix.i18n.dateFormatStr(obj.datum);
                       }},
-                      {view: "text", header: "Bezeichnung", id: "name", fillspace:true},
+                      {view: "text", header: "Bezeichnung", id: "name", width: 250},
                       {view: "text", header: "Punkte", id: "punkte", adjust:true},
                       {view: "text", header: "Total Kegeln", id: "total_kegeln", adjust:true},
                       {view: "text", header: "Streichresulutat", id: "streichresultat", adjust:true, hidden:true}
@@ -299,7 +299,7 @@ wxAMC.moduleClasses.Adressen = class {
                           total_kegeln:["total_kegeln", "sum"]
                         }
                       },
-                      $sort:{ by:"datum", as:"date", dir:"desc" }
+                      $sort:{ by:"jahr", as:"int", dir:"desc" }
                     }                                    
                   },
                   {
