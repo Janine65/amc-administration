@@ -45,6 +45,31 @@ module.exports = {
 
 	},
 
+	getChartData: function (req, res) {
+		var qrySelect = "SELECT CONCAT(date_format(data.datum, '%d.%m.%Y'),' ',data.name) as anlass,";
+		qrySelect += " data.teilnehmer, data.gaeste";
+		qrySelect += " FROM (";
+		qrySelect += " select a.datum, a.name, count(m.mitgliedid) as Teilnehmer, a.gaeste";
+		qrySelect += " from anlaesse a";
+		qrySelect += " LEFT JOIN meisterschaft m";
+		qrySelect += " on (a.id = m.eventid)";
+		qrySelect += " where year(a.datum) = " + req.query.jahr;
+		qrySelect += " and a.nachkegeln = 0";
+		qrySelect += " group by a.datum, a.name, a.gaeste";
+		qrySelect += " order by a.datum) data";
+
+		sequelize.query(qrySelect, 
+			{ 
+				type: Sequelize.QueryTypes.SELECT,
+				plain: false,
+				logging: console.log,
+				raw: false
+			}
+		).then(data => res.json(data))
+		.catch(error => console.error(error));					
+
+	},
+
 	getFKData: function(req, res) {
 		var qrySelect = "SELECT `id`, `fullname` as value FROM `adressen` WHERE `austritt` > NOW()" ;
 		if (req.query.filter != null) {

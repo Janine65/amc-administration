@@ -27,7 +27,7 @@ wxAMC.moduleClasses.Meisterschaft = class {
   getUIConfig() {
 
     return {
-      winWidth : 1000, winHeight : 800, winLabel : "Meisterschaft Ctrl+M", winIcon : "mdi mdi-order-numeric-ascending", winHotkey: "ctrl+m",
+      winWidth : 1000, winHeight : 800, winLabel : "Meisterschaft Ctrl+M", winIcon : "mdi mdi-numeric", winHotkey: "ctrl+m",
       id : "moduleMeisterschaft-container",
       cells : [
         /* ---------- Anlass list cell. ---------- */

@@ -83,8 +83,6 @@ passport.deserializeUser(function(user, done) {
   done(null, {id: user.id});
 });
 
-
-
 const adresse = require("./public/js/controllers/adresse");
 app.get('/Adressen/data', adresse.getData);
 app.post('/Adressen/data', adresse.updateData);
@@ -153,6 +151,7 @@ app.delete('/Meisterschaft/data', meisterschaft.removeData);
 app.get('/Meisterschaft/getOneData', meisterschaft.getOneData);
 app.get('/Meisterschaft/getFkData', meisterschaft.getFKData);
 app.get('/Meisterschaft/mitglied', meisterschaft.getMitgliedData);
+app.get('/Meisterschaft/getChartData', meisterschaft.getChartData);
 
 const clubmeister = require("./public/js/controllers/clubmeister");
 app.get('/Clubmeister/data', clubmeister.getData);

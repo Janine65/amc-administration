@@ -1,6 +1,6 @@
 .webix_view {
-  font-family: PT Sans, Tahoma;
-  font-size: 13px;
+  font-family: Verdana, PT Sans, Tahoma;
+  font-size: 14px;
   color: #666666;
   -webkit-font-smoothing: antialiased;
   cursor: default;
@@ -1214,20 +1214,31 @@ button,
   line-height: 18px;
   /*line-height:10px;*/
 
-  margin-top: -4px;
+  margin-top: 0px;
   text-align: right;
+
+  font-family: Verdana;
+  font-size: 14px;
+  font-weight: bold;
+
+  left: 20px !important;
+  color: #000;
 }
+
+
 .webix_axis_item_x {
+  font-family: Verdana;
   padding-top: 2px;
 }
 .webix_axis_title_x {
+  font-family: Verdana;
   text-align: center;
-  font-size: 13px;
+  font-size: 16px;
 }
 .webix_axis_title_y {
   text-align: center;
   font-family: Verdana;
-  font-size: 13px;
+  font-size: 16px;
   /*safari*/
 
   -webkit-transform: rotate(-90deg);
