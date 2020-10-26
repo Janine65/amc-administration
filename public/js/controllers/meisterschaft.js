@@ -45,6 +45,55 @@ module.exports = {
 
 	},
 
+	getChartData: function (req, res) {
+		let qrySelect
+		if (req.query.vorjahr == 'false') {
+			qrySelect = "SELECT CONCAT(date_format(data.datum, '%d.%m.%Y'),' ',data.name) as anlass,";
+			qrySelect += " data.teilnehmer, data.gaeste";
+			qrySelect += " FROM (";
+			qrySelect += " select a.datum, a.name, count(m.mitgliedid) as Teilnehmer, a.gaeste";
+			qrySelect += " from anlaesse a";
+			qrySelect += " LEFT JOIN meisterschaft m";
+			qrySelect += " on (a.id = m.eventid)";
+			qrySelect += " where year(a.datum) = " + req.query.jahr;
+			qrySelect += " and a.nachkegeln = 0";
+			qrySelect += " group by a.datum, a.name, a.gaeste";
+			qrySelect += " order by a.datum) data";
+		} else {
+			qrySelect = "SELECT CONCAT(date_format(a.datum, '%d.%m.%Y'),' ',a.name) as anlass,";
+			qrySelect += " (ma.anzahl + a.gaeste) as aktjahr,";
+			qrySelect += " (mv.anzahl + av.gaeste) as vorjahr";
+			qrySelect += " FROM anlaesse a";
+			qrySelect += " LEFT JOIN (";
+			qrySelect += " SELECT mc.eventid,";
+			qrySelect += " count(mc.mitgliedid) as anzahl";
+			qrySelect += " from meisterschaft mc";
+			qrySelect += " group by mc.eventid";
+			qrySelect += " ) ma on (a.id = ma.eventid)";
+			qrySelect += " JOIN anlaesse av on (a.anlaesseid = av.id)";
+			qrySelect += " LEFT JOIN (";
+			qrySelect += " SELECT mcv.eventid,";
+			qrySelect += " count(mcv.mitgliedid) as anzahl";
+			qrySelect += " from meisterschaft mcv";
+			qrySelect += " group by mcv.eventid";
+			qrySelect += " ) mv on (av.id = mv.eventid)";
+			qrySelect += " WHERE year(a.datum) = " + req.query.jahr;
+			qrySelect += " and a.nachkegeln = 0";
+			qrySelect += " ORDER BY a.datum";
+		}
+
+		sequelize.query(qrySelect, 
+			{ 
+				type: Sequelize.QueryTypes.SELECT,
+				plain: false,
+				logging: console.log,
+				raw: false
+			}
+		).then(data => res.json(data))
+		.catch(error => console.error(error));					
+
+	},
+
 	getFKData: function(req, res) {
 		var qrySelect = "SELECT `id`, `fullname` as value FROM `adressen` WHERE `austritt` > NOW()" ;
 		if (req.query.filter != null) {

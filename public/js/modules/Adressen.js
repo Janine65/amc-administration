@@ -485,6 +485,7 @@ wxAMC.moduleClasses.Adressen = class {
         .then(function(data) {
           const itemsAsArray = wxAMC.objectAsArray(data);
           $$("moduleAdressen-Anlaesseitems").parse(itemsAsArray);
+          $$("moduleAdressen-Anlaesseitems").open($$("moduleAdressen-Anlaesseitems").getFirstId());
         })
         .catch((e) => webix.message("Daten konnten nicht geladen werden:" + e, "error", -1));
     }
