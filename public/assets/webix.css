@@ -1,5 +1,5 @@
 .webix_view {
-  font-family: "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Geneva, Verdana, sans-serif;
+  font-family: PT Sans, Tahoma;
   font-size: 14px;
   color: #666666;
   -webkit-font-smoothing: antialiased;
@@ -1178,7 +1178,7 @@ button,
 /*chart container*/
 .webix_chart {
   position: relative;
-  font-family: "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Geneva, Verdana, sans-serif;
+  font-family: PT Sans, Tahoma;
   font-size: 13px;
   color: #ffffff;
   background-color: #666666;
@@ -1325,7 +1325,7 @@ button,
   cursor: w-resize;
 }
 .webix_view {
-  font-family: "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Geneva, Verdana, sans-serif;
+  font-family: PT Sans, Tahoma;
   font-size: 13px;
   -webkit-font-smoothing: antialiased;
   cursor: default;

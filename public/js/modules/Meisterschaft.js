@@ -167,7 +167,9 @@ wxAMC.moduleClasses.Meisterschaft = class {
               { id: "moduleMeisterschaft-Ccount", view : "label", label: "Anzahl 0"},
               { width : 6 },
               { id: "moduleMeisterschaft-refreshButton", view : "button", default : true, label : "Refresh", width : "80", type : "icon", disabled: false,
-              icon : "webix_icon mdi mdi-refresh-circle", click : this.refreshMeister.bind(this)},
+              icon : "webix_icon mdi mdi-refresh", click : this.refreshMeister.bind(this)},
+              { id: "moduleMeisterschaft-exporthButton", view : "button", default : true, label : "Excel", width : "80", type : "icon", disabled: false,
+              icon : "webix_icon mdi mdi-file-excel", click : this.exportMeister.bind(this)},
               { width : 6 },
               { id: "moduleMeisterschaft-Kcount", view : "label", label: "Anzahl 0", align: "left"},
             ] /* End toolbar items. */
@@ -193,12 +195,24 @@ wxAMC.moduleClasses.Meisterschaft = class {
   deactivate() {
   } /* End deactivate(). */
 
+  /**
+   * export both tables to one excel file
+   */
+  async exportMeister() {
+    await webix.toExcel([{id: "moduleMeisterschaft-Citems", options: {name: "Clubmeisterschaft"}},
+    {id: "moduleMeisterschaft-Kitems", options: {name: "Kegelmeisterschaft"}}],
+    {filename: "Meisterschaft", styles:true});
+
+  }
+  /**
+   * Recalculate both championships
+   */
   async refreshMeister() {
     var url = "/Clubmeister/refresh?jahr=" + $$("moduleMeisterschaftdatumSelect").getValue();
-    var promiseModule = await fetch(url)      
+    await fetch(url)      
       .catch(error => webix.message({ type:"error", text: error}));
     url = "/Kegelmeister/refresh?jahr=" + $$("moduleMeisterschaftdatumSelect").getValue();
-    promiseModule = await fetch(url)      
+    await fetch(url)      
       .catch(error => webix.message({ type:"error", text: error}));
     await this.refreshData();
     webix.message({type: "info", text:"Ranglisten neu berechnet"});
