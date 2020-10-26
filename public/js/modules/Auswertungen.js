@@ -48,54 +48,56 @@ wxAMC.moduleClasses.Auswertungen = class {
               }
             },
             {
-            cols: [
-              {
-                view: "checkbox", label: "Vergleich Vorjahr", id:"checkVorjahr", value:0, labelWidth: 150,
-                on: {
-                  onViewShow: this.refreshData.bind(this),
-                  onChange: this.refreshData.bind(this)
+              cols: [
+                {
+                  view: "checkbox", label: "Vergleich Vorjahr", id: "checkVorjahr", value: 0, labelWidth: 150,
+                  on: {
+                    onViewShow: this.refreshData.bind(this),
+                    onChange: this.refreshData.bind(this)
+                  }
+                },
+                {
+                  view: "button", label: "Bild speicher", id: "saveImage",
+                  type: "icon", icon: "webix_icon mdi mdi-printer",
+                  click: this.saveImage.bind(this)
                 }
-              },
-              {
-                view: "button", label: "Bild speicher", id:"saveImage",
-                type: "icon", icon: "webix_icon mdi mdi-printer",
-                click: this.saveImage.bind(this)
-              }    
-            ]},
+              ]
+            },
             {
               view: "chart", type: "stackedBarH", id: "moduleAuswertungenChartOhne", hidden: false,
               //barWidth:60,
               radius: 0,
-              yAxis:{
-               template:"#anlass#",
-               lineColor: "#fff"
-              },
-              padding:{
-                left:10
-              },
-              xAxis:{
+              yAxis: {
+                template: "#anlass#",
                 lineColor: "#fff"
               },
-              legend:{
-                values:[{text:"Mitglieder",color:"#FDBD67"},{text:"Gäste",color:"#5CCEF2"}],
-                valign:"bottom",
-                alpha:0.9,
-                align:"left",
-                width:120,
-                layout:"x"              },
-              series:[
+              padding: {
+                left: 10
+              },
+              xAxis: {
+                lineColor: "#fff"
+              },
+              legend: {
+                values: [{ text: "Mitglieder", color: "#FDBD67" }, { text: "Gäste", color: "#5CCEF2" }],
+                valign: "bottom",
+                alpha: 0.9,
+                align: "left",
+                width: 120,
+                layout: "x"
+              },
+              series: [
                 {
-                  value:"#teilnehmer#",
-                  color: "#FDBD67 ", 
-                  tooltip:{
-                    template:"#teilnehmer#"
+                  value: "#teilnehmer#",
+                  color: "#FDBD67 ",
+                  tooltip: {
+                    template: "#teilnehmer#"
                   }
                 },
                 {
-                  value:"#gaeste#",
-                  color:"#5CCEF2", 
-                  tooltip:{
-                    template:"#gaeste#"
+                  value: "#gaeste#",
+                  color: "#5CCEF2",
+                  tooltip: {
+                    template: "#gaeste#"
                   }
                 }
               ]
@@ -104,38 +106,39 @@ wxAMC.moduleClasses.Auswertungen = class {
               view: "chart", type: "barH", id: "moduleAuswertungenChartMit", hidden: true,
               //barWidth:60,
               radius: 0,
-              yAxis:{
-               template:"#anlass#",
-               lineColor: "#fff",
-               color: "#fff"
-              },
-              padding:{
-                left:10
-              },
-              xAxis:{
+              yAxis: {
+                template: "#anlass#",
                 lineColor: "#fff",
                 color: "#fff"
               },
-              legend:{
-                values:[{text:"aktuelles Jahr",color:"#27ae60"},{text:"Vorjahr",color:"#FF8063"}],
-                valign:"bottom",
-                alpha:0.9,
-                align:"left",
-                width:120,
-                layout:"x"              },
-              series:[
+              padding: {
+                left: 10
+              },
+              xAxis: {
+                lineColor: "#fff",
+                color: "#fff"
+              },
+              legend: {
+                values: [{ text: "aktuelles Jahr", color: "#27ae60" }, { text: "Vorjahr", color: "#FF8063" }],
+                valign: "bottom",
+                alpha: 0.9,
+                align: "left",
+                width: 120,
+                layout: "x"
+              },
+              series: [
                 {
-                  value:"#aktjahr#",
-                  color: "#27ae60", 
-                  tooltip:{
-                    template:"#aktjahr#"
+                  value: "#aktjahr#",
+                  color: "#27ae60",
+                  tooltip: {
+                    template: "#aktjahr#"
                   }
                 },
                 {
-                  value:"#vorjahr#",
-                  color:"#FF8063", 
-                  tooltip:{
-                    template:"#vorjahr#"
+                  value: "#vorjahr#",
+                  color: "#FF8063",
+                  tooltip: {
+                    template: "#vorjahr#"
                   }
                 }
               ]
@@ -166,21 +169,23 @@ wxAMC.moduleClasses.Auswertungen = class {
     let chart
     let docHeader
     if ($$("checkVorjahr").getValue() == 1) {
-      chart = $$("moduleAuswertungenChartMit");
+      chart = "moduleAuswertungenChartMit";
       docHeader = "Auswertung für das Jahr " + $$("moduleAuswertungendatumSelect").getValue() + " - Vergleich mit dem Vorjahr";
     } else {
-      chart = $$("moduleAuswertungenChartOhne");
+      chart = "moduleAuswertungenChartOhne";
       docHeader = "Auswertung für das Jahr " + $$("moduleAuswertungendatumSelect").getValue();
     }
-
-    await webix.toPDF(chart, { display:"image", filename:"auswertung", orientation:"landscape", 
-        docHeader:{
+    await webix.toPDF([
+      { id: chart, options: { display: "image" } }, 
+      { id: chart, options: { autowidth: true } }], 
+      {
+        filename: "auswertung", orientation: "landscape",
+        docHeader: {
           text: docHeader,
-          textAlign:"center",
-          color:0x663399
+          textAlign: "center",
+          color: 0x666666
         }
-      }
-    );
+      });
 
   } /* End saveImage */
 
