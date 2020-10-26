@@ -48,40 +48,94 @@ wxAMC.moduleClasses.Auswertungen = class {
               }
             },
             {
-              view: "chart", type: "stackedBarH", id: "moduleAuswertungenChart", 
+            cols: [
+              {
+                view: "checkbox", label: "Vergleich Vorjahr", id:"checkVorjahr", value:0, labelWidth: 150,
+                on: {
+                  onViewShow: this.refreshData.bind(this),
+                  onChange: this.refreshData.bind(this)
+                }
+              },
+              {
+                view: "button", label: "Bild speicher", id:"saveImage",
+                type: "icon", icon: "webix_icon mdi mdi-printer",
+                click: this.saveImage.bind(this)
+              }    
+            ]},
+            {
+              view: "chart", type: "stackedBarH", id: "moduleAuswertungenChartOhne", hidden: false,
               //barWidth:60,
               radius: 0,
-              alpha:0.7,
-              gradient:"falling",
               yAxis:{
                template:"#anlass#",
-               lineColor: "#000000"
+               lineColor: "#fff"
               },
               padding:{
                 left:10
               },
               xAxis:{
-                lineColor: "#000000"
+                lineColor: "#fff"
               },
               legend:{
-                values:[{text:"Mitglieder",color:"#58dccd"},{text:"Gäste",color:"#a7ee70"}],
+                values:[{text:"Mitglieder",color:"#FDBD67"},{text:"Gäste",color:"#5CCEF2"}],
                 valign:"bottom",
+                alpha:0.9,
                 align:"left",
-                width:90,
+                width:120,
                 layout:"x"              },
               series:[
                 {
                   value:"#teilnehmer#",
-                  color: "#58dccd", 
+                  color: "#FDBD67 ", 
                   tooltip:{
                     template:"#teilnehmer#"
                   }
                 },
                 {
                   value:"#gaeste#",
-                  color:"#a7ee70", 
+                  color:"#5CCEF2", 
                   tooltip:{
                     template:"#gaeste#"
+                  }
+                }
+              ]
+            }, /* End chart. */
+            {
+              view: "chart", type: "barH", id: "moduleAuswertungenChartMit", hidden: true,
+              //barWidth:60,
+              radius: 0,
+              yAxis:{
+               template:"#anlass#",
+               lineColor: "#fff",
+               color: "#fff"
+              },
+              padding:{
+                left:10
+              },
+              xAxis:{
+                lineColor: "#fff",
+                color: "#fff"
+              },
+              legend:{
+                values:[{text:"aktuelles Jahr",color:"#27ae60"},{text:"Vorjahr",color:"#FF8063"}],
+                valign:"bottom",
+                alpha:0.9,
+                align:"left",
+                width:120,
+                layout:"x"              },
+              series:[
+                {
+                  value:"#aktjahr#",
+                  color: "#27ae60", 
+                  tooltip:{
+                    template:"#aktjahr#"
+                  }
+                },
+                {
+                  value:"#vorjahr#",
+                  color:"#FF8063", 
+                  tooltip:{
+                    template:"#vorjahr#"
                   }
                 }
               ]
@@ -99,7 +153,6 @@ wxAMC.moduleClasses.Auswertungen = class {
     this.refreshData();
   } /* End activate(). */
 
-
   /**
    * Called whenever this module becomes inactive.
    */
@@ -107,13 +160,50 @@ wxAMC.moduleClasses.Auswertungen = class {
   } /* End deactivate(). */
 
   /**
+   * Save the image just shown
+   */
+  async saveImage() {
+    let chart
+    let docHeader
+    if ($$("checkVorjahr").getValue() == 1) {
+      chart = $$("moduleAuswertungenChartMit");
+      docHeader = "Auswertung für das Jahr " + $$("moduleAuswertungendatumSelect").getValue() + " - Vergleich mit dem Vorjahr";
+    } else {
+      chart = $$("moduleAuswertungenChartOhne");
+      docHeader = "Auswertung für das Jahr " + $$("moduleAuswertungendatumSelect").getValue();
+    }
+
+    await webix.toPDF(chart, { display:"image", filename:"auswertung", orientation:"landscape", 
+        docHeader:{
+          text: docHeader,
+          textAlign:"center",
+          color:0x663399
+        }
+      }
+    );
+
+  } /* End saveImage */
+
+  /**
    * Refresh the auswertungen list from local storage.
    */
   async refreshData() {
 
     var sSelYear = $$("moduleAuswertungendatumSelect").getValue();
-    const url = "/Meisterschaft/getChartData?jahr=" + sSelYear;
-    
+    var url = "/Meisterschaft/getChartData?jahr=" + sSelYear;
+    let chart
+    if ($$("checkVorjahr").getValue() == 1) {
+      url += "&vorjahr=true";
+      chart = $$("moduleAuswertungenChartMit");
+      $$("moduleAuswertungenChartOhne").hide();
+      $$("moduleAuswertungenChartMit").show();
+    } else {
+      url += "&vorjahr=false";
+      chart = $$("moduleAuswertungenChartOhne");
+      $$("moduleAuswertungenChartOhne").show();
+      $$("moduleAuswertungenChartMit").hide();
+    }
+
     const promiseModule = fetch(url)
       .then(function (response) {
         //console.log(response);
@@ -126,9 +216,8 @@ wxAMC.moduleClasses.Auswertungen = class {
         // Get the items as an array of objects.
         const itemsAsArray = wxAMC.objectAsArray(dataItems);
 
-        $$("moduleAuswertungenChart").clearAll();
-
-        $$("moduleAuswertungenChart").parse(itemsAsArray);
+        chart.clearAll();
+        chart.parse(itemsAsArray);
 
       });
 
