@@ -299,11 +299,11 @@ module.exports = {
 			var status = 1;
 			var ind = 0;
 			for (meister of arMeister) {
-				if (ind++ > 0) {
+				if (ind > 0) {
 					qrySelect += ","
 					status = meister.punkte >= cMinPunkte;
 				}
-				qrySelect += "(" + req.query.jahr + "," + (ind + 1) + ",'" + meister.vorname + "','" + meister.nachname + "'," + meister.mitgliedid
+				qrySelect += "(" + req.query.jahr + "," + ++ind + ",'" + meister.vorname + "','" + meister.nachname + "'," + meister.mitgliedid
 				qrySelect += "," + meister.punkte + "," + meister.anlaesse + "," + meister.babeli + "," + status + ")"			
 			}
 			await sequelize.query(qrySelect,
