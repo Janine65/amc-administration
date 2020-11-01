@@ -5,7 +5,7 @@ const {
 } = require("sequelize");
 const ExcelJS = require("exceljs");
 const adresse = require("./adresse");
-const { Meisterschaft, Adressen } = require("../db");
+const { Meisterschaft, Adressen, Clubmeister, Kegelmeister } = require("../db");
 const cName = "C6";
 const cVorname = "C7";
 const sFirstRow = 13;
@@ -162,6 +162,182 @@ module.exports = {
     }
   },
 
+  /**
+   * Erstellt eine Exceldatei mit den Meisterschaftsauswertungen
+   * @param {*} req 
+   * @param {*} res 
+   */
+  writeAuswertung: async function(req, res) {
+    console.log("writeExcelTemplate");
+
+    var objSave = req.body;
+
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.readFile("./public/exports/Meisterschaft-Vorlage.xlsx");
+
+    // Clubmeisterschaft lesen und exportieren
+		var dbMeister = await Clubmeister.findAll({
+			where: {jahr: { [Op.eq]: objSave.year }},
+			  order: [
+			 	 ['rang', 'asc']
+			 ]
+		}).catch((e) => console.error(e));
+    Promise.resolve(dbMeister)
+      .catch((e) => console.error(e));
+
+    var worksheet = workbook.getWorksheet('Clubmeisterschaft');
+    worksheet.getCell("A1").value = "Clubmeisterschaft " + objSave.year;
+    var row = 5
+    for (const meister of dbMeister) {
+      // Add a row by contiguous Array (assign to columns A, B & C)
+      worksheet.insertRow(row,[meister.rang, meister.punkte, meister.vorname, meister.nachname, meister.mitgliedid, meister.anlaesse, meister.werbungen, meister.mitglieddauer, meister.status],'i+');
+      row++;
+    }
+    worksheet.getColumn(5).hidden = true;
+    worksheet.getColumn(9).hidden = true;
+    worksheet.spliceRows(4,1);
+/*     worksheet.addConditionalFormatting({
+      ref: 'A4:H'+ row-1,
+      rules: [
+        {
+          type: 'expression',
+          formulae: ['$I4=0'],
+          style: {font: {italic: true, color: {argb: 'FF00FF00'}}},
+        }
+      ]
+    });
+ */
+    // Kegelmeisterschaft lesen und exportieren
+		dbMeister = await Kegelmeister.findAll({
+			where: {jahr: { [Op.eq]: objSave.year }},
+			  order: [
+			 	 ['rang', 'asc']
+			 ]
+		}).catch((e) => console.error(e));	
+    Promise.resolve(dbMeister)
+      .catch((e) => console.error(e));
+    
+    worksheet = workbook.getWorksheet('Kegelmeisterschaft');
+    worksheet.getCell("A1").value = "Kegelmeisterschaft " + objSave.year;
+    row = 5
+    for (const meister of dbMeister) {
+      // Add a row by contiguous Array (assign to columns A, B & C)
+      worksheet.insertRow(row,[meister.rang, meister.punkte, meister.vorname, meister.name, meister.mitgliedid, meister.anlaesse, meister.babeli, meister.status],'i+');
+      row++;
+    }
+    worksheet.getColumn(5).hidden = true;
+    worksheet.getColumn(8).hidden = true;
+    worksheet.spliceRows(4,1);
+/*     worksheet.addConditionalFormatting({
+      ref: 'A4:G'+ row-1,
+      rules: [
+        {
+          type: 'expression',
+          formulae: ['$H4=0'],
+          style: {font: {italic: true, color: {argb: 'FF00FF00'}}},
+        }
+      ]
+    });
+ */
+    // Auswertung ohne Vorjahr erstellen
+		let qrySelect
+    qrySelect = "SELECT CONCAT(date_format(data.datum, '%d.%m.%Y'),' ',data.name) as anlass,";
+    qrySelect += " data.teilnehmer, data.gaeste";
+    qrySelect += " FROM (";
+    qrySelect += " select a.datum, a.name, count(m.mitgliedid) as Teilnehmer, a.gaeste";
+    qrySelect += " from anlaesse a";
+    qrySelect += " LEFT JOIN meisterschaft m";
+    qrySelect += " on (a.id = m.eventid)";
+    qrySelect += " where year(a.datum) = " + objSave.year;
+    qrySelect += " and a.nachkegeln = 0";
+    qrySelect += " group by a.datum, a.name, a.gaeste";
+    qrySelect += " order by a.datum) data";
+
+		var dbChartData = await sequelize.query(qrySelect, 
+			{ 
+				type: Sequelize.QueryTypes.SELECT,
+				plain: false,
+				logging: console.log,
+				raw: false
+			}
+		)
+		.catch(error => console.error(error));					
+    Promise.resolve(dbChartData)
+      .catch((e) => console.error(e));
+
+    worksheet = workbook.getWorksheet('Datenbereich für Beteiligung');
+    row = 3
+
+    for (const chData of dbChartData) {
+      worksheet.insertRow(row, ['', chData.anlass, chData.teilnehmer, chData.gaeste]);
+      row++;
+    }
+
+    // Auswertung mit Vorjahr erstellen
+    qrySelect = "SELECT CONCAT(date_format(a.datum, '%d.%m.%Y'),' ',a.name) as anlass,";
+    qrySelect += " (ma.anzahl + a.gaeste) as aktjahr,";
+    qrySelect += " (mv.anzahl + av.gaeste) as vorjahr";
+    qrySelect += " FROM anlaesse a";
+    qrySelect += " LEFT JOIN (";
+    qrySelect += " SELECT mc.eventid,";
+    qrySelect += " count(mc.mitgliedid) as anzahl";
+    qrySelect += " from meisterschaft mc";
+    qrySelect += " group by mc.eventid";
+    qrySelect += " ) ma on (a.id = ma.eventid)";
+    qrySelect += " JOIN anlaesse av on (a.anlaesseid = av.id)";
+    qrySelect += " LEFT JOIN (";
+    qrySelect += " SELECT mcv.eventid,";
+    qrySelect += " count(mcv.mitgliedid) as anzahl";
+    qrySelect += " from meisterschaft mcv";
+    qrySelect += " group by mcv.eventid";
+    qrySelect += " ) mv on (av.id = mv.eventid)";
+    qrySelect += " WHERE year(a.datum) = " + objSave.year;
+    qrySelect += " and a.nachkegeln = 0";
+    qrySelect += " ORDER BY a.datum";
+
+		dbChartData = await sequelize.query(qrySelect, 
+			{ 
+				type: Sequelize.QueryTypes.SELECT,
+				plain: false,
+				logging: console.log,
+				raw: false
+			}
+		)
+    .catch((e) => console.error(e));	
+    Promise.resolve(dbChartData)
+      .catch((e) => console.error(e));
+
+    worksheet = workbook.getWorksheet('Datenbereich Vergleich Vorjahr');
+    row = 3
+
+    for (const chData of dbChartData) {
+      worksheet.insertRow(row, ['', chData.anlass, chData.aktjahr, chData.vorjahr]);
+      row++;
+    }
+
+    // Datei sichern
+    var filename = "./public/exports/Meisterschaft-" + objSave.year + ".xlsx";
+    await workbook.xlsx.writeFile(filename).catch((e) => {
+      console.error(e);
+      res.json({
+        type: "error",
+        message: e,
+      });
+    });
+
+    return res.json({
+      type: "info",
+      message: "Excelfile erstellt",
+      filename: filename
+    });
+
+  },
+
+  /**
+   * Erstellt Stammblätter mit oder ohne Daten
+   * @param {*} req 
+   * @param {*} res 
+   */
   writeExcelTemplate: async function (req, res) {
     console.log("writeExcelTemplate");
     const workbook = new ExcelJS.Workbook();
@@ -291,7 +467,7 @@ module.exports = {
         break;
     }
 
-    const filename = "./public/Stammblätter.xlsx";
+    const filename = "./public/exports/Stammblätter.xlsx";
     await workbook.xlsx.writeFile(filename).catch((e) => {
       console.error(e);
       res.json({

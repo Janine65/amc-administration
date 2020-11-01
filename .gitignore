@@ -3,4 +3,7 @@
 public/.DS_Store
 logs/*.txt
 *.log
-*.xlsx
+~$*.xlsx
+public/exports/*
+!public/exports/Meisterschaft-Vorlage.xlsx
+*.zip

@@ -514,7 +514,7 @@ class WXAMC {
           text: "erstellt und downloaded"
         });
         // download file
-        webix.send("./Stammblätter.xlsx",{},"GET","_blank");
+        webix.send("./exports/Stammblätter.xlsx",{},"GET","_blank");
       })
       .catch((e) => webix.message({
         type: "error",
@@ -522,6 +522,52 @@ class WXAMC {
       }));
 
   } /* End excelDatasheet(). */
+
+  /**
+   * Handles clicks of the save button for modules.
+   *
+   * @param inModuleName The name of the module.
+   * @param inFormIDs    An array of form IDs.
+   */
+  async writeAuswertung() {
+
+    var objSave = {};
+    const url = "/Anlaesse/writeAuswertung";
+    if ($$("moduleAuswertungendatumSelect"))
+      objSave.year = $$("moduleAuswertungendatumSelect").getValue();
+    else
+      return;
+
+    fetch(url, {
+        method: "POST", // *GET, POST, PUT, DELETE, etc.
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        redirect: 'follow', // manual, *follow, error
+        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+        body: JSON.stringify(objSave) // body data type must match "Content-Type" header
+      })
+      .then((response) => {
+        if (!response.ok) { // ***
+          webix.message({
+            type: "error",
+            text: "HTTP error " + response.status
+          }); // ***
+        } else {
+          webix.message({
+            type: "success",
+            text: "erstellt und downloaded"
+          });
+          // download file
+          webix.send("./exports/Meisterschaft-"+objSave.year+".xlsx",{},"GET","_blank");
+        }
+      })
+      .catch((e) => webix.message({
+        type: "error",
+        text: e
+      }));
+
+  } /* End writeAuswertung(). */
 
   /**
    * Handles clicks of the delete button for modules.
