@@ -142,6 +142,7 @@ app.get('/Anlaesse/getFkData', anlaesse.getFKData);
 app.get('/Anlaesse/data/:id', anlaesse.getOneData);
 app.get('/Anlaesse/getOverviewData', anlaesse.getOverviewData);
 app.post('/Anlaesse/sheet', anlaesse.writeExcelTemplate);
+app.post('/Anlaesse/writeAuswertung', anlaesse.writeAuswertung);
 
 const meisterschaft = require("./public/js/controllers/meisterschaft");
 app.get('/Meisterschaft/data', meisterschaft.getData);

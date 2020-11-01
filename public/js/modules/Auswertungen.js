@@ -60,6 +60,11 @@ wxAMC.moduleClasses.Auswertungen = class {
                   view: "button", label: "Bild speicher", id: "saveImage",
                   type: "icon", icon: "webix_icon mdi mdi-printer",
                   click: this.saveImage.bind(this)
+                },
+                {
+                  view: "button", label: "Excel erstellen", id: "excelCreate",
+                  type: "icon", icon: "webix_icon mdi mdi-file-excel",
+                  click: wxAMC.writeAuswertung.bind(this)
                 }
               ]
             },
