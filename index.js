@@ -175,6 +175,19 @@ parameter.getGlobal();
 
 console.log(global.Parameter);
 
+const book = require("./public/js/controllers/book");
+app.get('/Book/data', book.getData);
+app.post('/Book/data', upload.array(), book.addData);
+app.put('/Book/data', upload.array(), book.updateData);
+app.delete('/Book/data', book.removeData);
+app.get('/Book/getFkData', book.getFKData);
+
+const journal = require("./public/js/controllers/journal");
+app.get('/Journal/data', journal.getData);
+app.post('/Journal/data', upload.array(), journal.addData);
+app.put('/Journal/data', upload.array(), journal.updateData);
+app.delete('/Journal/data', journal.removeData);
+
 /**
  * A common handler to deal with DB operation errors.  Returns a 500 and an error object.
  *
