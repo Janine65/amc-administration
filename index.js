@@ -175,12 +175,20 @@ parameter.getGlobal();
 
 console.log(global.Parameter);
 
-const book = require("./public/js/controllers/book");
-app.get('/Book/data', book.getData);
-app.post('/Book/data', upload.array(), book.addData);
-app.put('/Book/data', upload.array(), book.updateData);
-app.delete('/Book/data', book.removeData);
-app.get('/Book/getFkData', book.getFKData);
+const fiscalyear = require("./public/js/controllers/fiscalyear");
+app.get('/Fiscalyear/data', fiscalyear.getData);
+app.post('/Fiscalyear/data', upload.array(), fiscalyear.addData);
+app.put('/Fiscalyear/data', upload.array(), fiscalyear.updateData);
+app.delete('/Fiscalyear/data', fiscalyear.removeData);
+app.get('/Fiscalyear/getFkData', fiscalyear.getFKData);
+app.get('/Fiscalyear/getOneData', fiscalyear.getOneData);
+
+const account = require("./public/js/controllers/account");
+app.get('/Account/data', account.getData);
+app.post('/Account/data', upload.array(), account.addData);
+app.put('/Account/data', upload.array(), account.updateData);
+app.delete('/Account/data', account.removeData);
+app.get('/Account/getFkData', account.getFKData);
 
 const journal = require("./public/js/controllers/journal");
 app.get('/Journal/data', journal.getData);

@@ -172,8 +172,8 @@ module.exports = {
 
     var objSave = req.body;
 
-    const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.readFile("./public/exports/Meisterschaft-Vorlage.xlsx");
+    const workaccount = new ExcelJS.Workaccount();
+    await workaccount.xlsx.readFile("./public/exports/Meisterschaft-Vorlage.xlsx");
 
     // Clubmeisterschaft lesen und exportieren
 		var dbMeister = await Clubmeister.findAll({
@@ -185,7 +185,7 @@ module.exports = {
     Promise.resolve(dbMeister)
       .catch((e) => console.error(e));
 
-    var worksheet = workbook.getWorksheet('Clubmeisterschaft');
+    var worksheet = workaccount.getWorksheet('Clubmeisterschaft');
     worksheet.getCell("A1").value = "Clubmeisterschaft " + objSave.year;
     var row = 5
     for (const meister of dbMeister) {
@@ -217,7 +217,7 @@ module.exports = {
     Promise.resolve(dbMeister)
       .catch((e) => console.error(e));
     
-    worksheet = workbook.getWorksheet('Kegelmeisterschaft');
+    worksheet = workaccount.getWorksheet('Kegelmeisterschaft');
     worksheet.getCell("A1").value = "Kegelmeisterschaft " + objSave.year;
     row = 5
     for (const meister of dbMeister) {
@@ -265,7 +265,7 @@ module.exports = {
     Promise.resolve(dbChartData)
       .catch((e) => console.error(e));
 
-    worksheet = workbook.getWorksheet('Datenbereich für Beteiligung');
+    worksheet = workaccount.getWorksheet('Datenbereich für Beteiligung');
     row = 3
 
     for (const chData of dbChartData) {
@@ -307,7 +307,7 @@ module.exports = {
     Promise.resolve(dbChartData)
       .catch((e) => console.error(e));
 
-    worksheet = workbook.getWorksheet('Datenbereich Vergleich Vorjahr');
+    worksheet = workaccount.getWorksheet('Datenbereich Vergleich Vorjahr');
     row = 3
 
     for (const chData of dbChartData) {
@@ -317,7 +317,7 @@ module.exports = {
 
     // Datei sichern
     var filename = "./public/exports/Meisterschaft-" + objSave.year + ".xlsx";
-    await workbook.xlsx.writeFile(filename).catch((e) => {
+    await workaccount.xlsx.writeFile(filename).catch((e) => {
       console.error(e);
       res.json({
         type: "error",
@@ -340,11 +340,11 @@ module.exports = {
    */
   writeExcelTemplate: async function (req, res) {
     console.log("writeExcelTemplate");
-    const workbook = new ExcelJS.Workbook();
-    workbook.creator = "Janine Franken";
+    const workaccount = new ExcelJS.Workaccount();
+    workaccount.creator = "Janine Franken";
 
-    // Force workbook calculation on load
-    workbook.calcProperties.fullCalcOnLoad = true;
+    // Force workaccount calculation on load
+    workaccount.calcProperties.fullCalcOnLoad = true;
 
     let sheet
     let oneAdresse
@@ -354,7 +354,7 @@ module.exports = {
     switch (objSave.type) {
       case 0:
         // Datenblatt leer
-        sheet = workbook.addWorksheet("Template", {
+        sheet = workaccount.addWorksheet("Template", {
           pageSetup: {
             fitToPage: true,
             fitToHeight: 1,
@@ -382,7 +382,7 @@ module.exports = {
             .catch((e) => console.error(e));
 
           for (const adress of dbAdressen) {
-            sheet = workbook.addWorksheet(adress.vorname + " " + adress.name, {
+            sheet = workaccount.addWorksheet(adress.vorname + " " + adress.name, {
               pageSetup: {
                 fitToPage: true,
                 fitToHeight: 1,
@@ -400,7 +400,7 @@ module.exports = {
             .catch((e) => console.error(e));
           Promise.resolve(oneAdresse)
             .catch((e) => console.error(e));
-          sheet = workbook.addWorksheet(oneAdresse.vorname + " " + oneAdresse.name, {
+          sheet = workaccount.addWorksheet(oneAdresse.vorname + " " + oneAdresse.name, {
             pageSetup: {
               fitToPage: true,
               fitToHeight: 1,
@@ -429,7 +429,7 @@ module.exports = {
           });
         
           for (const adress of dbAdressen) {
-            sheet = workbook.addWorksheet(adress.vorname + " " + adress.name, {
+            sheet = workaccount.addWorksheet(adress.vorname + " " + adress.name, {
               pageSetup: {
                 fitToPage: true,
                 fitToHeight: 1,
@@ -449,7 +449,7 @@ module.exports = {
           Promise.resolve(oneAdresse)
             .catch((e) => console.error(e));
 
-          sheet = workbook.addWorksheet(oneAdresse.vorname + " " + oneAdresse.name, {
+          sheet = workaccount.addWorksheet(oneAdresse.vorname + " " + oneAdresse.name, {
             pageSetup: {
               fitToPage: true,
               fitToHeight: 1,
@@ -468,7 +468,7 @@ module.exports = {
     }
 
     const filename = "./public/exports/Stammblätter.xlsx";
-    await workbook.xlsx.writeFile(filename).catch((e) => {
+    await workaccount.xlsx.writeFile(filename).catch((e) => {
       console.error(e);
       res.json({
         type: "error",

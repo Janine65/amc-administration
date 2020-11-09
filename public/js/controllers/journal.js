@@ -6,8 +6,8 @@ module.exports = {
 		db.Journal.findAll(
 			{ where: sequelize.where(sequelize.fn('YEAR', sequelize.col('date')), req.query.jahr),
 			include: [
-				{ model: db.Book, as: 'fromBook', required: true, attributes: ['id', 'order',  'name']},
-				{ model: db.Book, as: 'toBook', required: true, attributes: ['id', 'order', 'name']}
+				{ model: db.Account, as: 'fromAccount', required: true, attributes: ['id', 'order',  'name']},
+				{ model: db.Account, as: 'toAccount', required: true, attributes: ['id', 'order', 'name']}
 			],
 			order: [
 				['journalNo', 'asc'],

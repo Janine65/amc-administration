@@ -376,11 +376,32 @@ User.init({
     modelName: 'user'
   });
 
+  class FiscalYear extends Model {
 
-class Book extends Model {
+  }
+  FiscalYear.init({
+    id: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
+      defaultValue: 0
+    },
+    year: DataTypes.STRING,
+    name: DataTypes.STRING,
+    state: DataTypes.INTEGER,
+  },
+    {
+      sequelize,
+      tableName: 'fiscalyear',
+      modelName: 'fiscalyear'
+    });
+  
+  
+class Account extends Model {
 
 }
-Book.init({
+Account.init({
   id: {
     type: Sequelize.INTEGER,
     allowNull: false,
@@ -395,8 +416,8 @@ Book.init({
 },
   {
     sequelize,
-    tableName: 'book',
-    modelName: 'book'
+    tableName: 'account',
+    modelName: 'account'
   });
 
 class Journal extends Model {
@@ -409,17 +430,17 @@ Journal.init({
     primaryKey: true,
     defaultValue: 0
   },
-  from_book: {
+  from_account: {
     type: Sequelize.INTEGER,
     references: {
-      model: Book,
+      model: Account,
       key: 'id'
     }
   },
-  to_book: {
+  to_account: {
     type: Sequelize.INTEGER,
     references: {
-      model: Book,
+      model: Account,
       key: 'id'
     }
   },
@@ -445,9 +466,9 @@ Journal.init({
     modelName: 'journal'
   });
 
-  Journal.belongsTo(Book, { as: 'fromBook', constraints: true, foreignKey: 'from_book' });
-  Journal.belongsTo(Book, { as: 'toBook', constraints: true, foreignKey: 'to_book' });
+  Journal.belongsTo(Account, { as: 'fromAccount', constraints: true, foreignKey: 'from_account' });
+  Journal.belongsTo(Account, { as: 'toAccount', constraints: true, foreignKey: 'to_account' });
 
 module.exports = {
-  Adressen, Anlaesse, Parameter, Meisterschaft, Clubmeister, Kegelmeister, User, Session, Book, Journal
+  Adressen, Anlaesse, Parameter, Meisterschaft, Clubmeister, Kegelmeister, User, Session, Account, Journal, FiscalYear,
 };

@@ -27,13 +27,22 @@ wxAMC.moduleClasses.Journal = class {
   getUIConfig() {
 
     return {
-      winWidth: 1200, winHeight: 800, winLabel: "Journal Ctrl+J", winIcon: "mdi mdi-notebook", winHotkey: "ctrl+j",
+      winWidth: 1200, winHeight: 800, winLabel: "Journal Ctrl+J", winIcon: "mdi mdi-bank", winHotkey: "ctrl+j",
       id: "moduleJournal-container",
       cells: [
         /* ---------- Journal list cell. ---------- */
         {
           id: "moduleJournal-itemsCell",
           rows: [
+            {
+              view: "select", id: "moduleJournal-dateSelect",
+              options: "/Fiscalyear/getFkData",
+              value: wxAMC.parameter.get('CLUBJAHR'),
+              on: {
+                onViewShow: this.refreshData.bind(this),
+                onChange: this.refreshData.bind(this)
+              }
+            },
             {
               view: "datatable", id: "moduleJournal-items",
               css: "webix_header_border webix_data_border",
@@ -48,8 +57,8 @@ wxAMC.moduleClasses.Journal = class {
                    "editor": "date", hidden: false,
                   format: webix.i18n.dateFormatStr
                 },
-                {  header: "From", adjust:true,  hidden: false, template: "#fromBook.order# #fromBook.name#" },
-                {  header: "To", adjust:true,  hidden: false, template: "#toBook.order# #toBook.name#" },
+                {  header: "From", adjust:true,  hidden: false, template: "#fromAccount.order# #fromAccount.name#" },
+                {  header: "To", adjust:true,  hidden: false, template: "#toAccount.order# #toAccount.name#" },
                 {
                   id: "amount", header: "Amount", 
                   "editor": "text", hidden: false,
@@ -64,8 +73,18 @@ wxAMC.moduleClasses.Journal = class {
                 },
                 onAfterLoad: function () {
                   this.hideOverlay();
-                  //console.info(this.count());
                   $$("count_journal").setValue("Anzahl " + this.count());
+                  if (wxAMC.fiscalyear.state < 3) {
+                    $$("moduleJournal-editButton").show();
+                    $$("moduleJournal-deleteButton").show();
+                    $$("moduleJournal-addForm").show();
+                    $$("moduleJournal-editButton").disable();
+                    $$("moduleJournal-deleteButton").disable();
+                    } else {
+                    $$("moduleJournal-editButton").hide();
+                    $$("moduleJournal-deleteButton").hide();
+                    $$("moduleJournal-addForm").hide();
+                  }
                 },
                 onAfterFilter: function () {
                   $$("count_journal").setValue("Anzahl " + this.count());
@@ -127,14 +146,14 @@ wxAMC.moduleClasses.Journal = class {
                       width: 120
                     },
                     {
-                      view: "combo", suggest: "/Book/getFkData", name: "from_book", label: "Konto",
+                      view: "combo", suggest: "/Account/getFkData", name: "from_account", label: "Konto",
                       height: 46,
                       labelPosition: "top",
                       required: true,
                       width: 200
                     },
                     {
-                      view: "combo", suggest: "/Book/getFkData", name: "to_book", label: "Konto",
+                      view: "combo", suggest: "/Account/getFkData", name: "to_account", label: "Konto",
                       height: 44,
                       labelPosition: "top",
                       required: true,
@@ -192,20 +211,20 @@ wxAMC.moduleClasses.Journal = class {
                   name: "date"
                 },
                 {
-                  label: "From Book",
+                  label: "From Account",
                   "value": "1",
                   view: "combo",
-                  suggest: "/Book/getFkData",
+                  suggest: "/Account/getFkData",
                   "labelWidth": 100,
                   required: true
                 },
                 {
-                  label: "To Book",
+                  label: "To Account",
                   "value": "1",
                   view: "combo",
-                  suggest: "/Book/getFkData",
+                  suggest: "/Account/getFkData",
                   required: true,
-                  name: "to_book",
+                  name: "to_account",
                   "labelWidth": 100
                 },
                 {
@@ -328,8 +347,29 @@ wxAMC.moduleClasses.Journal = class {
    */
   async refreshData() {
 
-    const url = "/Journal/data?jahr=" + wxAMC.parameter.get('CLUBJAHR');
-    // var dataItems;
+    var sJahr = $$("moduleJournal-dateSelect").getValue();
+    if (sJahr == "")
+      sJahr = wxAMC.parameter.get("CLUBJAHR");
+    const url = "/Journal/data?jahr=" + sJahr;
+
+    // read the fiscalyear to handle all the rights
+    const promiseFiscal = fetch("/Fiscalyear/getOneData?year=" + sJahr)
+    .then(function (response) {
+      if (!response.ok)
+        webix.message('Fehler beim Lesen der Journaldaten', 'Error');
+      return response.json();
+    })
+    .catch(function (error) {
+      webix.message({ type: "error", text: error })
+    });
+
+    Promise.resolve(promiseFiscal)
+    .then(function (data) {
+      wxAMC.fiscalyear = data;      
+    })
+    .catch(function (error) {
+      webix.message({ type: "error", text: error })
+    });
 
     const promiseModule = fetch(url)
       .then(function (response) {

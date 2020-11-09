@@ -317,7 +317,11 @@ class WXAMC {
     } /* End uiType check. */
 
     // Refresh data for the module to show their lists of items.
-    await wxAMC.modules[inModuleName].refreshData();
+    await wxAMC.modules[inModuleName].refreshData()
+    .catch((e) => webix.message({
+      type: "error",
+      text: e
+    }));
 
     // Finally, call the module's activate() handler.
     wxAMC.modules[inModuleName].activate();
