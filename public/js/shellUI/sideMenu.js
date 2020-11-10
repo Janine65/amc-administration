@@ -7,7 +7,7 @@ wxAMC.getSideMenuConfig = function() {
   const listItems = [ ];
   for (let moduleName of wxAMC.registeredModules) {
     listItems.push({ id : moduleName, value : wxAMC.modules[moduleName].getUIConfig().winLabel,
-      icon : wxAMC.modules[moduleName].getUIConfig().winIcon
+      icon : wxAMC.modules[moduleName].getUIConfig().winIcon, css: wxAMC.modules[moduleName].getUIConfig().winCss
     });
   }
 
@@ -27,7 +27,12 @@ wxAMC.getSideMenuConfig = function() {
         { view : "list", scroll : true,
           select : false, type : { height : 40 }, id : "sidemenu_list",
           template : `<span class="#icon#"></span> #value#`,
-          data : listItems, click : wxAMC.launchModule, css: "authenticate_logged_in hidden"
+          data : listItems, click : wxAMC.launchModule, css: "authenticate_logged_in hidden",
+          scheme:{
+            $init:function(obj){
+              if (obj.css != null) obj.$css = obj.css;
+            }
+          },
         },
         { height : 2, template : "<hr>" },
         {view : "label", id: "MainMenulogin", label: "Login", icon: "webix_icon mdi mdi-login",

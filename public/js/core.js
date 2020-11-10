@@ -43,6 +43,16 @@ class WXAMC {
     this.deLocale = webix.i18n.locales["de-DE"];
     this.deLocale.dateFormat = "%d.%m.%Y";
     this.deLocale.parseFormat = "%c";
+    this.deLocale.decimalDelimiter =".";
+    this.deLocale.groupDelimiter = "'";
+    this.deLocale.priceSettings = {
+      groupSize:3,        // the number of digits in a group
+      groupDelimiter:"'", // a mark that divides numbers with many digits into groups
+      decimalDelimiter:".",// the decimal delimiter
+      decimalSize:2       // the number of digits after the decimal mark
+    };
+  
+
     webix.i18n.locales["de-DE"] = this.deLocale;
     webix.i18n.setLocale("de-DE");
 
@@ -331,6 +341,16 @@ class WXAMC {
 
   // **************************************** Module helper methods ****************************************
 
+
+
+  importLoadedFile() {
+
+    //$$("files").files.data.parse();
+    var file_id = $$("files").files.getFirstId();
+    var fileobj = $$("files").files.getItem(file_id).file;
+    console.log(fileobj);
+    $$("message_win").close();
+  }
 
   /**
    * Sort an array of objects by a specified property in descending order.

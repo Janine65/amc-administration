@@ -20,7 +20,6 @@ wxAMC.moduleClasses.Journal = class {
 
   } /* End constructor. */
 
-
   /**
    * Return the module's UI config object.
    */
@@ -28,6 +27,7 @@ wxAMC.moduleClasses.Journal = class {
 
     return {
       winWidth: 1200, winHeight: 800, winLabel: "Journal Ctrl+J", winIcon: "mdi mdi-bank", winHotkey: "ctrl+j",
+      winCss: "authenticate_admin",
       id: "moduleJournal-container",
       cells: [
         /* ---------- Journal list cell. ---------- */
@@ -119,6 +119,10 @@ wxAMC.moduleClasses.Journal = class {
                 {
                   id: "moduleJournal-exportButton", view: "button", label: "Export", width: "80", type: "icon",
                   icon: "webix_icon mdi mdi-export", click: this.exportData.bind(this)
+                },
+                {
+                  id: "moduleJournal-importButton", view: "button", label: "Import", width: "80", type: "icon",
+                  icon: "webix_icon mdi mdi-import", click: this.importData.bind(this)
                 },
                 { width: 6 }
               ] /* End toolbar items. */
@@ -284,35 +288,63 @@ wxAMC.moduleClasses.Journal = class {
   } /* End deactivate(). */
 
   /**
+   * Import Journal from an Excelfile
+   */
+  importData() {
+    var message_text = "Exceldatei hier hochladen, um sie als Journaleinträge zu importieren";
+
+    var compose_form = {
+      view:"form", rows: [
+        { view:"textarea", value:message_text, label:"message", labelPosition:"top", height:100 },
+        { type:"clean", cols:[
+          { view: "uploader", value: 'Exceldatei auswählen', link:"mytemplate", 
+           upload: "upload.php", 
+           multiple: false,
+           name:"files", id:"files" },
+          {
+            id:"mytemplate", autoheight:true,
+            template:function(data){
+              var names = [];
+              if (data.each)
+                data.each(function(obj){  
+                  if (obj.status == "server")
+                    names.push("<a target='__blank' href='./uploads/"+obj.name+"'>"+obj.name+"</a>");
+                  else
+                    names.push(obj.name);
+                });
+              return names.join(", &nbsp;&nbsp;&nbsp; ");
+            },
+            borderless:true 
+          }
+        ]},
+        { view:"button", value:"Send message", click: function() {
+          $$("files").send(function(response){
+            if(response)
+              webix.message(response.status);
+            wxAMC.importLoadedFile();
+          });
+        }},
+        { view:"button", value:"Cancel", click: function() {$$("message_win").close();}
+        }
+      ]
+    };
+    
+    webix.ui({
+      view:"window", body:compose_form, head:"Compose message",
+      width:450, id:"message_win",
+      position:"center"
+    }).show();
+    
+  }
+
+
+  /**
    * Export selected data to Excel
    */
   exportData() {
     webix.toExcel($$("moduleJournal-items"), {
       filename: "Journal",
-      rawValues: true,
-      columns: [
-        { id: "mnr", header: "MNR" },
-        { id: "geschlecht", header: "Geschlecht" },
-        { id: "name", header: "Name" },
-        { id: "vorname", header: "Vorname" },
-        { id: "journal", header: "Journal" },
-        { id: "plz", header: "PLZ" },
-        { id: "ort", header: "Ort" },
-        { id: "land", header: "Land" },
-        { id: "telefon_p", header: "Telefon (P)" },
-        { id: "mobile", header: "Mobile" },
-        { id: "email", header: "Email" },
-        { id: "notes", header: "Notizen" },
-        { id: "mnr_sam", header: "SAM Nr." },
-        { id: "sam_mitglied", header: "SAM Mitglied", exportType: "boolean" },
-        { id: "ehrenmitglied", header: "Ehrenmitglied", exportType: "boolean" },
-        { id: "vorstand", header: "Vorstand", exportType: "boolean" },
-        { id: "revisor", header: "Revisor", exportType: "boolean" },
-        { id: "allianz", header: "Allianz", exportType: "boolean" },
-        { id: "eintritt", header: "Eintritt" },
-        { id: "austritt", header: "Austritt" },
-        { id: "journalId", header: "Geworben von" }
-      ]
+      rawValues: false
     });
   } /* End exportData(). */
 
@@ -394,8 +426,60 @@ wxAMC.moduleClasses.Journal = class {
    * Service requests from day-at-a-glance to present data for this module.
    */
   async dayAtAGlance() {
+    // Add a section to the day-at-a-glance body for this module if there isn't one already.
+    if (!$$("dayAtAGlanceScreen_Journal")) {
+      $$("dayAtAGlanceBody").addView({
+        view : "fieldset", label : "Journal - Ctrl+J", 
+        body : { id: "dayAtAGlanceScreen_Journal", cols: [ ] }
+      });
+      $$("dayAtAGlanceBody").addView({ height : 20 });
+    } 
+
+    // Populate the day-at-a-glance screen.
+    var rows = [ ];
+
+    const sJahr = wxAMC.parameter.get("CLUBJAHR");
+
+    // read the fiscalyear to handle all the rights
+    const promiseFiscal = fetch("/Fiscalyear/getOneData?year=" + sJahr)
+    .then(function (response) {
+      if (!response.ok)
+        webix.message('Fehler beim Lesen des Buchhaltungsjahres', 'Error');
+      return response.json();
+    })
+    .catch(function (error) {
+      webix.message({ type: "error", text: error })
+    });
+
+    Promise.resolve(promiseFiscal)
+    .then(function (data) {
+      wxAMC.fiscalyear = data;      
+      let status
+      switch (data.state) {
+        case 1:
+          status = " - offen"
+          break;
+        case 2:
+          status = " - prov. abgeschlossen"
+          break;
+        default:
+          status = " - abgeschlossen"
+          break;
+      }
+      rows.push(
+        { view:"fieldset", label: "Buchhaltung", body: { 
+          rows : [ 
+            {view: "label", label : data.name + status}
+          ]}
+        });
+        webix.ui (rows, $$("dayAtAGlanceScreen_Journal"));
+    })
+    .catch(function (error) {
+      webix.message({ type: "error", text: error })
+    });
+
+
 
   } /* End dayAtAGlance(). */
-
 
 }; /* End Journal class. */
