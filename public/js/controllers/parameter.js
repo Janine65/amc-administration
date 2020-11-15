@@ -69,7 +69,7 @@ module.exports = {
 					.then((updated) => global.Parameter.set(updated.key, updated.value))
 					.catch((e) => {ok = false; console.error(e);}))
 				.catch((e) => {ok = false; console.error(e);});
-			};
+			}
 			if (ok) {
 				res.json({});
 			}

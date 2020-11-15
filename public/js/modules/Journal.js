@@ -51,18 +51,18 @@ wxAMC.moduleClasses.Journal = class {
               scroll: true,
               editable: false,
               columns: [
-                { id: "journalNo", header: "No", adjust:true,  hidden: false },
+                { id: "journalNo", header: "No", adjust: true, hidden: false },
                 {
-                  id: "date", header: "Date", adjust:true,
-                   "editor": "date", hidden: false,
+                  id: "date", header: "Date", adjust: true,
+                  "editor": "date", hidden: false,
                   format: webix.i18n.dateFormatStr
                 },
-                {  header: "From", adjust:true,  hidden: false, template: "#fromAccount.order# #fromAccount.name#" },
-                {  header: "To", adjust:true,  hidden: false, template: "#toAccount.order# #toAccount.name#" },
+                { header: "From", adjust: true, hidden: false, template: "#fromAccount.order# #fromAccount.name#" },
+                { header: "To", adjust: true, hidden: false, template: "#toAccount.order# #toAccount.name#" },
                 {
-                  id: "amount", header: "Amount", 
+                  id: "amount", header: "Amount",
                   "editor": "text", hidden: false,
-                  css:{'text-align':'right'}, format:webix.i18n.numberFormat
+                  css: { 'text-align': 'right' }, format: webix.i18n.numberFormat
                 },
                 { id: "memo", header: "Memo", fillspace: true, hidden: false }
               ],
@@ -80,7 +80,7 @@ wxAMC.moduleClasses.Journal = class {
                     $$("moduleJournal-addForm").show();
                     $$("moduleJournal-editButton").disable();
                     $$("moduleJournal-deleteButton").disable();
-                    } else {
+                  } else {
                     $$("moduleJournal-editButton").hide();
                     $$("moduleJournal-deleteButton").hide();
                     $$("moduleJournal-addForm").hide();
@@ -169,7 +169,7 @@ wxAMC.moduleClasses.Journal = class {
                       name: "amount",
                       view: "text",
                       required: true,
-                      format:"1'111.00",
+                      format: "1'111.00",
                       height: 46,
                       labelPosition: "top",
                       placeholder: "0.00",
@@ -179,10 +179,11 @@ wxAMC.moduleClasses.Journal = class {
                     }
                   ]
                 },
-                { view: "button", css: "webix_primary", label: "Save",
-                icon: "mdi mdi-content-save", id: "moduleJournal-addButton", disabled: true,
-                click: () => { wxAMC.saveHandler("Journal", "moduleJournal-addForm") }
-               }
+                {
+                  view: "button", css: "webix_primary", label: "Save",
+                  icon: "mdi mdi-content-save", id: "moduleJournal-addButton", disabled: true,
+                  click: () => { wxAMC.saveHandler("Journal", "moduleJournal-addForm") }
+                }
               ]
             }
           ] /* End journal list rows. */
@@ -294,46 +295,56 @@ wxAMC.moduleClasses.Journal = class {
     var message_text = "Exceldatei hier hochladen, um sie als Einträge ins Journal zu importieren";
 
     var compose_form = {
-      view:"form", rows: [
-        { view:"textarea", value:message_text, label:"message", labelPosition:"top", autoheight:true 
+      view: "form", rows: [
+        {
+          view: "textarea", value: message_text, label: "message", labelPosition: "top", autoheight: true
         },
-        { view: "uploader", value: 'Choose files', link:"mytemplate", 
-          upload: "/upload", 
+        {
+          view: "uploader", value: 'Choose files', link: "mytemplate",
+          upload: "/uploadFiles", accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
           multiple: true, autosend: false,
-          name:"uploadFiles", id:"fisupload",
+          name: "uploadFiles", id: "fisupload",
           on: {
             onAfterFileAdd: () => { $$("fisupload_import").enable(); }
           }
         },
         {
-          view:"list",
-          id:"mytemplate", 
-          type:"uploader",
-          height: 30,
-          borderless:true 
+          view: "list",
+          id: "mytemplate",
+          type: "uploader",
+          autoheight: true,
+          miniminHeight: 30,
+          borderless: true
         },
-        {cols: [
-          { view:"button", value:"Start Import", id: "fisupload_import",  disabled: true, 
-            click: function() {
-              $$("fisupload").send(function(response){
-                if(response)
-                  webix.message(response.status);
-                wxAMC.importLoadedFile();
-              });
-            }
+        {
+          cols: [
+            {
+              view: "button", value: "Start Import", id: "fisupload_import", disabled: true,
+              click: function () {
+                $$("fisupload").send(function (response) {
+                  if (response) {
+                    if (response.status == 'server')
+                      wxAMC.importLoadedFile();
+                    else
+                      webix.message('Fehler beim Upload: ' + response.error);
+                  }
+                });
+              }
             },
-          { view:"button", value:"Cancel", click: function() {$$("message_win").close();}
-          }  
-        ]}
+            {
+              view: "button", value: "Cancel", click: function () { $$("message_win").close(); }
+            }
+          ]
+        }
       ]
     };
-    
+
     webix.ui({
-      view:"window", body:compose_form, head:"Import File",
-      width:450, id:"message_win",
-      position:"center"
+      view: "window", body: compose_form, head: "Import File",
+      width: 450, id: "message_win",
+      position: "center"
     }).show();
-    
+
   }
 
 
@@ -385,22 +396,22 @@ wxAMC.moduleClasses.Journal = class {
 
     // read the fiscalyear to handle all the rights
     const promiseFiscal = fetch("/Fiscalyear/getOneData?year=" + sJahr)
-    .then(function (response) {
-      if (!response.ok)
-        webix.message('Fehler beim Lesen der Journaldaten', 'Error');
-      return response.json();
-    })
-    .catch(function (error) {
-      webix.message({ type: "error", text: error })
-    });
+      .then(function (response) {
+        if (!response.ok)
+          webix.message('Fehler beim Lesen der Journaldaten', 'Error');
+        return response.json();
+      })
+      .catch(function (error) {
+        webix.message({ type: "error", text: error })
+      });
 
     Promise.resolve(promiseFiscal)
-    .then(function (data) {
-      wxAMC.fiscalyear = data;      
-    })
-    .catch(function (error) {
-      webix.message({ type: "error", text: error })
-    });
+      .then(function (data) {
+        wxAMC.fiscalyear = data;
+      })
+      .catch(function (error) {
+        webix.message({ type: "error", text: error })
+      });
 
     const promiseModule = fetch(url)
       .then(function (response) {
@@ -428,54 +439,56 @@ wxAMC.moduleClasses.Journal = class {
     // Add a section to the day-at-a-glance body for this module if there isn't one already.
     if (!$$("dayAtAGlanceScreen_Journal")) {
       $$("dayAtAGlanceBody").addView({
-        view : "fieldset", label : "Journal - Ctrl+J", 
-        body : { id: "dayAtAGlanceScreen_Journal", cols: [ ] }
+        view: "fieldset", label: "Journal - Ctrl+J",
+        body: { id: "dayAtAGlanceScreen_Journal", cols: [] }
       });
-      $$("dayAtAGlanceBody").addView({ height : 20 });
-    } 
+      $$("dayAtAGlanceBody").addView({ height: 20 });
+    }
 
     // Populate the day-at-a-glance screen.
-    var rows = [ ];
+    var rows = [];
 
     const sJahr = wxAMC.parameter.get("CLUBJAHR");
 
     // read the fiscalyear to handle all the rights
     const promiseFiscal = fetch("/Fiscalyear/getOneData?year=" + sJahr)
-    .then(function (response) {
-      if (!response.ok)
-        webix.message('Fehler beim Lesen des Buchhaltungsjahres', 'Error');
-      return response.json();
-    })
-    .catch(function (error) {
-      webix.message({ type: "error", text: error })
-    });
+      .then(function (response) {
+        if (!response.ok)
+          webix.message('Fehler beim Lesen des Buchhaltungsjahres', 'Error');
+        return response.json();
+      })
+      .catch(function (error) {
+        webix.message({ type: "error", text: error })
+      });
 
     Promise.resolve(promiseFiscal)
-    .then(function (data) {
-      wxAMC.fiscalyear = data;      
-      let status
-      switch (data.state) {
-        case 1:
-          status = " - offen"
-          break;
-        case 2:
-          status = " - prov. abgeschlossen"
-          break;
-        default:
-          status = " - abgeschlossen"
-          break;
-      }
-      rows.push(
-        { view:"fieldset", label: "Buchhaltung", body: { 
-          rows : [ 
-            {view: "label", label : data.name + status}
-          ]}
-        });
-        webix.ui (rows, $$("dayAtAGlanceScreen_Journal"));
-    })
-    .catch(function (error) {
-      webix.message({ type: "error", text: error })
-    });
+      .then(function (data) {
+        wxAMC.fiscalyear = data;
+        let status
+        switch (data.state) {
+          case 1:
+            status = " - offen"
+            break;
+          case 2:
+            status = " - prov. abgeschlossen"
+            break;
+          default:
+            status = " - abgeschlossen"
+            break;
+        }
+        rows.push(
+          {
+            view: "fieldset", label: "Buchhaltung", body: {
+              rows: [
+                { view: "label", label: data.name + status }
+              ]
+            }
+          });
+        webix.ui(rows, $$("dayAtAGlanceScreen_Journal"));
+      })
+      .catch(function (error) {
+        webix.message({ type: "error", text: error })
+      });
 
 
 

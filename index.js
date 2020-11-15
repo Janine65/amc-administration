@@ -66,30 +66,6 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// fileupload router
-app.use(fileUpload);
-
-app.post('/upload' ,function(req, res) {
-  console.log(req.files);
-  console.log(req);
-  if (!req.files || Object.keys(req.files).length === 0) {
-    console.error('status 400 : No files were uploaded');
-    return res.status(400).send('No files were uploaded.');
-  }
-
-  // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
-  let uploadFiles = req.files.uploadFiles;
-  console.log(uploadFiles);
-
-  // Use the mv() method to place the file somewhere on your server
-  uploadFiles.mv('/uploads/', function(err) {
-    if (err)
-      return res.status(500).send(err);
-
-    res.send('File uploaded!');
-  });
-});
-
 const userRouter = require('./public/js/controllers/user');
 //renders register view
 app.get('/user/register', userRouter.registerView);
@@ -99,7 +75,6 @@ app.post('/user/logout',function(req, res){
   req.logout();
   res.redirect('/');
 });
-
 
 passport.serializeUser(function(user, done) {
   done(null, {id: user.id});
@@ -143,11 +118,21 @@ function sendEmail(req, res) {
     }
   });
 
+  let attachments = []
+
+  if (email.uploadFiles) {
+    var files = email.uploadFiles.split(',');
+    files.forEach(file => {
+      attachments.push({filename: file, path: path.join(__dirname, '/public/uploads/'+file)});
+    });
+  }
+
   transporter.sendMail({
         from: emailConfig.email_from, // sender address
         to: email.email_an, // list of receivers
         cc: email.email_cc,
         bcc: email.email_bcc,
+        attachments: attachments,
         subject: email.email_subject, // Subject line
         text: decodeURI(email.email_body), // plain text body
         html: email.email_body, // html body
@@ -220,6 +205,35 @@ app.get('/Journal/data', journal.getData);
 app.post('/Journal/data', upload.array(), journal.addData);
 app.put('/Journal/data', upload.array(), journal.updateData);
 app.delete('/Journal/data', journal.removeData);
+app.post('/Journal/import', journal.importJournal);
+
+// fileupload router
+app.use(fileUpload({debug: true, useTempFiles: true, tempFileDir: '/tmp/'}));
+
+app.post('/uploadFiles', fncUploadFiles);
+
+function fncUploadFiles(req, res) {
+  if (!req.files || Object.keys(req.files).length === 0) {
+    console.error('status 400 : No files were uploaded');
+    res.send('{"status" : "server", "error" : "status 400 : No files were uploaded"}');
+    return;
+  }
+
+  // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
+  let uploadFiles = req.files.upload;
+
+  // Use the mv() method to place the file somewhere on your server
+  let newFileName = path.join(__dirname, '/public/uploads/'+uploadFiles.name);
+  uploadFiles.mv(newFileName, function(err) {
+    if (err) {
+      console.error(err);
+      res.send('{"status" : "error", "error" : "' + err + '"}');
+      return;
+    }
+    res.send('{"status" : "server", "sname" : "' + newFileName + '"}');
+  });
+}
+
 
 /**
  * A common handler to deal with DB operation errors.  Returns a 500 and an error object.

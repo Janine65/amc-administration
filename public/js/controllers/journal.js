@@ -1,5 +1,6 @@
 var db = require("../db");
 const { Op, Sequelize } = require("sequelize");
+const ExcelJS = require("exceljs");
 
 module.exports = {
 	getData: function (req, res) {
@@ -54,6 +55,23 @@ module.exports = {
 				.then((obj) => res.json({ id: obj.id }))
 				.catch((e) => console.error(e)))
 			.catch((e) => console.error(e));
+	},
+
+	importJournal: async function (req, res) {
+		var data = req.body;
+		var filename = data.sname.replace(process.cwd(), ".");
+		console.log(filename);
+
+		const workbook = new ExcelJS.Workbook();
+		await workbook.xlsx.readFile(filename);
+		workbook.eachSheet(function(worksheet, sheetId) {
+			// ...
+			const row = worksheet.lastRow.getCell(1).row;
+			console.log(`Worksheet ${worksheet.name} hat ${row} Zeilen.`);
+		  });
+
+		
+		
 	},
 
 };
