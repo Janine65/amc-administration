@@ -66,14 +66,20 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+// fileupload router
+app.use(fileUpload);
 
 app.post('/upload' ,function(req, res) {
+  console.log(req.files);
+  console.log(req);
   if (!req.files || Object.keys(req.files).length === 0) {
+    console.error('status 400 : No files were uploaded');
     return res.status(400).send('No files were uploaded.');
   }
 
   // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
   let uploadFiles = req.files.uploadFiles;
+  console.log(uploadFiles);
 
   // Use the mv() method to place the file somewhere on your server
   uploadFiles.mv('/uploads/', function(err) {

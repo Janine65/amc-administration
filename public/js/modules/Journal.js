@@ -313,13 +313,15 @@ wxAMC.moduleClasses.Journal = class {
           borderless:true 
         },
         {cols: [
-          { view:"button", value:"Start Import", id: "fisupload_import",  disabled: true, click: function() {
-            $$("fisupload").send(function(response){
-              if(response)
-                webix.message(response.status);
-              wxAMC.importLoadedFile();
-            });
-          }},
+          { view:"button", value:"Start Import", id: "fisupload_import",  disabled: true, 
+            click: function() {
+              $$("fisupload").send(function(response){
+                if(response)
+                  webix.message(response.status);
+                wxAMC.importLoadedFile();
+              });
+            }
+            },
           { view:"button", value:"Cancel", click: function() {$$("message_win").close();}
           }  
         ]}
