@@ -291,46 +291,43 @@ wxAMC.moduleClasses.Journal = class {
    * Import Journal from an Excelfile
    */
   importData() {
-    var message_text = "Exceldatei hier hochladen, um sie als Journaleinträge zu importieren";
+    var message_text = "Exceldatei hier hochladen, um sie als Einträge ins Journal zu importieren";
 
     var compose_form = {
       view:"form", rows: [
-        { view:"textarea", value:message_text, label:"message", labelPosition:"top", height:100 },
-        { type:"clean", cols:[
-          { view: "uploader", value: 'Exceldatei auswählen', link:"mytemplate", 
-           upload: "upload.php", 
-           multiple: false,
-           name:"files", id:"files" },
-          {
-            id:"mytemplate", autoheight:true,
-            template:function(data){
-              var names = [];
-              if (data.each)
-                data.each(function(obj){  
-                  if (obj.status == "server")
-                    names.push("<a target='__blank' href='./uploads/"+obj.name+"'>"+obj.name+"</a>");
-                  else
-                    names.push(obj.name);
-                });
-              return names.join(", &nbsp;&nbsp;&nbsp; ");
-            },
-            borderless:true 
+        { view:"textarea", value:message_text, label:"message", labelPosition:"top", autoheight:true 
+        },
+        { view: "uploader", value: 'Choose files', link:"mytemplate", 
+          upload: "/upload", 
+          multiple: true, autosend: false,
+          name:"uploadFiles", id:"fisupload",
+          on: {
+            onAfterFileAdd: () => { $$("fisupload_import").enable(); }
           }
-        ]},
-        { view:"button", value:"Send message", click: function() {
-          $$("files").send(function(response){
-            if(response)
-              webix.message(response.status);
-            wxAMC.importLoadedFile();
-          });
-        }},
-        { view:"button", value:"Cancel", click: function() {$$("message_win").close();}
-        }
+        },
+        {
+          view:"list",
+          id:"mytemplate", 
+          type:"uploader",
+          height: 30,
+          borderless:true 
+        },
+        {cols: [
+          { view:"button", value:"Start Import", id: "fisupload_import",  disabled: true, click: function() {
+            $$("fisupload").send(function(response){
+              if(response)
+                webix.message(response.status);
+              wxAMC.importLoadedFile();
+            });
+          }},
+          { view:"button", value:"Cancel", click: function() {$$("message_win").close();}
+          }  
+        ]}
       ]
     };
     
     webix.ui({
-      view:"window", body:compose_form, head:"Compose message",
+      view:"window", body:compose_form, head:"Import File",
       width:450, id:"message_win",
       position:"center"
     }).show();

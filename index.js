@@ -13,6 +13,7 @@ const system = require("./public/js/system");
 const https = require("https");
 const fs = require('fs');
 const passport = require('passport');
+const fileUpload = require('express-fileupload');
 
 // environment variables
 if (process.env.NODE_ENV == undefined)
@@ -64,6 +65,24 @@ app.use(
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+
+app.post('/upload' ,function(req, res) {
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return res.status(400).send('No files were uploaded.');
+  }
+
+  // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
+  let uploadFiles = req.files.uploadFiles;
+
+  // Use the mv() method to place the file somewhere on your server
+  uploadFiles.mv('/uploads/', function(err) {
+    if (err)
+      return res.status(500).send(err);
+
+    res.send('File uploaded!');
+  });
+});
 
 const userRouter = require('./public/js/controllers/user');
 //renders register view

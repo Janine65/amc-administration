@@ -344,11 +344,13 @@ class WXAMC {
 
 
   importLoadedFile() {
-
-    //$$("files").files.data.parse();
-    var file_id = $$("files").files.getFirstId();
-    var fileobj = $$("files").files.getItem(file_id).file;
-    console.log(fileobj);
+    var f = $$("fisupload").files;
+    var file_id = f.getFirstId();
+    var status = f.getItem(file_id).status; // upload status
+    var fname = f.getItem(file_id).name;    // file name
+    var sname = f.getItem(file_id).sname;   // storage name
+    webix.message("Upload: "+status+" for "+fname+" stored as "+sname,"Info", -1 );
+    console.log(f.getItem(file_id));
     $$("message_win").close();
   }
 
