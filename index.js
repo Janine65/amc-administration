@@ -199,6 +199,7 @@ app.post('/Account/data', upload.array(), account.addData);
 app.put('/Account/data', upload.array(), account.updateData);
 app.delete('/Account/data', account.removeData);
 app.get('/Account/getFkData', account.getFKData);
+app.get('/Account/showData', account.getAccountSummary);
 
 const journal = require("./public/js/controllers/journal");
 app.get('/Journal/data', journal.getData);

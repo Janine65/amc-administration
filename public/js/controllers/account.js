@@ -64,4 +64,24 @@ module.exports = {
 		.catch((e) => console.error(e));
 	},
 
+	getAccountSummary: function (req, res) {
+		var qrySelect = "Select ac.`id`, ac.`level`, ac.`order`, ac.`name`, sum(j.`amount`) as amount ";
+		qrySelect += " from account ac ";
+		qrySelect += " left outer join journal j ";
+		qrySelect += " on ac.id = j.from_account ";
+		qrySelect += " and year(j.date) = " + req.query.jahr;
+		qrySelect += " group by ac.`id`,  ac.`level`, ac.`order`, ac.`name` ";
+		qrySelect += " order by ac.`level`, ac.`order`";
+
+		sequelize.query(qrySelect, 
+			{ 
+				type: Sequelize.QueryTypes.SELECT,
+				plain: false,
+				logging: console.log,
+				raw: false
+			}
+		).then(data => res.json(data))
+		.catch((e) => console.error(e));					
+	},
+
 };

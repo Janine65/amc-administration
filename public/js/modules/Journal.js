@@ -34,6 +34,7 @@ wxAMC.moduleClasses.Journal = class {
         {
           id: "moduleJournal-itemsCell",
           rows: [
+            {cols: [
             {
               view: "select", id: "moduleJournal-dateSelect",
               options: "/Fiscalyear/getFkData",
@@ -43,6 +44,18 @@ wxAMC.moduleClasses.Journal = class {
                 onChange: this.refreshData.bind(this)
               }
             },
+            {view: "toolbar",
+              cols: [               
+              {
+                id: "moduleJournal-addFiscalyear", view: "button", label: "Edit", width: "80", type: "icon", 
+                icon: "webix_icon mdi mdi-plus", click: this.editFiscalYear.bind(this)
+              },
+              {
+                id: "moduleJournal-showFiscalyear", view: "button", label: "Show", width: "80", type: "icon", 
+                icon: "webix_icon mdi mdi-waves", click: this.showFiscalYear.bind(this)
+              }
+            ]}
+            ]},
             {
               view: "datatable", id: "moduleJournal-items",
               css: "webix_header_border webix_data_border",
@@ -105,16 +118,16 @@ wxAMC.moduleClasses.Journal = class {
                 { width: 6 },
                 {
                   id: "moduleJournal-editButton", view: "button", label: "Edit", width: "80", type: "icon", disabled: true,
-                  icon: "webix_icon mdi mdi-pencil", click: this.editExisting.bind(this)
+                  icon: "webix_icon mdi mdi-pen", click: this.editExisting.bind(this)
+                },
+                {
+                  id: "moduleJournal-copyButton", view: "button", label: "Copy", width: "80", type: "icon", disabled: true,
+                  icon: "webix_icon mdi mdi-content-copy", click: this.copyExisting.bind(this)
                 },
                 {
                   id: "moduleJournal-deleteButton", view: "button", label: "Delete", width: "80", type: "icon", disabled: true,
                   icon: "webix_icon mdi mdi-delete", click: () => { wxAMC.deleteHandler("Journal"); }
                 },
-                // {
-                //   id: "moduleJournal-newButton", view: "button", label: "New", width: "80", type: "icon",
-                //   icon: "webix_icon mdi mdi-plus", click: this.newHandler.bind(this)
-                // },
                 { width: 6 },
                 {
                   id: "moduleJournal-exportButton", view: "button", label: "Export", width: "80", type: "icon",
@@ -128,8 +141,8 @@ wxAMC.moduleClasses.Journal = class {
               ] /* End toolbar items. */
             }, /* End toolbar. */
             {
-              "autoheight": false,
               view: "form", id: "moduleJournal-addForm",
+              "autoheight": true,
               elementsConfig: {
                 on: {
                   onChange: () => {
@@ -151,14 +164,12 @@ wxAMC.moduleClasses.Journal = class {
                     },
                     {
                       view: "combo", suggest: "/Account/getFkData", name: "from_account", label: "Konto",
-                      height: 46,
                       labelPosition: "top",
                       required: true,
                       width: 200
                     },
                     {
                       view: "combo", suggest: "/Account/getFkData", name: "to_account", label: "Konto",
-                      height: 44,
                       labelPosition: "top",
                       required: true,
                       width: 200
@@ -170,7 +181,6 @@ wxAMC.moduleClasses.Journal = class {
                       view: "text",
                       required: true,
                       format: "1'111.00",
-                      height: 46,
                       labelPosition: "top",
                       placeholder: "0.00",
                       width: 100,
@@ -179,15 +189,84 @@ wxAMC.moduleClasses.Journal = class {
                     }
                   ]
                 },
-                {
-                  view: "button", css: "webix_primary", label: "Save",
-                  icon: "mdi mdi-content-save", id: "moduleJournal-addButton", disabled: true,
-                  click: () => { wxAMC.saveHandler("Journal", "moduleJournal-addForm") }
-                }
+                {cols:[
+                  {
+                    view: "button", css: "webix_primary", label: "Clear",
+                    icon: "mdi mdi-close-octagon", id: "moduleJournal-clearButton", 
+                    click: () => { 
+                      $$("moduleJournal-addForm").clear();  
+                      this.isEditingExisting = false;
+                      this.editingID = 0;                    }
+                  },
+                  {
+                    view: "button", css: "webix_primary", label: "Save",
+                    icon: "mdi mdi-content-save", id: "moduleJournal-addButton", disabled: true,
+                    click: () => { 
+                      wxAMC.saveHandler("Journal", "moduleJournal-addForm");
+                      $$("moduleJournal-addForm").clear();  
+                      this.isEditingExisting = false;
+                      this.editingID = 0;  
+                   }
+                  }  
+                ]}
               ]
             }
           ] /* End journal list rows. */
         }, /* End journal list cell. */
+        /* ---------- Fiscal Overview cell. ---------- */
+        {
+          id: "moduleJournal-FiscalYeardetails",
+          rows: [
+            { view: "treetable", id: "moduleJournal-FiscalYeardetailsTree", borderless: true, scroll: true,
+              columns:[
+              { id:"order",	header:"", css:{"text-align":"right"},  	width:50},
+              { id:"name",	header:"Konto",	width:250,
+//               template:"{common.treetable()} #name#" 
+                  template:function(obj, common){
+                    if (obj.$group) return common.treetable(obj, common) + obj.name;
+                    return obj.name;
+                  }
+              },
+              { id:"amount",	header:"Amount",	width:200, css:{"text-align":"right"}, format:webix.i18n.numberFormat}
+            ],
+            autoheight:false,
+            autowidth:false,  
+            url: "/Account/showData",
+            scheme:{
+              $group:{
+                by:"level",
+                map:{
+                  amount:["amount", "sum"],
+                  name:["name"]
+                }
+              },
+              $sort:{ by:"order", as:"int", dir:"asc" }
+            }
+            },
+            {
+              view: "toolbar",
+              cols: [
+                { width: 6 },
+                {
+                  view: "button", label: "Zurück", width: "90",
+                  type: "icon", icon: "mdi mdi-arrow-left",
+                  click: () => {
+                    $$("moduleJournal-itemsCell").show();
+                  }
+                },
+                {},
+                // {
+                //   view: "button", label: "Save", width: "80", type: "icon",
+                //   icon: "mdi mdi-content-save", id: "moduleJournal-saveButton", disabled: true, hotkey: "enter",
+                //   click: () => {
+                //     wxAMC.saveHandler("Journal", "moduleJournal-detailsForm")
+                //   }
+                // },
+                { width: 6 }
+              ]
+            }
+          ]
+        },
         /* ---------- Journal details cell. ---------- */
         {
           id: "moduleJournal-details",
@@ -208,29 +287,26 @@ wxAMC.moduleClasses.Journal = class {
                 {
                   view: "datepicker",
                   label: "Date",
-                  "value": "2020-11-08T15:03:10.974Z",
                   "timepicker": false,
                   "labelWidth": 100,
                   "format": "%d.%m.%Y",
-                  height: 0,
                   name: "date"
                 },
                 {
                   label: "From Account",
-                  "value": "1",
                   view: "combo",
                   suggest: "/Account/getFkData",
-                  "labelWidth": 100,
-                  required: true
+                  required: true,
+                  name: "from_account",
+                  labelWidth: 100
                 },
                 {
                   label: "To Account",
-                  "value": "1",
                   view: "combo",
                   suggest: "/Account/getFkData",
                   required: true,
                   name: "to_account",
-                  "labelWidth": 100
+                  labelWidth: 100
                 },
                 {
                   label: "Amount",
@@ -287,6 +363,36 @@ wxAMC.moduleClasses.Journal = class {
   deactivate() {
 
   } /* End deactivate(). */
+
+  editFiscalYear() {
+
+  }
+
+  showFiscalYear() {
+    var sJahr = $$("moduleJournal-dateSelect").getValue();
+    if (sJahr == "")
+      sJahr = wxAMC.parameter.get("CLUBJAHR");
+    const url = "/Account/showData?jahr=" + sJahr;
+
+    const promiseModule = fetch(url)
+      .then(function (response) {
+        if (!response.ok)
+          webix.message('Fehler beim Lesen der Accountdaten', 'Error');
+        return response.json();
+      }).catch(function (error) {
+        webix.message({ type: "error", text: error })
+      });
+    Promise.resolve(promiseModule)
+      .then(function (dataItems) {
+        //console.log('dataItems: ',dataItems);
+        // Get the items as an array of objects.
+        const itemsAsArray = wxAMC.objectAsArray(dataItems);
+
+        $$("moduleJournal-FiscalYeardetails").show();
+        $$("moduleJournal-FiscalYeardetailsTree").clearAll();
+        $$("moduleJournal-FiscalYeardetailsTree").parse(itemsAsArray);
+      });
+  }
 
   /**
    * Import Journal from an Excelfile
@@ -371,19 +477,32 @@ wxAMC.moduleClasses.Journal = class {
     this.editingID = journal.id;
 
     // Clear the details form.
-    $$("moduleJournal-detailsForm").clear();
-
-    // Show the form.  Note that this has to be done before the call to setValues()
-    // below otherwise we get an error due to setting the value of the richtext (my
-    // guess is it lazy-builds the DOM and it's not actually there until the show()
-    // executes).
-    $$("moduleJournal-details").show();
+    $$("moduleJournal-addForm").clear();
 
     // Populate the form.
-    $$("moduleJournal-detailsForm").setValues(journal);
+    $$("moduleJournal-addForm").setValues(journal);
 
   } /* End editExisting(). */
 
+
+  /**
+   * Handles clicks on the Save button.
+   */
+  async copyExisting() {
+
+    const journal = $$("moduleJournal-items").getSelectedItem();
+    journal.id = 0;
+    // Set flag to indicate editing an existing journal and show the details.
+    this.isEditingExisting = false;
+    this.editingID = 0;
+
+    // Clear the details form.
+    $$("moduleJournal-addForm").clear();
+
+    // Populate the form.
+    $$("moduleJournal-addForm").setValues(journal);
+
+  } /* End editExisting(). */
   /**
    * Refresh the journal list from local storage.
    */
