@@ -34,28 +34,32 @@ wxAMC.moduleClasses.Journal = class {
         {
           id: "moduleJournal-itemsCell",
           rows: [
-            {cols: [
             {
-              view: "select", id: "moduleJournal-dateSelect",
-              options: "/Fiscalyear/getFkData",
-              value: wxAMC.parameter.get('CLUBJAHR'),
-              on: {
-                onViewShow: this.refreshData.bind(this),
-                onChange: this.refreshData.bind(this)
-              }
+              cols: [
+                {
+                  view: "select", id: "moduleJournal-dateSelect",
+                  options: "/Fiscalyear/getFkData",
+                  value: wxAMC.parameter.get('CLUBJAHR'),
+                  on: {
+                    onViewShow: this.refreshData.bind(this),
+                    onChange: this.refreshData.bind(this)
+                  }
+                },
+                {
+                  view: "toolbar",
+                  cols: [
+                    {
+                      id: "moduleJournal-addFiscalyear", view: "button", label: "Edit", width: "80", type: "icon",
+                      icon: "webix_icon mdi mdi-plus", click: this.editFiscalYear.bind(this)
+                    },
+                    {
+                      id: "moduleJournal-showFiscalyear", view: "button", label: "Show", width: "80", type: "icon",
+                      icon: "webix_icon mdi mdi-waves", click: this.showFiscalYear.bind(this)
+                    }
+                  ]
+                }
+              ]
             },
-            {view: "toolbar",
-              cols: [               
-              {
-                id: "moduleJournal-addFiscalyear", view: "button", label: "Edit", width: "80", type: "icon", 
-                icon: "webix_icon mdi mdi-plus", click: this.editFiscalYear.bind(this)
-              },
-              {
-                id: "moduleJournal-showFiscalyear", view: "button", label: "Show", width: "80", type: "icon", 
-                icon: "webix_icon mdi mdi-waves", click: this.showFiscalYear.bind(this)
-              }
-            ]}
-            ]},
             {
               view: "datatable", id: "moduleJournal-items",
               css: "webix_header_border webix_data_border",
@@ -189,26 +193,29 @@ wxAMC.moduleClasses.Journal = class {
                     }
                   ]
                 },
-                {cols:[
-                  {
-                    view: "button", css: "webix_primary", label: "Clear",
-                    icon: "mdi mdi-close-octagon", id: "moduleJournal-clearButton", 
-                    click: () => { 
-                      $$("moduleJournal-addForm").clear();  
-                      this.isEditingExisting = false;
-                      this.editingID = 0;                    }
-                  },
-                  {
-                    view: "button", css: "webix_primary", label: "Save",
-                    icon: "mdi mdi-content-save", id: "moduleJournal-addButton", disabled: true,
-                    click: () => { 
-                      wxAMC.saveHandler("Journal", "moduleJournal-addForm");
-                      $$("moduleJournal-addForm").clear();  
-                      this.isEditingExisting = false;
-                      this.editingID = 0;  
-                   }
-                  }  
-                ]}
+                {
+                  cols: [
+                    {
+                      view: "button", css: "webix_primary", label: "Clear",
+                      icon: "mdi mdi-close-octagon", id: "moduleJournal-clearButton",
+                      click: () => {
+                        $$("moduleJournal-addForm").clear();
+                        this.isEditingExisting = false;
+                        this.editingID = 0;
+                      }
+                    },
+                    {
+                      view: "button", css: "webix_primary", label: "Save",
+                      icon: "mdi mdi-content-save", id: "moduleJournal-addButton", disabled: true,
+                      click: () => {
+                        wxAMC.saveHandler("Journal", "moduleJournal-addForm");
+                        $$("moduleJournal-addForm").clear();
+                        this.isEditingExisting = false;
+                        this.editingID = 0;
+                      }
+                    }
+                  ]
+                }
               ]
             }
           ] /* End journal list rows. */
@@ -217,31 +224,132 @@ wxAMC.moduleClasses.Journal = class {
         {
           id: "moduleJournal-FiscalYeardetails",
           rows: [
-            { view: "treetable", id: "moduleJournal-FiscalYeardetailsTree", borderless: true, scroll: true,
-              columns:[
-              { id:"order",	header:"", css:{"text-align":"right"},  	width:50},
-              { id:"name",	header:"Konto",	width:250,
-//               template:"{common.treetable()} #name#" 
-                  template:function(obj, common){
-                    if (obj.$group) return common.treetable(obj, common) + obj.name;
-                    return obj.name;
+            {
+              view: "tabview",
+              cells: [
+                {
+                  header: "Bilanz",
+                  body:
+                  {
+                    cols:
+                      [
+                        {
+                          view: "treetable", id: "moduleJournal-FiscalYeardetailsTreeB1", borderless: true, scroll: true,
+                          columns: [
+                            { id: "order", header: "", css: { "text-align": "right" }, width: 50 },
+                            {
+                              id: "name", header: "Konto", width: 250,
+                              template: function (obj, common) {
+                                if (obj.$group) return common.treetable(obj, common) + obj.name;
+                                return obj.name;
+                              }
+                            },
+                            { id: "amount", header: "Amount", width: 200, css: { "text-align": "right" }, format: webix.i18n.numberFormat }
+                          ],
+                          autoheight: false,
+                          autowidth: false,
+                          scheme: {
+                            $group: {
+                              by: "level",
+                              map: {
+                                amount: ["amount", "sum"],
+                                name: ["name"]
+                              }
+                            },
+                            $sort: { by: "order", as: "int", dir: "asc" }
+                          }
+                        },
+                        {
+                          view: "treetable", id: "moduleJournal-FiscalYeardetailsTreeB2", borderless: true, scroll: true,
+                          columns: [
+                            { id: "order", header: "", css: { "text-align": "right" }, width: 50 },
+                            {
+                              id: "name", header: "Konto", width: 250,
+                              template: function (obj, common) {
+                                if (obj.$group) return common.treetable(obj, common) + obj.name;
+                                return obj.name;
+                              }
+                            },
+                            { id: "amount", header: "Amount", width: 200, css: { "text-align": "right" }, format: webix.i18n.numberFormat }
+                          ],
+                          autoheight: false,
+                          autowidth: false,
+                          scheme: {
+                            $group: {
+                              by: "level",
+                              map: {
+                                amount: ["amount", "sum"],
+                                name: ["name"]
+                              }
+                            },
+                            $sort: { by: "order", as: "int", dir: "asc" }
+                          }
+                        }
+                      ]
                   }
-              },
-              { id:"amount",	header:"Amount",	width:200, css:{"text-align":"right"}, format:webix.i18n.numberFormat}
-            ],
-            autoheight:false,
-            autowidth:false,  
-            url: "/Account/showData",
-            scheme:{
-              $group:{
-                by:"level",
-                map:{
-                  amount:["amount", "sum"],
-                  name:["name"]
+                },
+                {
+                  header: "Erfolgsrechnung",
+                  body:
+                  {
+                    cols:
+                      [
+                        {
+                          view: "treetable", id: "moduleJournal-FiscalYeardetailsTreeE4", borderless: true, scroll: true,
+                          columns: [
+                            { id: "order", header: "", css: { "text-align": "right" }, width: 50 },
+                            {
+                              id: "name", header: "Konto", width: 250,
+                              template: function (obj, common) {
+                                if (obj.$group) return common.treetable(obj, common) + obj.name;
+                                return obj.name;
+                              }
+                            },
+                            { id: "amount", header: "Amount", width: 200, css: { "text-align": "right" }, format: webix.i18n.numberFormat }
+                          ],
+                          autoheight: false,
+                          autowidth: false,
+                          scheme: {
+                            $group: {
+                              by: "level",
+                              map: {
+                                amount: ["amount", "sum"],
+                                name: ["name"]
+                              }
+                            },
+                            $sort: { by: "order", as: "int", dir: "asc" }
+                          }
+                        },
+                        {
+                          view: "treetable", id: "moduleJournal-FiscalYeardetailsTreeE6", borderless: true, scroll: true,
+                          columns: [
+                            { id: "order", header: "", css: { "text-align": "right" }, width: 50 },
+                            {
+                              id: "name", header: "Konto", width: 250,
+                              template: function (obj, common) {
+                                if (obj.$group) return common.treetable(obj, common) + obj.name;
+                                return obj.name;
+                              }
+                            },
+                            { id: "amount", header: "Amount", width: 200, css: { "text-align": "right" }, format: webix.i18n.numberFormat }
+                          ],
+                          autoheight: false,
+                          autowidth: false,
+                          scheme: {
+                            $group: {
+                              by: "level",
+                              map: {
+                                amount: ["amount", "sum"],
+                                name: ["name"]
+                              }
+                            },
+                            $sort: { by: "order", as: "int", dir: "asc" }
+                          }
+                        }
+                      ]
+                  }
                 }
-              },
-              $sort:{ by:"order", as:"int", dir:"asc" }
-            }
+              ]
             },
             {
               view: "toolbar",
@@ -255,13 +363,11 @@ wxAMC.moduleClasses.Journal = class {
                   }
                 },
                 {},
-                // {
-                //   view: "button", label: "Save", width: "80", type: "icon",
-                //   icon: "mdi mdi-content-save", id: "moduleJournal-saveButton", disabled: true, hotkey: "enter",
-                //   click: () => {
-                //     wxAMC.saveHandler("Journal", "moduleJournal-detailsForm")
-                //   }
-                // },
+                {
+                  view: "button", label: "Export", width: "80", type: "icon",
+                  icon: "mdi mdi-file-excel", id: "moduleJournal-excelFiscalButton", hotkey: "enter",
+                  click: this.exportData.bind(this)
+                },
                 { width: 6 }
               ]
             }
@@ -388,9 +494,32 @@ wxAMC.moduleClasses.Journal = class {
         // Get the items as an array of objects.
         const itemsAsArray = wxAMC.objectAsArray(dataItems);
 
+        var arAktiv = itemsAsArray.filter(function(value, index, array) {
+          return value.level == 1;
+        });
+        var arPassiv = itemsAsArray.filter(function(value, index, array) {
+          return value.level == 2;
+        });
+        var arAufwand = itemsAsArray.filter(function(value, index, array) {
+          return value.level == 4;
+        });
+        var arErfolg = itemsAsArray.filter(function(value, index, array) {
+          return value.level == 6;
+        });
         $$("moduleJournal-FiscalYeardetails").show();
-        $$("moduleJournal-FiscalYeardetailsTree").clearAll();
-        $$("moduleJournal-FiscalYeardetailsTree").parse(itemsAsArray);
+        $$("moduleJournal-FiscalYeardetailsTreeB1").clearAll();
+        $$("moduleJournal-FiscalYeardetailsTreeB1").parse(arAktiv);
+        $$("moduleJournal-FiscalYeardetailsTreeB1").openAll();
+        $$("moduleJournal-FiscalYeardetailsTreeB2").clearAll();
+        $$("moduleJournal-FiscalYeardetailsTreeB2").parse(arPassiv);
+        $$("moduleJournal-FiscalYeardetailsTreeB2").openAll();
+
+        $$("moduleJournal-FiscalYeardetailsTreeE4").clearAll();
+        $$("moduleJournal-FiscalYeardetailsTreeE4").parse(arAufwand);
+        $$("moduleJournal-FiscalYeardetailsTreeE4").openAll();
+        $$("moduleJournal-FiscalYeardetailsTreeE6").clearAll();
+        $$("moduleJournal-FiscalYeardetailsTreeE6").parse(arErfolg);
+        $$("moduleJournal-FiscalYeardetailsTreeE6").openAll();
       });
   }
 
@@ -458,10 +587,35 @@ wxAMC.moduleClasses.Journal = class {
    * Export selected data to Excel
    */
   exportData() {
-    webix.toExcel($$("moduleJournal-items"), {
-      filename: "Journal",
-      rawValues: false
-    });
+
+    if ($$("moduleJournal-FiscalYeardetails")) {
+      const sJahr = $$("moduleJournal-dateSelect").getValue();
+
+      // read the fiscalyear to handle all the rights
+      const promiseFiscal = fetch("/Fiscalyear/export?year=" + sJahr)
+        .then(function (response) {
+          if (!response.ok)
+            webix.message('Fehler beim Lesen des Buchhaltungsjahres', 'Error');
+          return response.json();
+        })
+        .catch(function (error) {
+          webix.message({ type: "error", text: error })
+        });
+  
+      Promise.resolve(promiseFiscal)
+        .then(function (data) {
+          webix.message({type: 'Info', content: 'Export finished'});
+          webix.send("./exports/Bilanz.xlsx", {}, "GET", "_blank");
+        })
+        .catch(function (error) {
+          webix.message({ type: "error", text: error })
+        });  
+    } else {
+      webix.toExcel($$("moduleJournal-items"), {
+        filename: "Journal",
+        rawValues: false
+      });
+    }
   } /* End exportData(). */
 
 

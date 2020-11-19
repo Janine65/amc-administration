@@ -83,6 +83,8 @@ passport.deserializeUser(function(user, done) {
   done(null, {id: user.id});
 });
 
+const exportData = require("./public/js/controllers/exports");
+
 const adresse = require("./public/js/controllers/adresse");
 app.get('/Adressen/data', adresse.getData);
 app.post('/Adressen/data', adresse.updateData);
@@ -151,8 +153,8 @@ app.delete('/Anlaesse/data', anlaesse.removeData);
 app.get('/Anlaesse/getFkData', anlaesse.getFKData);
 app.get('/Anlaesse/data/:id', anlaesse.getOneData);
 app.get('/Anlaesse/getOverviewData', anlaesse.getOverviewData);
-app.post('/Anlaesse/sheet', anlaesse.writeExcelTemplate);
-app.post('/Anlaesse/writeAuswertung', anlaesse.writeAuswertung);
+app.post('/Anlaesse/sheet', exportData.writeExcelTemplate);
+app.post('/Anlaesse/writeAuswertung', exportData.writeAuswertung);
 
 const meisterschaft = require("./public/js/controllers/meisterschaft");
 app.get('/Meisterschaft/data', meisterschaft.getData);
@@ -192,6 +194,7 @@ app.put('/Fiscalyear/data', upload.array(), fiscalyear.updateData);
 app.delete('/Fiscalyear/data', fiscalyear.removeData);
 app.get('/Fiscalyear/getFkData', fiscalyear.getFKData);
 app.get('/Fiscalyear/getOneData', fiscalyear.getOneData);
+app.get('/Fiscalyear/export', exportData.writeExcelData);
 
 const account = require("./public/js/controllers/account");
 app.get('/Account/data', account.getData);
