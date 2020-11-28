@@ -4,7 +4,8 @@ const DataTypes = require('sequelize').DataTypes;
 const UUIDV4 = require('uuid').v4;
 
 const sequelize = new Sequelize(global.gConfig.database, global.gConfig.db_user, global.cipher.decrypt(global.gConfig.db_pwd), {
-  host: "localhost", port: global.gConfig.port,
+  host: "localhost", 
+  port: global.gConfig.port,
   dialect: global.gConfig.dbtype
 });
 
@@ -12,6 +13,8 @@ global.sequelize = sequelize;
 
 try {
   sequelize.authenticate();
+//  sequelize.sync()
+//    .catch((e) => console.error(e));
   console.log("Connecion has been established successfully.");
 } catch (error) {
   console.error("Unable to connect to the database.", errro);
@@ -23,10 +26,9 @@ class Adressen extends Model {
 Adressen.init({
   id: {
     type: Sequelize.INTEGER,
-    allowNull: true,
+    allowNull: false,
     autoIncrement: true,
-    primaryKey: true,
-    defaultValue: 0
+    primaryKey: true
   },
   mnr: {
     type: Sequelize.INTEGER,
@@ -136,7 +138,7 @@ Adressen.init({
     sequelize,
     tableName: 'adressen',
     modelName: 'adressen',
-    indexes: [{ unique: true, fields: ['name', 'vorname', 'ort'] }]
+    //indexes: [{ unique: true, fields: ['name', 'vorname', 'ort'] }]
   });
 
 class Anlaesse extends Model {
@@ -144,10 +146,9 @@ class Anlaesse extends Model {
 Anlaesse.init({
   id: {
     type: Sequelize.INTEGER,
-    allowNull: true,
+    allowNull: false,
     autoIncrement: true,
-    primaryKey: true,
-    defaultValue: 0
+    primaryKey: true
   },
   datum: { type: Sequelize.DATEONLY, allowNull: false },
   name: { type: Sequelize.STRING, allowNull: false },
@@ -204,10 +205,9 @@ class Meisterschaft extends Model {
 Meisterschaft.init({
   id: {
     type: Sequelize.INTEGER,
-    allowNull: true,
+    allowNull: false,
     autoIncrement: true,
-    primaryKey: true,
-    defaultValue: 0
+    primaryKey: true
   },
   mitgliedId: {
     type: Sequelize.INTEGER,
@@ -269,8 +269,7 @@ Clubmeister.init({
     type: Sequelize.INTEGER,
     allowNull: false,
     autoIncrement: true,
-    primaryKey: true,
-    defaultValue: 0
+    primaryKey: true
   },
   jahr: { type: Sequelize.STRING, allowNull: false },
   rang: { type: Sequelize.INTEGER, allowNull: false },
@@ -298,8 +297,7 @@ Kegelmeister.init({
     type: Sequelize.INTEGER,
     allowNull: false,
     autoIncrement: true,
-    primaryKey: true,
-    defaultValue: 0
+    primaryKey: true
   },
   jahr: { type: Sequelize.STRING, allowNull: false },
   rang: { type: Sequelize.INTEGER, allowNull: false },
@@ -384,8 +382,7 @@ User.init({
       type: Sequelize.INTEGER,
       allowNull: false,
       autoIncrement: true,
-      primaryKey: true,
-      defaultValue: 0
+      primaryKey: true
     },
     year: DataTypes.STRING,
     name: DataTypes.STRING,
@@ -406,8 +403,7 @@ Account.init({
     type: Sequelize.INTEGER,
     allowNull: false,
     autoIncrement: true,
-    primaryKey: true,
-    defaultValue: 0
+    primaryKey: true
   },
   name: DataTypes.STRING,
   level: DataTypes.INTEGER,
@@ -427,8 +423,7 @@ Journal.init({
     type: Sequelize.INTEGER,
     allowNull: false,
     autoIncrement: true,
-    primaryKey: true,
-    defaultValue: 0
+    primaryKey: true
   },
   from_account: {
     type: Sequelize.INTEGER,
@@ -472,3 +467,4 @@ Journal.init({
 module.exports = {
   Adressen, Anlaesse, Parameter, Meisterschaft, Clubmeister, Kegelmeister, User, Session, Account, Journal, FiscalYear,
 };
+

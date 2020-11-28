@@ -2,6 +2,10 @@ var db = require("../db");
 const {
     Sequelize
 } = require("sequelize");
+const Meisterschaft = require('../db').Meisterschaft;
+const Adressen = require('../db').Adressen;
+const Kegelmeister = require('../db').Kegelmeister;
+const Clubmeister = require('../db').Clubmeister;
 
 const ExcelJS = require("exceljs");
 const cName = "C6";
@@ -314,6 +318,7 @@ module.exports = {
 
     writeExcelData: async function (req, res) {
         var sjahr = req.query.year;
+        var iJahr = eval(sjahr - 1);
 
         const workbook = new ExcelJS.Workbook();
 
@@ -326,6 +331,13 @@ module.exports = {
                 fitToHeight: 1,
                 fitToWidth: 1,
             },
+            properties: {
+                defaultRowHeight: 18
+            },
+            headerFooter: {
+                oddHeader: "&18Auto-Moto-Club Swissair",
+                oddFooter: "&14Bilanz " + sjahr
+            }
         });
 
         var esheet = workbook.addWorksheet("Erfolgsrechnung", {
@@ -334,16 +346,18 @@ module.exports = {
                 fitToHeight: 1,
                 fitToWidth: 1,
             },
+            properties: {
+                defaultRowHeight: 18
+            },
+            headerFooter: {
+                oddHeader: "&18Auto-Moto-Club Swissair",
+                oddFooter: "&14Erfolgsrechnung " + sjahr
+            }
         });
 
-        var qrySelect = "Select ac.`id`, ac.`level`, ac.`order`, ac.`name`, sum(j.`amount`) as amount ";
+        var qrySelect = "Select ac.`id`, ac.`level`, ac.`order`, ac.`name`, 0 as amount, 0 as amountVJ ";
         qrySelect += " from account ac ";
-        qrySelect += " left outer join journal j ";
-        qrySelect += " on ac.id = j.from_account ";
-        qrySelect += " and year(j.date) = " + sjahr;
-        qrySelect += " group by ac.`id`,  ac.`level`, ac.`order`, ac.`name` ";
         qrySelect += " order by ac.`level`, ac.`order`";
-
         var accData = await sequelize.query(qrySelect,
             {
                 type: Sequelize.QueryTypes.SELECT,
@@ -353,77 +367,159 @@ module.exports = {
             }
         ).catch((e) => console.error(e));
 
-        bsheet.getCell("B1").value = "AMC-Buchhaltung für das Jahr " + sjahr;
-        let cell = bsheet.getCell("B1");
-        cell.font = {
-            bold: true,
-            size: 14,
-        };
-        bsheet.getCell("B3").value = "Bilanz";
-        cell = bsheet.getCell("B3");
-        cell.font = {
-            bold: true,
-            size: 12,
-        };
-        var row = 4;
+        qrySelect = "select j.from_account, sum(j.amount) as amount";
+        qrySelect += " from journal j";
+        qrySelect += " where year(j.date) = " + sjahr;
+        qrySelect += " group by j.from_account";
+
+        var arrAmount = await sequelize.query(qrySelect,
+            {
+                type: Sequelize.QueryTypes.SELECT,
+                plain: false,
+                logging: console.log,
+                raw: false
+            }
+        ).catch((e) => console.error(e));
+        arrAmount.forEach(element => {
+            var found = accData.findIndex(acc => acc.id == element.from_account);
+            accData[found].amount = eval(element.amount);
+        })
+
+
+        qrySelect = "select j.to_account, sum(j.amount) as amount";
+        qrySelect += " from journal j";
+        qrySelect += " where year(j.date) = " + sjahr;
+        qrySelect += " group by j.to_account";
+
+        arrAmount = await sequelize.query(qrySelect,
+            {
+                type: Sequelize.QueryTypes.SELECT,
+                plain: false,
+                logging: console.log,
+                raw: false
+            }
+        ).catch((e) => console.error(e));
+        arrAmount.forEach(element => {
+            var found = accData.findIndex(acc => acc.id == element.to_account);
+            switch (accData[found].level) {
+                case 1:
+                case 4:
+                    accData[found].amount = eval(accData[found].amount - element.amount);
+                    break;
+                case 2:
+                case 6:
+                    accData[found].amount = eval(element.amount - accData[found].amount);
+                    break;
+            }
+        })
+
+        qrySelect = "select j.from_account, sum(j.amount) as amount";
+        qrySelect += " from journal j";
+        qrySelect += " where year(j.date) = " + iJahr;
+        qrySelect += " group by j.from_account";
+
+        arrAmount = await sequelize.query(qrySelect,
+            {
+                type: Sequelize.QueryTypes.SELECT,
+                plain: false,
+                logging: console.log,
+                raw: false
+            }
+        ).catch((e) => console.error(e));
+        arrAmount.forEach(element => {
+            var found = accData.findIndex(acc => acc.id == element.from_account);
+            accData[found].amountVJ = eval(element.amount);
+        })
+
+
+        qrySelect = "select j.to_account, sum(j.amount) as amount";
+        qrySelect += " from journal j";
+        qrySelect += " where year(j.date) = " + iJahr;
+        qrySelect += " group by j.to_account";
+
+        arrAmount = await sequelize.query(qrySelect,
+            {
+                type: Sequelize.QueryTypes.SELECT,
+                plain: false,
+                logging: console.log,
+                raw: false
+            }
+        ).catch((e) => console.error(e));
+        arrAmount.forEach(element => {
+            var found = accData.findIndex(acc => acc.id == element.to_account);
+            switch (accData[found].level) {
+                case 1:
+                case 4:
+                    accData[found].amountVJ = eval(accData[found].amountVJ - element.amount);
+                    break;
+                case 2:
+                case 6:
+                    accData[found].amountVJ = eval(element.amount - accData[found].amountVJ);
+                    break;
+            }
+        })
+
+        setCellValueFormat(bsheet, 'B1', "Bilanz " + sjahr, false, false, { bold: true, size: 18, name: 'Tahoma' });
+        setCellValueFormat(bsheet, 'B3', "Konto", true, false, { bold: true, size: 11, name: 'Tahoma' });
+        setCellValueFormat(bsheet, 'C3', "Bezeichnung", true, false, { bold: true, size: 11, name: 'Tahoma' });
+        setCellValueFormat(bsheet, 'D3', "Saldo " + sjahr, true, false, { bold: true, size: 11, name: 'Tahoma' });
+        bsheet.getCell('D3').alignment = { horizontal: "right" };
+        setCellValueFormat(bsheet, 'E3', "Saldo " + iJahr, true, false, { bold: true, size: 11, name: 'Tahoma' });
+        bsheet.getCell('E3').alignment = { horizontal: "right" };
+        setCellValueFormat(bsheet, 'F3', "Differenz", true, false, { bold: true, size: 11, name: 'Tahoma' });
+        bsheet.getCell('F3').alignment = { horizontal: "right" };
+
         var accBData = accData.filter(function (value, index, array) {
             return value.level < 3;
         });
-        accBData.forEach(element => {
-            if (element.level == element.order) {
-                bsheet.getCell("B" + row).value = element.name;
-                cell = bsheet.getCell("B3");
-                cell.font = {
-                    bold: true,
-                    size: 12,
-                };
-            } else {
-                bsheet.getCell("B" + row).value = element.order;
-                bsheet.getCell("C" + row).value = element.name;
-                bsheet.getCell("D" + row).value = element.amount;
-                cell = bsheet.getCell("D" + row);
-                cell.alignment = {
-                    horizontal: "right",
-                };
-            }
-            row++;
-        });
+        var Total = writeArray(bsheet, accBData, 4);
+        var row = Total.lastRow + 2;
+        var formula1 = {formula: 'D' + Total.total1 + '-D' + Total.total2};
+        var formula2 = {formula: 'E' + Total.total1 + '-E' + Total.total2};
+        var formula3 = {formula: 'D' + row + '-E' + row};
+        setCellValueFormat(bsheet, 'B' + row, "Gewinn / Verlust", true, 'B' + row + ':C' + row, {bold: true, size: 18, name: 'Tahoma'});
+        setCellValueFormat(bsheet, 'D' + row, formula1, true, '', {bold: true, size: 11, name: 'Tahoma'});
+        setCellValueFormat(bsheet, 'E' + row, formula2, true, '', {bold: true, size: 11, name: 'Tahoma'});
+        setCellValueFormat(bsheet, 'F' + row, formula3, true, '', {bold: true, size: 11, name: 'Tahoma'});
+        bsheet.getCell('D' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
+        bsheet.getCell('E' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
+        bsheet.getCell('F' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
 
-        esheet.getCell("B1").value = "AMC-Buchhaltung für das Jahr " + sjahr;
-        cell = esheet.getCell("B1");
-        cell.font = {
-            bold: true,
-            size: 14,
-        };
-        esheet.getCell("B3").value = "Erfolgsrechnung";
-        cell = esheet.getCell("B3");
-        cell.font = {
-            bold: true,
-            size: 12,
-        };
-        row = 4;
+        bsheet.getColumn('C').width = 27;
+        bsheet.getColumn('D').width = 12;
+        bsheet.getColumn('E').width = 12;
+        bsheet.getColumn('F').width = 12;
+
+        setCellValueFormat(esheet, 'B1', "Erfolgsrechnung " + sjahr, false, false, { bold: true, size: 18, name: 'Tahoma' });
+        setCellValueFormat(esheet, 'B3', "Konto", true, false, { bold: true, size: 11, name: 'Tahoma' });
+        setCellValueFormat(esheet, 'C3', "Bezeichnung", true, false, { bold: true, size: 11, name: 'Tahoma' });
+        setCellValueFormat(esheet, 'D3', "Saldo " + sjahr, true, false, { bold: true, size: 11, name: 'Tahoma' });
+        esheet.getCell('D3').alignment = { horizontal: "right" };
+        setCellValueFormat(esheet, 'E3', "Saldo " + iJahr, true, false, { bold: true, size: 11, name: 'Tahoma' });
+        esheet.getCell('E3').alignment = { horizontal: "right" };
+        setCellValueFormat(esheet, 'F3', "Differenz", true, false, { bold: true, size: 11, name: 'Tahoma' });
+        esheet.getCell('F3').alignment = { horizontal: "right" };
+
         var accEData = accData.filter(function (value, index, array) {
             return value.level > 2 && value.level < 9;
         });
-        accEData.forEach(element => {
-            if (element.level == element.order) {
-                esheet.getCell("B" + row).value = element.name;
-                cell = esheet.getCell("B3");
-                cell.font = {
-                    bold: true,
-                    size: 12,
-                };
-            } else {
-                esheet.getCell("B" + row).value = element.order;
-                esheet.getCell("C" + row).value = element.name;
-                esheet.getCell("D" + row).value = element.amount;
-                cell = esheet.getCell("D" + row);
-                cell.alignment = {
-                    horizontal: "right",
-                };
-            }
-            row++;
-        });
+        Total = writeArray(esheet, accEData, 4);
+        row = Total.lastRow + 2;
+        formula1 = {formula: 'D' + Total.total2 + '-D' + Total.total1};
+        formula2 = {formula: 'E' + Total.total2 + '-E' + Total.total1};
+        formula3 = {formula: 'D' + row + '-E' + row};
+        setCellValueFormat(esheet, 'B' + row, "Gewinn / Verlust", true, 'B' + row + ':C' + row, {bold: true, size: 18, name: 'Tahoma'});
+        setCellValueFormat(esheet, 'D' + row, formula1, true, '', {bold: true, size: 11, name: 'Tahoma'});
+        setCellValueFormat(esheet, 'E' + row, formula2, true, '', {bold: true, size: 11, name: 'Tahoma'});
+        setCellValueFormat(esheet, 'F' + row, formula3, true, '', {bold: true, size: 11, name: 'Tahoma'});
+        esheet.getCell('D' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
+        esheet.getCell('E' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
+        esheet.getCell('F' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
+
+        esheet.getColumn('C').width = 27;
+        esheet.getColumn('D').width = 12;
+        esheet.getColumn('E').width = 12;
+        esheet.getColumn('F').width = 12;
 
         const filename = "./public/exports/Bilanz.xlsx";
         await workbook.xlsx.writeFile(filename).catch((e) => {
@@ -442,6 +538,57 @@ module.exports = {
     },
 };
 
+function writeArray(sheet, arData, firstRow) {
+    var row = firstRow;
+
+    var cellLevel;
+
+    arData.forEach(element => {
+        if (element.level == element.order) {
+            row++;
+            cellLevel = row;
+            setCellValueFormat(sheet, "B" + row, element.name, true, "B" + row + ":C" + row, { name: 'Tahoma', bold: true, size: 11 })
+
+            setCellValueFormat(sheet, "D" + row, '', true, '', { name: 'Tahoma', bold: true, size: 11 })
+            setCellValueFormat(sheet, "E" + row, '', true, '', { name: 'Tahoma', bold: true, size: 11 })
+            setCellValueFormat(sheet, "F" + row, '', true, '', { name: 'Tahoma', bold: true, size: 11 })
+
+            sheet.getCell('D' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
+            sheet.getCell('E' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
+            sheet.getCell('F' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
+        } else {
+            var font = { name: 'Tahoma', bold: false, size: 11 };
+            setCellValueFormat(sheet, "B" + row, element.order, true, '', font);
+            setCellValueFormat(sheet, "C" + row, element.name, true, '', font);
+            setCellValueFormat(sheet, 'D' + row, element.amount, true, '', font);
+            setCellValueFormat(sheet, 'E' + row, element.amountVJ, true, '', font);
+
+            setCellValueFormat(sheet, 'F' + row, { formula: 'D' + row + '-E' + row }, true, '', font);
+
+            sheet.getCell('D' + cellLevel).value = { formula: '=SUM(D' + eval(cellLevel + 1) + ':' + 'D' + row + ')' };
+            sheet.getCell('E' + cellLevel).value = { formula: '=SUM(E' + eval(cellLevel + 1) + ':' + 'E' + row + ')' };
+            sheet.getCell('F' + cellLevel).value = { formula: '=SUM(F' + eval(cellLevel + 1) + ':' + 'F' + row + ')' };
+
+            sheet.getCell('D' + row).alignment = {
+                horizontal: "right",
+            };
+            sheet.getCell('E' + row).alignment = {
+                horizontal: "right",
+            };
+            sheet.getCell('F' + row).alignment = {
+                horizontal: "right",
+            };
+
+            sheet.getCell('D' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
+            sheet.getCell('E' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
+            sheet.getCell('F' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
+        }
+
+        row++;
+    });
+
+    return {lastRow: row-1, total1: firstRow+1, total2: cellLevel};
+}
 
 async function fillTemplate(sheet, id, syear) {
     var qrySelect = "SELECT * FROM meisterschaft where eventid in (";
@@ -482,11 +629,12 @@ async function fillTemplate(sheet, id, syear) {
                                 kegelTotal += kegelSumme;
                             } else {
                                 // setzte diagonale Linie - > Streichresultat
+                                // TODO: Nicht die ganze Linie durchstreichen
                                 sheet.getRow(row).border = {
                                     diagonal: {
                                         up: true,
                                         down: true,
-                                        style: 'thick',
+                                        style: 'thin',
                                         color: {
                                             argb: 'FFFF0000'
                                         }
@@ -536,12 +684,8 @@ async function createTemplate(syear, sheet, inclPoints) {
         console.error(e);
     });
 
-    setCellValueFormat(sheet, "A2", "CLUB/KEGELMEISTERSCHAFT", false, "A2:I2");
+    setCellValueFormat(sheet, "A2", "CLUB/KEGELMEISTERSCHAFT", false, "A2:I2", { bold: true, size: 12 });
     let cell = sheet.getCell("A2");
-    cell.font = {
-        bold: true,
-        size: 12,
-    };
     cell.alignment = {
         vertical: "middle",
         horizontal: "center",
@@ -664,7 +808,7 @@ async function createTemplate(syear, sheet, inclPoints) {
 
 }
 
-function setCellValueFormat(sheet, cell, value, border, merge) {
+function setCellValueFormat(sheet, cell, value, border, merge, font) {
     sheet.getCell(cell).value = value;
     if (merge != "") {
         sheet.mergeCells(merge);
@@ -685,5 +829,8 @@ function setCellValueFormat(sheet, cell, value, border, merge) {
                 style: "thin",
             }
         };
+
+    if (font)
+        sheet.getCell(cell).font = font;
 
 }
