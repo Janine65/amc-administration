@@ -1,9 +1,12 @@
-.DS_Store
 .vscode/settings.json
-public/.DS_Store
 logs/*.txt
 *.log
 ~$*.xlsx
 public/exports/*
 !public/exports/Meisterschaft-Vorlage.xlsx
 *.zip
+.DS_Store
+public/.DS_Store
+public/js/.DS_Store
+public/uploads/*.xlsx
+public/uploads/*.pdf

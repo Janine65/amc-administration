@@ -5,7 +5,7 @@
         "app_desc": "AMC Administration",
         "node_port": 3050,
         "json_indentation": 4,
-        "database": "amcmitglieder",
+        "database": "amcadmin",
         "db_user": "webuser",
         "db_pwd": "U2FsdGVkX1+91tP1h+l1dhQgbJOZ1PZllUtwQPzcdnk=",
         "port": "3306",

@@ -335,7 +335,20 @@ wxAMC.moduleClasses.Adressen = class {
                 { view: "textarea", name: "email_cc", label: "CC:", height: 50 },
                 { view: "textarea", name: "email_bcc", label: "BCC:", height: 50 },
                 { view: "text", name: "email_subject", label: "Betreff:", required: true },
-                //{ view:"", name:"attachement", label:"Attachement" },
+                {
+                  view: "uploader", value: 'Attachments', link: "emailupload_list",
+                  upload: "/uploadFiles", accept: "application/pdf",
+                  multiple: true, autosend: true,
+                  name: "uploadFiles", id: "emailupload"
+                },
+                {
+                  view: "list",
+                  id: "emailupload_list",
+                  type: "uploader",
+                  autoheight: true,
+                  miniminHeight: 30,
+                  borderless: true
+                },
                 {
                   view: "nic-editor",
                   config: {

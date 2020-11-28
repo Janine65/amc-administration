@@ -37,7 +37,7 @@ module.exports = {
 
 		// Streichresultate ermitteln - nur im aktuellen Clubjahr
 		if (req.query.jahr == global.Parameter.get('CLUBJAHR')) {
-			qrySelect = "SELECT count(id) as value from anlaesse where status = 1 and datum > NOW() and YEAR(`datum`) = " + global.Parameter.get('CLUBJAHR');
+			qrySelect = "SELECT count(id) as value from anlaesse where status = 1 and datum > NOW() and nachkegeln = 0 and YEAR(`datum`) = " + global.Parameter.get('CLUBJAHR');
 			data = await sequelize.query(qrySelect, 
 				{ 
 					type: Sequelize.QueryTypes.SELECT,

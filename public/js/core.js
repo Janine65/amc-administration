@@ -1,4 +1,3 @@
-
 class WXAMC {
 
   /**
@@ -43,6 +42,16 @@ class WXAMC {
     this.deLocale = webix.i18n.locales["de-DE"];
     this.deLocale.dateFormat = "%d.%m.%Y";
     this.deLocale.parseFormat = "%c";
+    this.deLocale.decimalDelimiter = ".";
+    this.deLocale.groupDelimiter = "'";
+    this.deLocale.priceSettings = {
+      groupSize: 3,        // the number of digits in a group
+      groupDelimiter: "'", // a mark that divides numbers with many digits into groups
+      decimalDelimiter: ".",// the decimal delimiter
+      decimalSize: 2       // the number of digits after the decimal mark
+    };
+
+
     webix.i18n.locales["de-DE"] = this.deLocale;
     webix.i18n.setLocale("de-DE");
 
@@ -237,51 +246,51 @@ class WXAMC {
           head: {
             view: "toolbar",
             cols: [{
-                view: "label",
-                id: inModuleName,
-                label: moduleUIConfig.winLabel
-              },
-              {
-                view: "icon",
-                icon: "webix_icon mdi mdi-window-minimize",
-                click: function () {
-                  // Hide the window and toggle it's taskbar button.
-                  $$(`moduleWindow-${inModuleName}`).hide();
-                  $$(`moduleTasbbarButton-${inModuleName}`).toggle();
-                }
-              },
-              {
-                view: "icon",
-                icon: "webix_icon mdi mdi-window-maximize",
-                click: function () {
-                  // Reconfigure the module's window to be full-screen and resize it.
-                  const win = $$(`moduleWindow-${inModuleName}`);
-                  win.config.fullscreen = !win.config.fullscreen;
-                  win.resize();
-                  // Now change this icon's, err, ICON, as appropriate, and position the
-                  // window based on it's new state.
-                  if (win.config.fullscreen) {
-                    this.config.icon = "webix_icon mdi mdi-window-restore";
-                    win.setPosition(0, 0);
-                  } else {
-                    this.config.icon = "webix_icon mdi mdi-window-maximize";
-                    win.setPosition(centerX, centerY);
-                  }
-                  // Refresh this icon to reflect the change.
-                  this.refresh();
-                  // Finally, blur off the icon so there's no "selection" artifact.
-                  this.blur();
-                }
-              },
-              {
-                view: "icon",
-                icon: "webix_icon mdi mdi-window-close",
-                click: function () {
-                  // Close the window and remove taskbar button.
-                  $$(`moduleWindow-${inModuleName}`).close();
-                  $$("taskbar").removeView(`moduleTasbbarButton-${inModuleName}`);
-                }
+              view: "label",
+              id: inModuleName,
+              label: moduleUIConfig.winLabel
+            },
+            {
+              view: "icon",
+              icon: "webix_icon mdi mdi-window-minimize",
+              click: function () {
+                // Hide the window and toggle it's taskbar button.
+                $$(`moduleWindow-${inModuleName}`).hide();
+                $$(`moduleTasbbarButton-${inModuleName}`).toggle();
               }
+            },
+            {
+              view: "icon",
+              icon: "webix_icon mdi mdi-window-maximize",
+              click: function () {
+                // Reconfigure the module's window to be full-screen and resize it.
+                const win = $$(`moduleWindow-${inModuleName}`);
+                win.config.fullscreen = !win.config.fullscreen;
+                win.resize();
+                // Now change this icon's, err, ICON, as appropriate, and position the
+                // window based on it's new state.
+                if (win.config.fullscreen) {
+                  this.config.icon = "webix_icon mdi mdi-window-restore";
+                  win.setPosition(0, 0);
+                } else {
+                  this.config.icon = "webix_icon mdi mdi-window-maximize";
+                  win.setPosition(centerX, centerY);
+                }
+                // Refresh this icon to reflect the change.
+                this.refresh();
+                // Finally, blur off the icon so there's no "selection" artifact.
+                this.blur();
+              }
+            },
+            {
+              view: "icon",
+              icon: "webix_icon mdi mdi-window-close",
+              click: function () {
+                // Close the window and remove taskbar button.
+                $$(`moduleWindow-${inModuleName}`).close();
+                $$("taskbar").removeView(`moduleTasbbarButton-${inModuleName}`);
+              }
+            }
             ]
           },
           body: moduleUIConfig
@@ -317,7 +326,11 @@ class WXAMC {
     } /* End uiType check. */
 
     // Refresh data for the module to show their lists of items.
-    await wxAMC.modules[inModuleName].refreshData();
+    await wxAMC.modules[inModuleName].refreshData()
+      .catch((e) => webix.message({
+        type: "error",
+        text: e
+      }));
 
     // Finally, call the module's activate() handler.
     wxAMC.modules[inModuleName].activate();
@@ -326,7 +339,50 @@ class WXAMC {
 
 
   // **************************************** Module helper methods ****************************************
+  async importLoadedFile() {
+    var f = $$("fisupload").files;
 
+    f.data.each(function (file) {
+      var status = file.status; // upload status
+      var fname = file.name;    // file name
+      var sname = file.sname;   // storage name
+      var message = 'Upload: ' + status + ' for ' + fname + 'stored as ' + sname;
+      webix.message(message, 'Info');
+      console.log(message, 'Info');
+
+      const url = "/Journal/import";
+
+      const promiseModule = fetch(url, {
+        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, *cors, same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'same-origin', // include, *same-origin, omit
+        headers: {
+          'Content-Type': 'application/json'
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        redirect: 'follow', // manual, *follow, error
+        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+        body: JSON.stringify(file) // body data type must match "Content-Type" header  
+      })
+        .then((response) => {
+          if (!response.ok) {                                  // ***
+            webix.message({ type: "error", text: "HTTP error " + response.status });  // ***
+          }
+          return response.json();
+        })
+        .catch((e) => webix.message(`Datei ${file.name} konnte nicht erfolgreich importiert werden: ${e}`, "error", -1)
+      );
+      Promise.resolve(promiseModule)
+        .then((response) => {
+          webix.message(fname + " wurde importiert.", "info", -1);
+        })
+        .catch((e) => webix.message(`Fehler beim Importieren der Datei ${file.name}: ${e}`, "error", -1)
+        );
+    })
+
+    $$("message_win").close();
+  }
 
   /**
    * Sort an array of objects by a specified property in descending order.
@@ -436,18 +492,18 @@ class WXAMC {
     var smethond = (wxAMC.modules[inModuleName].editingID > 0 ? "PUT" : "POST");
 
     fetch(url, {
-        method: smethond, // *GET, POST, PUT, DELETE, etc.
-        mode: 'cors', // no-cors, *cors, same-origin
-        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-        credentials: 'same-origin', // include, *same-origin, omit
-        headers: {
-          'Content-Type': 'application/json'
-          // 'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        redirect: 'follow', // manual, *follow, error
-        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-        body: JSON.stringify(itemData) // body data type must match "Content-Type" header
-      })
+      method: smethond, // *GET, POST, PUT, DELETE, etc.
+      mode: 'cors', // no-cors, *cors, same-origin
+      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+      credentials: 'same-origin', // include, *same-origin, omit
+      headers: {
+        'Content-Type': 'application/json'
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      redirect: 'follow', // manual, *follow, error
+      referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+      body: JSON.stringify(itemData) // body data type must match "Content-Type" header
+    })
       .then((response) => {
         if (!response.ok) { // ***
           webix.message({
@@ -492,14 +548,14 @@ class WXAMC {
       objSave.year = wxAMC.parameter.get('CLUBJAHR');
 
     fetch(url, {
-        method: "POST", // *GET, POST, PUT, DELETE, etc.
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        redirect: 'follow', // manual, *follow, error
-        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-        body: JSON.stringify(objSave) // body data type must match "Content-Type" header
-      })
+      method: "POST", // *GET, POST, PUT, DELETE, etc.
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      redirect: 'follow', // manual, *follow, error
+      referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+      body: JSON.stringify(objSave) // body data type must match "Content-Type" header
+    })
       .then((response) => {
         if (!response.ok) { // ***
           webix.message({
@@ -514,7 +570,7 @@ class WXAMC {
           text: "erstellt und downloaded"
         });
         // download file
-        webix.send("./exports/Stammblätter.xlsx",{},"GET","_blank");
+        webix.send("./exports/Stammblätter.xlsx", {}, "GET", "_blank");
       })
       .catch((e) => webix.message({
         type: "error",
@@ -539,14 +595,14 @@ class WXAMC {
       return;
 
     fetch(url, {
-        method: "POST", // *GET, POST, PUT, DELETE, etc.
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        redirect: 'follow', // manual, *follow, error
-        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-        body: JSON.stringify(objSave) // body data type must match "Content-Type" header
-      })
+      method: "POST", // *GET, POST, PUT, DELETE, etc.
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      redirect: 'follow', // manual, *follow, error
+      referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+      body: JSON.stringify(objSave) // body data type must match "Content-Type" header
+    })
       .then((response) => {
         if (!response.ok) { // ***
           webix.message({
@@ -559,7 +615,7 @@ class WXAMC {
             text: "erstellt und downloaded"
           });
           // download file
-          webix.send("./exports/Meisterschaft-"+objSave.year+".xlsx",{},"GET","_blank");
+          webix.send("./exports/Meisterschaft-" + objSave.year + ".xlsx", {}, "GET", "_blank");
         }
       })
       .catch((e) => webix.message({
@@ -587,19 +643,19 @@ class WXAMC {
         // Delete confirmed.
         if (inResult) {
           const url = "/" + inModuleName + "/data/";
-          var anlass = $$(`module${inModuleName}-items`).getSelectedItem();
+          var data = $$(`module${inModuleName}-items`).getSelectedItem();
           fetch(url, {
-              method: 'DELETE', // *GET, POST, PUT, DELETE, etc.
-              mode: 'cors', // no-cors, *cors, same-origin
-              cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-              credentials: 'same-origin', // include, *same-origin, omit
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              redirect: 'follow', // manual, *follow, error
-              referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-              body: JSON.stringify(anlass) // body data type must match "Content-Type" header
-            })
+            method: 'DELETE', // *GET, POST, PUT, DELETE, etc.
+            mode: 'cors', // no-cors, *cors, same-origin
+            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: 'same-origin', // include, *same-origin, omit
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            redirect: 'follow', // manual, *follow, error
+            referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+            body: JSON.stringify(data) // body data type must match "Content-Type" header
+          })
             .then((response) => {
               if (!response.ok) { // ***
                 webix.message({
@@ -714,8 +770,8 @@ class WXAMC {
 
     const url = "/user/logout";
     fetch(url, {
-        method: 'POST' // *GET, POST, PUT, DELETE, etc.
-      })
+      method: 'POST' // *GET, POST, PUT, DELETE, etc.
+    })
       .then(function (resp) {
         if (resp.ok) {
           webix.message("Bye bye " + wxAMC.loggedUser, "Info");
@@ -753,18 +809,18 @@ class WXAMC {
     $$("message").setValue("")
 
     const promiseModule = fetch(url, {
-        method: 'POST', // *GET, POST, PUT, DELETE, etc.
-        mode: 'cors', // no-cors, *cors, same-origin
-        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-        credentials: 'include', // include, *same-origin, omit
-        headers: {
-          'Content-Type': 'application/json'
-          // 'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        redirect: 'follow', // manual, *follow, error
-        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-        body: JSON.stringify(user) // body data type must match "Content-Type" header
-      })
+      method: 'POST', // *GET, POST, PUT, DELETE, etc.
+      mode: 'cors', // no-cors, *cors, same-origin
+      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+      credentials: 'include', // include, *same-origin, omit
+      headers: {
+        'Content-Type': 'application/json'
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      redirect: 'follow', // manual, *follow, error
+      referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+      body: JSON.stringify(user) // body data type must match "Content-Type" header
+    })
       .then(resp => {
         if (!resp.ok) {
           $$("message").setValue("an error occurred while creating user");
@@ -824,8 +880,8 @@ class WXAMC {
       if (wxAMC.UserRole != "admin")
         eachElement(".authenticate_admin", (e) => e.classList.add("hidden"));
       webix.UIManager.removeHotKey("ctrl+i");
-      webix.UIManager.addHotKey("ctrl+o",wxAMC.doLogout);
-      } else {
+      webix.UIManager.addHotKey("ctrl+o", wxAMC.doLogout);
+    } else {
       eachElement(".authenticate_logged_in", (e) => e.classList.add("hidden"));
       eachElement(".authenticate_logged_out", (e) => e.classList.remove("hidden"));
       $$("loggedUser").setValue("not logged in");
@@ -836,14 +892,14 @@ class WXAMC {
 
         // Module window already exists, just show it.
         if (moduleWindow) {
-            moduleWindow.close();
-            $$("taskbar").removeView(`moduleTasbbarButton-${moduleName}`);
+          moduleWindow.close();
+          $$("taskbar").removeView(`moduleTasbbarButton-${moduleName}`);
         }
 
         webix.UIManager.removeHotKey(wxAMC.modules[moduleName].getUIConfig().winHotkey);
-        }
-        webix.UIManager.removeHotKey("ctrl+o");
-        webix.UIManager.addHotKey("ctrl+i",this.showLoginGui);
+      }
+      webix.UIManager.removeHotKey("ctrl+o");
+      webix.UIManager.addHotKey("ctrl+i", this.showLoginGui);
     }
   } /* End setHidden */
 } /* End WXAMC. */
