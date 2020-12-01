@@ -83,6 +83,9 @@ passport.deserializeUser(function(user, done) {
   done(null, {id: user.id});
 });
 
+app.get('/System/env', function(req,res) {
+  res.json({env: process.env.NODE_ENV});
+})
 const exportData = require("./public/js/controllers/exports");
 
 const adresse = require("./public/js/controllers/adresse");

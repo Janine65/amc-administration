@@ -136,26 +136,54 @@ class WXAMC {
 
     wxAMC.setHidden();
 
-    if (window.PasswordCredential) {
-      if (!wxAMC.isAuthenticated) {
-        navigator.credentials.get({
-          password: true,
-          mediation: 'silent'
-        }).then(c => {
-          if (c) {
-            if (c.type == 'password')
-              return doLogin(c);
-          }
-          return Promise.resolve();
-        }).then(profile => {
-          if (profile) {
-            doLogin(profile);
-          }
-        }).catch(error => {
-          console.log('Sign-in Failed');
-        });
+    const promiseModule = await fetch('/System/env')
+    .then((response) => response.json())
+    .catch((error) => webix.message({
+      type: "error",
+      text: "Fetch Environemnt " + error,
+      expire: -1
+    }));
+  await Promise.resolve(promiseModule)
+    .then((env) => {
+      console.log('env: ', env);
+      if (env != null) {
+        wxAMC.env = env.env;
       }
-    }
+    })
+    .catch((e) => webix.message({
+      type: "error",
+      text: "Resolve Environemt. " + e,
+      expire: -1
+    }));
+
+    if (wxAMC.env == 'development') {
+      wxAMC.isAuthenticated = true;
+      wxAMC.loggedUser = 'Development';
+      wxAMC.UserRole = 'admin';
+      webix.message("Welcome " + wxAMC.loggedUser, "Info");
+      wxAMC.setHidden();
+
+    } else
+      if (window.PasswordCredential) {
+        if (!wxAMC.isAuthenticated) {
+          navigator.credentials.get({
+            password: true,
+            mediation: 'silent'
+          }).then(c => {
+            if (c) {
+              if (c.type == 'password')
+                return doLogin(c);
+            }
+            return Promise.resolve();
+          }).then(profile => {
+            if (profile) {
+              doLogin(profile);
+            }
+          }).catch(error => {
+            console.log('Sign-in Failed');
+          });
+        }
+      }
 
   } /* End start(). */
 
@@ -851,7 +879,7 @@ class WXAMC {
                 closeWindow()
               )
           } else {
-            closeWindow();
+            closeWindow();            
             return Promise.resolve(resp);
           }
         }

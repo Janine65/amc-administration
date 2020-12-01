@@ -13,6 +13,7 @@ module.exports = {
 			order: [
 				['journalNo', 'asc'],
 				['date', 'asc'],
+				['from_account', 'asc'],
 			]
 		}
 		)

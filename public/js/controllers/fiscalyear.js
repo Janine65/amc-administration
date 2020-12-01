@@ -18,8 +18,9 @@ module.exports = {
 	},
 
 	getFKData: function(req, res) {
-		var qrySelect = "SELECT `year` as id, CONCAT(`name`,' - ', ";
-		qrySelect += "(CASE WHEN `state`= 1 THEN 'offen' WHEN `state`= 2 THEN 'prov. abgeschlossen' ELSE 'abgeschlossen' END)) as value"; 
+		var qrySelect = "SELECT `year` as id, ";
+		qrySelect += " CONCAT(`name`,' - ', (CASE WHEN `state`= 1 THEN 'offen' WHEN `state`= 2 THEN 'prov. abgeschlossen' ELSE 'abgeschlossen' END)) as value,"; 
+		qrySelect += "(CASE WHEN `state`= 1 THEN 'open' WHEN `state`= 2 THEN 'prov-closed' ELSE 'closed' END) as $css"
 		qrySelect += " FROM `fiscalyear` " ;
 		if (req.query.filter != null) {
 			var qfield = '%' + req.query.filter.value + '%';

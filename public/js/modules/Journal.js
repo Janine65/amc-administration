@@ -20,6 +20,7 @@ wxAMC.moduleClasses.Journal = class {
 
   } /* End constructor. */
 
+
   /**
    * Return the module's UI config object.
    */
@@ -37,19 +38,23 @@ wxAMC.moduleClasses.Journal = class {
             {
               cols: [
                 {
-                  view: "select", id: "moduleJournal-dateSelect",
+                  view: "richselect", id: "moduleJournal-dateSelect",
                   options: "/Fiscalyear/getFkData",
                   value: wxAMC.parameter.get('CLUBJAHR'),
+                  css: 'open',
                   on: {
-                    onViewShow: this.refreshData.bind(this),
-                    onChange: this.refreshData.bind(this)
+                    onChange: function(newV, oldV) {                      
+                      if (oldV) webix.html.removeCss(this.getNode(), this.getList().getItem(oldV).$css);
+                      if (newV) webix.html.addCss(this.getNode(), this.getList().getItem(newV).$css);
+                      wxAMC.modules['Journal'].refreshData();
+                    }
                   }
                 },
                 {
                   view: "toolbar",
                   cols: [
                     {
-                      id: "moduleJournal-addFiscalyear", view: "button", label: "Edit", width: "80", type: "icon",
+                      id: "moduleJournal-editFiscalyear", view: "button", label: "Edit", width: "80", type: "icon",
                       icon: "webix_icon mdi mdi-plus", click: this.editFiscalYear.bind(this)
                     },
                     {
@@ -91,6 +96,7 @@ wxAMC.moduleClasses.Journal = class {
                 onAfterLoad: function () {
                   this.hideOverlay();
                   $$("count_journal").setValue("Anzahl " + this.count());
+                  //webix.html.addCss($$('moduleJournal-dateSelect').getNode(), $$('moduleJournal-dateSelect').getList().getItem($$('moduleJournal-dateSelect').getValue()).$css);
                   if (wxAMC.fiscalyear.state < 3) {
                     $$("moduleJournal-editButton").show();
                     $$("moduleJournal-deleteButton").show();

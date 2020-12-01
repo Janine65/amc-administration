@@ -15,7 +15,7 @@ module.exports = {
 	},
 
 	getFKData: function(req, res) {
-		var qrySelect = "SELECT `id`, CONCAT(`order`,' ',`name`) as value"; 
+		var qrySelect = "SELECT `id`, CONCAT(`order`,' ',`name`) as value";
 		qrySelect += " FROM `account` WHERE `status` = 1 and `level` != `order` " ;
 		if (req.query.filter != null) {
 			var qfield = '%' + req.query.filter.value + '%';
