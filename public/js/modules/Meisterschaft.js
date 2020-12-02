@@ -42,14 +42,7 @@ wxAMC.moduleClasses.Meisterschaft = class {
                 {"id":(parseInt(wxAMC.parameter.get('CLUBJAHR'))+1), value:parseInt(wxAMC.parameter.get('CLUBJAHR'))+1}
               ],
               on: {
-                onViewShow: function() {
-                  $$("moduleMeisterschaft-Citems").filterByAll();
-                  $$("moduleMeisterschaft-Kitems").filterByAll();
-                },
-                onChange: function() {
-                  $$("moduleMeisterschaft-Citems").filterByAll();
-                  $$("moduleMeisterschaft-Kitems").filterByAll();
-                }
+                onChange: this.refreshData.bind(this)
               }
             },
             {cols: [
@@ -79,30 +72,11 @@ wxAMC.moduleClasses.Meisterschaft = class {
                   }},
                 hover: "hoverline",
                 on : {
-                  onViewShow:function(){
-                    this.filterByAll();
-                  },
                   onBeforeLoad:function(){
                     this.showOverlay("Loading...");
                   },
                   onAfterLoad:function(){
-                    console.log(this);
                     this.hideOverlay();
-                    $$("moduleMeisterschaft-Ccount").setValue("Anzahl " + this.count());	  
-                    $$("moduleMeisterschaft-Citems").registerFilter(
-                      $$("moduleMeisterschaftdatumSelect"),  
-                      { columnId:"jahr" },
-                      {  
-                        getValue:function(view){
-                          return view.getValue();
-                        },
-                        setValue:function(view, value){
-                          view.setValue(value)
-                        }
-                      }
-                    );
-                  },
-                  onAfterFilter:function(){
                     $$("moduleMeisterschaft-Ccount").setValue("Anzahl " + this.count());	  
                   }
                 }  
@@ -131,9 +105,6 @@ wxAMC.moduleClasses.Meisterschaft = class {
                   }},
                 hover: "hoverline",
                 on : {
-                  onViewShow:function(){
-                    this.filterByAll();
-                  },
                   onBeforeLoad:function(){
                     this.showOverlay("Loading...");
                   },
@@ -141,26 +112,11 @@ wxAMC.moduleClasses.Meisterschaft = class {
                     console.log(this);
                     this.hideOverlay();
                     $$("moduleMeisterschaft-Kcount").setValue("Anzahl " + this.count());	  
-                    $$("moduleMeisterschaft-Kitems").registerFilter(
-                      $$("moduleMeisterschaftdatumSelect"),  
-                      { columnId:"jahr" },
-                      {  
-                        getValue:function(view){
-                          return view.getValue();
-                        },
-                        setValue:function(view, value){
-                          view.setValue(value)
-                        }
-                      }
-                    );
-                  },
-                  onAfterFilter:function(){
-                    $$("moduleMeisterschaft-Kcount").setValue("Anzahl " + this.count());	  
                   }
                 }  
               }
              ]
-            },            
+            },
             /* Anlass list toolbar. */
             { view : "toolbar",
             cols : [
@@ -171,7 +127,8 @@ wxAMC.moduleClasses.Meisterschaft = class {
               { id: "moduleMeisterschaft-exporthButton", view : "button", default : true, label : "Excel", width : "80", type : "icon", disabled: false,
               icon : "webix_icon mdi mdi-file-excel", click : this.exportMeister.bind(this)},
               { width : 6 },
-              { id: "moduleMeisterschaft-Kcount", view : "label", label: "Anzahl 0", align: "left"},
+              { id: "moduleMeisterschaft-Kendjahr", view : "label", label: "", align: "right"},
+              { id: "moduleMeisterschaft-Kcount", view : "label", label: "Anzahl 0", align: "right"},
             ] /* End toolbar items. */
             } /* End toolbar. */
           ] /* End anlass list rows. */
@@ -212,7 +169,7 @@ wxAMC.moduleClasses.Meisterschaft = class {
     await fetch(url)      
       .catch(error => webix.message({ type:"error", text: error}));
     url = "/Kegelmeister/refresh?jahr=" + $$("moduleMeisterschaftdatumSelect").getValue();
-    await fetch(url)      
+    await fetch(url)
       .catch(error => webix.message({ type:"error", text: error}));
     await this.refreshData();
     webix.message({type: "info", text:"Ranglisten neu berechnet"});
@@ -222,8 +179,12 @@ wxAMC.moduleClasses.Meisterschaft = class {
    * Refresh the meisterschaft list from local storage.
    */
   async refreshData() {
+    var sSelYear = $$("moduleMeisterschaftdatumSelect").getValue();
+    if (sSelYear == "")
+      sSelYear = wxAMC.parameter.get('CLUBJAHR');
 
-    const url = "/Clubmeister/data";
+
+    const url = "/Clubmeister/data?jahr=" + sSelYear;
    // var dataItems;
 
     const promiseModule = fetch(url)
@@ -242,9 +203,8 @@ wxAMC.moduleClasses.Meisterschaft = class {
     $$("moduleMeisterschaft-Citems").clearAll();
     $$("moduleMeisterschaft-Citems").parse(itemsAsArray);
 
-    const promiseModuleK = fetch("/Kegelmeister/data")
+    const promiseModuleK = fetch("/Kegelmeister/data?jahr=" + sSelYear)
       .then(function(response) {
-        //console.log(response);
         return response.json();
       }).catch(function(error) {
         webix.message({ type:"error", text: error})
@@ -258,21 +218,19 @@ wxAMC.moduleClasses.Meisterschaft = class {
       $$("moduleMeisterschaft-Kitems").clearAll();
       $$("moduleMeisterschaft-Kitems").parse(itemsKAsArray);
 
-      var sSelYear = $$("moduleMeisterschaftdatumSelect").getValue();
-      if (sSelYear == "")
-        sSelYear = wxAMC.parameter.get('CLUBJAHR');
+      const promiseModuleKJ = fetch("Meisterschaft/checkJahr?jahr=" + sSelYear)
+        .then(response => response.json())
+        .catch(error => webix.message({type: "error", text: error}));
+      Promise.resolve(promiseModuleKJ)
+        .then(function(dataJahr) {
+          if (dataJahr[0].AnzStreich > 0) 
+            $$("moduleMeisterschaft-Kendjahr").setValue('<div style="font-size:small;color:yellow;">Streichresultate berücksichtigt</div>');
+          else
+            $$("moduleMeisterschaft-Kendjahr").setValue("");
 
-      await wxAMC.reloadParameters();
+        })
+        .catch(error => webix.message({type: "error", text: error}));
       
-      $$("moduleMeisterschaftdatumSelect").options = [
-        {"id":(parseInt(wxAMC.parameter.get('CLUBJAHR'))-1), value:parseInt(wxAMC.parameter.get('CLUBJAHR'))-1},
-        {"id":parseInt(wxAMC.parameter.get('CLUBJAHR')), value:parseInt(wxAMC.parameter.get('CLUBJAHR'))},
-        {"id":(parseInt(wxAMC.parameter.get('CLUBJAHR'))+1), value:parseInt(wxAMC.parameter.get('CLUBJAHR'))+1}
-      ];
-
-      $$("moduleMeisterschaftdatumSelect").setValue(sSelYear);
-      $$("moduleMeisterschaft-Citems").filterByAll();
-      $$("moduleMeisterschaft-Kitems").filterByAll();
     });
   });
 

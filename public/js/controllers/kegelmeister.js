@@ -5,7 +5,7 @@ module.exports = {
 	getData: function (req, res) {	
 		console.log("kegelmeister.js/getData");				
 		db.Kegelmeister.findAll({
-			where: {jahr: { [Op.gte]: (global.Parameter.get('CLUBJAHR') - 1 ) }},
+			where: {jahr: req.query.jahr},
 			  order: [
 			 	 ['rang', 'asc']
 			 ]

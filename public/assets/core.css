@@ -39,4 +39,18 @@
 
 .hidden {
 	display: none;
-	}
+  }
+
+  .open .webix_inp_static,.webix_list_item.open { 
+  	background:#ddf7dd; 
+  }
+  .prov-closed .webix_inp_static,.webix_list_item.prov-closed { 
+  	background:#ffffe0; 
+  }
+  .closed .webix_inp_static,.webix_list_item.closed { 
+  	background:#fdbebe; 
+  }
+  .webix_list_item.webix_selected {
+  	color:black;
+  	font-weight:bold
+  }

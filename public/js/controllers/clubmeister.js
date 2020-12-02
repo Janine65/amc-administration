@@ -5,7 +5,7 @@ module.exports = {
 	getData: async function (req, res) {	
 		console.log("clubmeister.js/getData");	
 		await db.Clubmeister.findAll({
-			where: {jahr: { [Op.gte]: (global.Parameter.get('CLUBJAHR') - 1 ) }},
+			where: {jahr: req.query.jahr},
 			  order: [
 			 	 ['rang', 'asc']
 			 ]

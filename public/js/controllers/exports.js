@@ -474,13 +474,13 @@ module.exports = {
         });
         var Total = writeArray(bsheet, accBData, 4);
         var row = Total.lastRow + 2;
-        var formula1 = {formula: 'D' + Total.total1 + '-D' + Total.total2};
-        var formula2 = {formula: 'E' + Total.total1 + '-E' + Total.total2};
-        var formula3 = {formula: 'D' + row + '-E' + row};
-        setCellValueFormat(bsheet, 'B' + row, "Gewinn / Verlust", true, 'B' + row + ':C' + row, {bold: true, size: 18, name: 'Tahoma'});
-        setCellValueFormat(bsheet, 'D' + row, formula1, true, '', {bold: true, size: 11, name: 'Tahoma'});
-        setCellValueFormat(bsheet, 'E' + row, formula2, true, '', {bold: true, size: 11, name: 'Tahoma'});
-        setCellValueFormat(bsheet, 'F' + row, formula3, true, '', {bold: true, size: 11, name: 'Tahoma'});
+        var formula1 = { formula: 'D' + Total.total1 + '-D' + Total.total2 };
+        var formula2 = { formula: 'E' + Total.total1 + '-E' + Total.total2 };
+        var formula3 = { formula: 'D' + row + '-E' + row };
+        setCellValueFormat(bsheet, 'B' + row, "Gewinn / Verlust", true, 'B' + row + ':C' + row, { bold: true, size: 18, name: 'Tahoma' });
+        setCellValueFormat(bsheet, 'D' + row, formula1, true, '', { bold: true, size: 11, name: 'Tahoma' });
+        setCellValueFormat(bsheet, 'E' + row, formula2, true, '', { bold: true, size: 11, name: 'Tahoma' });
+        setCellValueFormat(bsheet, 'F' + row, formula3, true, '', { bold: true, size: 11, name: 'Tahoma' });
         bsheet.getCell('D' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
         bsheet.getCell('E' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
         bsheet.getCell('F' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
@@ -505,13 +505,13 @@ module.exports = {
         });
         Total = writeArray(esheet, accEData, 4);
         row = Total.lastRow + 2;
-        formula1 = {formula: 'D' + Total.total2 + '-D' + Total.total1};
-        formula2 = {formula: 'E' + Total.total2 + '-E' + Total.total1};
-        formula3 = {formula: 'D' + row + '-E' + row};
-        setCellValueFormat(esheet, 'B' + row, "Gewinn / Verlust", true, 'B' + row + ':C' + row, {bold: true, size: 18, name: 'Tahoma'});
-        setCellValueFormat(esheet, 'D' + row, formula1, true, '', {bold: true, size: 11, name: 'Tahoma'});
-        setCellValueFormat(esheet, 'E' + row, formula2, true, '', {bold: true, size: 11, name: 'Tahoma'});
-        setCellValueFormat(esheet, 'F' + row, formula3, true, '', {bold: true, size: 11, name: 'Tahoma'});
+        formula1 = { formula: 'D' + Total.total2 + '-D' + Total.total1 };
+        formula2 = { formula: 'E' + Total.total2 + '-E' + Total.total1 };
+        formula3 = { formula: 'D' + row + '-E' + row };
+        setCellValueFormat(esheet, 'B' + row, "Gewinn / Verlust", true, 'B' + row + ':C' + row, { bold: true, size: 18, name: 'Tahoma' });
+        setCellValueFormat(esheet, 'D' + row, formula1, true, '', { bold: true, size: 11, name: 'Tahoma' });
+        setCellValueFormat(esheet, 'E' + row, formula2, true, '', { bold: true, size: 11, name: 'Tahoma' });
+        setCellValueFormat(esheet, 'F' + row, formula3, true, '', { bold: true, size: 11, name: 'Tahoma' });
         esheet.getCell('D' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
         esheet.getCell('E' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
         esheet.getCell('F' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
@@ -587,7 +587,7 @@ function writeArray(sheet, arData, firstRow) {
         row++;
     });
 
-    return {lastRow: row-1, total1: firstRow+1, total2: cellLevel};
+    return { lastRow: row - 1, total1: firstRow + 1, total2: cellLevel };
 }
 
 async function fillTemplate(sheet, id, syear) {
@@ -628,18 +628,19 @@ async function fillTemplate(sheet, id, syear) {
                             if (meisterschaft.streichresultat == 0) {
                                 kegelTotal += kegelSumme;
                             } else {
-                                // setzte diagonale Linie - > Streichresultat
-                                // TODO: Nicht die ganze Linie durchstreichen
-                                sheet.getRow(row).border = {
-                                    diagonal: {
-                                        up: true,
-                                        down: true,
-                                        style: 'thin',
-                                        color: {
-                                            argb: 'FFFF0000'
+                                // setzte diagonale Linie - > Streichresultat                                
+                                sheet.getRow(row).eachCell({ includeEmpty: false }, function (formatCell, colNumber) {
+                                    formatCell.border = {
+                                        diagonal: {
+                                            up: true,
+                                            down: true,
+                                            style: 'thin',
+                                            color: {
+                                                argb: '999999'
+                                            }
                                         }
-                                    }
-                                };
+                                    };
+                                });
                             }
                         }
                         break;
