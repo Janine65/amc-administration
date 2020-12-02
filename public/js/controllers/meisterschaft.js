@@ -110,7 +110,22 @@ module.exports = {
 				raw: false
 			}
 		).then(data => res.json(data));					
-		},
+	},
+
+	checkJahr: function(req, res) {
+		var qrySelect = "SELECT count(*) as AnzStreich FROM meisterschaft";
+		qrySelect += " where eventid in (select id from anlaesse where year(datum) = " + req.query.jahr + ")";
+		qrySelect += "and streichresultat = 1";
+
+		sequelize.query(qrySelect, 
+			{ 
+				type: Sequelize.QueryTypes.SELECT,
+				plain: false,
+				logging: console.log,
+				raw: false
+			}
+		).then(data => res.json(data));					
+	},
 
 	removeData: function (req, res) {
 		const data = req.body;

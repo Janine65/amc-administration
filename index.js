@@ -168,6 +168,7 @@ app.get('/Meisterschaft/getOneData', meisterschaft.getOneData);
 app.get('/Meisterschaft/getFkData', meisterschaft.getFKData);
 app.get('/Meisterschaft/mitglied', meisterschaft.getMitgliedData);
 app.get('/Meisterschaft/getChartData', meisterschaft.getChartData);
+app.get('/Meisterschaft/checkJahr', meisterschaft.checkJahr);
 
 const clubmeister = require("./public/js/controllers/clubmeister");
 app.get('/Clubmeister/data', clubmeister.getData);
