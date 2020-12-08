@@ -199,6 +199,7 @@ app.delete('/Fiscalyear/data', fiscalyear.removeData);
 app.get('/Fiscalyear/getFkData', fiscalyear.getFKData);
 app.get('/Fiscalyear/getOneData', fiscalyear.getOneData);
 app.get('/Fiscalyear/export', exportData.writeExcelData);
+app.post('/Fiscalyear/close', fiscalyear.closeYear);
 
 const account = require("./public/js/controllers/account");
 app.get('/Account/data', account.getData);

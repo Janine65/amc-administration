@@ -54,6 +54,10 @@ wxAMC.moduleClasses.Journal = class {
                   view: "toolbar",
                   cols: [
                     {
+                      id: "moduleJournal-closeFiscalyear", view: "button", label: "Close", width: "80", type: "icon",
+                      icon: "webix_icon mdi mdi-close", click: this.closeFiscalYear.bind(this)
+                    },
+                    {
                       id: "moduleJournal-editFiscalyear", view: "button", label: "Edit", width: "80", type: "icon",
                       icon: "webix_icon mdi mdi-plus", click: this.editFiscalYear.bind(this)
                     },
@@ -480,6 +484,33 @@ wxAMC.moduleClasses.Journal = class {
 
   }
 
+  /**
+   * Close the Fiscalyear
+   */
+  closeFiscalYear() {
+    var sJahr = $$("moduleJournal-dateSelect").getValue();
+    if (sJahr == "")
+      sJahr = wxAMC.parameter.get("CLUBJAHR");
+    const url = "/Fiscalyear/close?jahr=" + sJahr + "&status=2";
+
+    const promiseModule = fetch(url, {method: 'POST'})
+      .then(function (response) {
+        if (!response.ok)
+          webix.message('Fehler beim Schliessen des Buchungsjahres', 'Error');
+        return response.json();
+      }).catch(function (error) {
+        webix.message({ type: "error", text: error })
+      });
+    Promise.resolve(promiseModule)
+      .then( function () {
+        webix.message({ type: "info", text: "Buchungsjahr wurde geschlossen" });
+        wxAMC.refreshData('Journal');
+      })
+      .catch(function (error) {
+        webix.message({ type: "error", text: error })
+      });
+  }
+
   showFiscalYear() {
     var sJahr = $$("moduleJournal-dateSelect").getValue();
     if (sJahr == "")
@@ -598,7 +629,7 @@ wxAMC.moduleClasses.Journal = class {
       const sJahr = $$("moduleJournal-dateSelect").getValue();
 
       // read the fiscalyear to handle all the rights
-      const promiseFiscal = fetch("/Fiscalyear/export?year=" + sJahr)
+      const promiseFiscal = fetch("/Fiscalyear/export?jahr=" + sJahr)
         .then(function (response) {
           if (!response.ok)
             webix.message('Fehler beim Lesen des Buchhaltungsjahres', 'Error');
@@ -674,7 +705,7 @@ wxAMC.moduleClasses.Journal = class {
     const url = "/Journal/data?jahr=" + sJahr;
 
     // read the fiscalyear to handle all the rights
-    const promiseFiscal = fetch("/Fiscalyear/getOneData?year=" + sJahr)
+    const promiseFiscal = fetch("/Fiscalyear/getOneData?jahr=" + sJahr)
       .then(function (response) {
         if (!response.ok)
           webix.message('Fehler beim Lesen der Journaldaten', 'Error');
@@ -730,7 +761,7 @@ wxAMC.moduleClasses.Journal = class {
     const sJahr = wxAMC.parameter.get("CLUBJAHR");
 
     // read the fiscalyear to handle all the rights
-    const promiseFiscal = fetch("/Fiscalyear/getOneData?year=" + sJahr)
+    const promiseFiscal = fetch("/Fiscalyear/getOneData?jahr=" + sJahr)
       .then(function (response) {
         if (!response.ok)
           webix.message('Fehler beim Lesen des Buchhaltungsjahres', 'Error');
