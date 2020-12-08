@@ -54,8 +54,12 @@ wxAMC.moduleClasses.Journal = class {
                   view: "toolbar",
                   cols: [
                     {
-                      id: "moduleJournal-closeFiscalyear", view: "button", label: "Close", width: "80", type: "icon",
-                      icon: "webix_icon mdi mdi-close", click: this.closeFiscalYear.bind(this)
+                      id: "moduleJournal-closeFinalFiscalyear", view: "button", label: "Final Close", width: "120", type: "icon",
+                      icon: "webix_icon mdi mdi-close", click () { wxAMC.modules['Journal'].closeFiscalYear(3); }
+                    },
+                    {
+                      id: "moduleJournal-closeFiscalyear", view: "button", label: "Prov. Close", width: "120", type: "icon",
+                      icon: "webix_icon mdi mdi-close", click () { wxAMC.modules['Journal'].closeFiscalYear(2); }
                     },
                     {
                       id: "moduleJournal-editFiscalyear", view: "button", label: "Edit", width: "80", type: "icon",
@@ -100,7 +104,6 @@ wxAMC.moduleClasses.Journal = class {
                 onAfterLoad: function () {
                   this.hideOverlay();
                   $$("count_journal").setValue("Anzahl " + this.count());
-                  //webix.html.addCss($$('moduleJournal-dateSelect').getNode(), $$('moduleJournal-dateSelect').getList().getItem($$('moduleJournal-dateSelect').getValue()).$css);
                   if (wxAMC.fiscalyear.state < 3) {
                     $$("moduleJournal-editButton").show();
                     $$("moduleJournal-deleteButton").show();
@@ -487,11 +490,11 @@ wxAMC.moduleClasses.Journal = class {
   /**
    * Close the Fiscalyear
    */
-  closeFiscalYear() {
+   closeFiscalYear(iStatus) {
     var sJahr = $$("moduleJournal-dateSelect").getValue();
     if (sJahr == "")
       sJahr = wxAMC.parameter.get("CLUBJAHR");
-    const url = "/Fiscalyear/close?jahr=" + sJahr + "&status=2";
+    const url = "/Fiscalyear/close?jahr=" + sJahr + "&status=" + iStatus;
 
     const promiseModule = fetch(url, {method: 'POST'})
       .then(function (response) {
@@ -502,9 +505,16 @@ wxAMC.moduleClasses.Journal = class {
         webix.message({ type: "error", text: error })
       });
     Promise.resolve(promiseModule)
-      .then( function () {
-        webix.message({ type: "info", text: "Buchungsjahr wurde geschlossen" });
-        wxAMC.refreshData('Journal');
+      .then( async function (response) {
+        if (response.type == "error") {
+          webix.message({type: "error", text: response.message});
+        } else {
+          //TODO : richselect neu einlesen
+          $$("moduleJournal-dateSelect").refresh();
+          await wxAMC.modules['Journal'].refreshData();  
+          wxAMC.modules['Journal'].dayAtAGlance();
+          webix.message({ type: "info", text: response.message });
+        }
       })
       .catch(function (error) {
         webix.message({ type: "error", text: error })

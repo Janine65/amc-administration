@@ -95,7 +95,15 @@ module.exports = {
                 logging: console.log,
                 raw: false
             }
-        ).catch((e) => console.error(e));
+		)
+		.catch(err => {
+			console.error(err);
+			res.json({
+				type: "error",
+				message: err
+			});
+			return;
+		});
 
 		qrySelect = "SELECT j.to_account as account, SUM(j.amount) AS amount";
 		qrySelect += " FROM journal j WHERE YEAR(j.date) = " + sJahr;
@@ -108,7 +116,15 @@ module.exports = {
                 logging: console.log,
                 raw: false
             }
-        ).catch((e) => console.error(e));
+		)
+		.catch(err => {
+			console.error(err);
+			res.json({
+				type: "error",
+				message: err
+			});
+			return;
+		});
 		arAktiv2.forEach( record => {
 			var found = arAktiv.findIndex(acc => acc.account == record.account);
 			if (found > -1) {
@@ -130,7 +146,15 @@ module.exports = {
                 logging: console.log,
                 raw: false
             }
-        ).catch((e) => console.error(e));
+		)
+		.catch(err => {
+			console.error(err);
+			res.json({
+				type: "error",
+				message: err
+			});
+			return;
+		});
 
 		qrySelect = "SELECT j.to_account as account, SUM(j.amount) AS amount";
 		qrySelect += " FROM journal j WHERE YEAR(j.date) = " + sJahr;
@@ -143,7 +167,15 @@ module.exports = {
                 logging: console.log,
                 raw: false
             }
-        ).catch((e) => console.error(e));
+		)
+		.catch(err => {
+			console.error(err);
+			res.json({
+				type: "error",
+				message: err
+			});
+			return;
+		});
 		arPassiv2.forEach( record => {
 			var found = arPassiv.findIndex(acc => acc.account == record.account);
 			if (found > -1) {
@@ -170,15 +202,28 @@ module.exports = {
 		 // Fiscalyear erfassen
 		var newFiscalyear = await FiscalYear.findOne(
 			{ where: { year: sNextJahr} })
-			.catch((e) => console.error(e));
+			.catch(err => {
+				console.error(err);
+				res.json({
+					type: "error",
+					message: err
+				});
+				return;
+			});
 		if (!newFiscalyear) {
 			// neues Buchhaltungsjahr erstellen
 			newFiscalyear = {year: sNextJahr, name: "AMC-Buchhaltung " + sNextJahr, state: 1};
 			
 			await FiscalYear.create(newFiscalyear)
 				.then((obj) => newFiscalyear.id = obj.id)
-				.catch(err => console.error(err));
-			
+				.catch(err => {
+					console.error(err);
+					res.json({
+						type: "error",
+						message: err
+					});
+					return;
+				});				
 		} else {
 			// lösche alle Eröffnungsbuchungen
 			qrySelect = "DELETE FROM journal where year(date) = " + sNextJahr;
@@ -190,12 +235,27 @@ module.exports = {
 					logging: console.log,
 					raw: false
 				}
-			).catch((e) => console.error(e));	
+			)
+			.catch(err => {
+				console.error(err);
+				res.json({
+					type: "error",
+					message: err
+				});
+				return;
+			});	
 		}
 
 		// Eröffnungsbuchungen erstellen
 		await Journal.bulkCreate(arEroeffnung)
-		.catch(err => console.error(err));
+		.catch(err => {
+			console.error(err)
+			res.json({
+				type: "error",
+				message: err
+			});
+			return;
+		});
 
 		// Status vom Buchungsjahr ändern
 		qrySelect = "UPDATE fiscalyear set state = " + iStatus;
@@ -207,9 +267,55 @@ module.exports = {
 				logging: console.log,
 				raw: false
 			}
-		).catch((e) => console.error(e));	
+		).catch((err) => {
+			console.error(err);
+			res.json({
+				type: "error",
+				message: err
+			});
+			return;
+		});	
 
 		// Buchungsnummern setzten
-		
+		qrySelect = "SELECT j.id, j.date, f.order as fromacc, t.order as toacc";
+		qrySelect += " FROM journal j join account f on j.from_account = f.id";
+		qrySelect += " join account t on j.to_account = t.id";
+		qrySelect += " where year(j.date) = " + sJahr;
+		qrySelect += " order by j.date, f.order, t.order";
+
+		var arJournal = await sequelize.query(qrySelect,
+            {
+                type: Sequelize.QueryTypes.SELECT,
+                plain: false,
+                logging: console.log,
+                raw: false
+            }
+		).catch((e) => console.error(e));
+		var rownum = 1;
+		arJournal.forEach( record => {
+			qrySelect = "UPDATE journal set journalNo = " + rownum++ + " WHERE id = " + record.id;
+			sequelize.query(qrySelect,
+				{
+					type: Sequelize.QueryTypes.UPDATE,
+					plain: false,
+					logging: console.log,
+					raw: false
+			})
+			.catch(err => {
+				console.error(err);
+				res.json({
+					type: "error",
+					message: err
+				});
+				return;
+			});
+		})
+
+		res.json({
+			type: "info",
+			message: "AMC-Buchhaltung " + sJahr + " wurde erfolgreich beendet mit Gewinn/Verlust " + iGewinn,
+			gewinn: iGewinn
+		})
+
 	},
 };
