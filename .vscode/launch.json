@@ -16,7 +16,7 @@
             "type": "node",
             "request": "launch",
             "runtimeArgs": ["--trace-warnings"],
-            "name": "Launch Program",
+            "name": "Launch AMC Program",
             "skipFiles": [
                 "<node_internals>/**"
             ],

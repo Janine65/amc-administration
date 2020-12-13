@@ -47,7 +47,7 @@ custom_checkbox(obj, common, value){
   getUIConfig() {
 
     return {
-      winWidth : 1000, winHeight : 800, winLabel : "Anlässe Ctrl+E", winIcon : "mdi mdi-calendar-check", winHotkey: "ctrl+e",
+      winWidth : 1000, winHeight : 800, winLabel : "Anlässe", winIcon : "mdi mdi-calendar-check", winHotkey: "ctrl+e",
       id : "moduleAnlaesse-container",
       cells : [
         /* ---------- Anlass list cell. ---------- */
@@ -737,7 +737,7 @@ custom_checkbox(obj, common, value){
     // Add a section to the day-at-a-glance body for this module if there isn't one already.
     if (!$$("dayAtAGlanceScreen_Anlaesse")) {
       $$("dayAtAGlanceBody").addView({
-        view : "fieldset", label : "Anlässe - Ctrl+E", 
+        view : "fieldset", label : "Anlässe", 
         body : { id: "dayAtAGlanceScreen_Anlaesse", cols: [ ] }
       });
       $$("dayAtAGlanceBody").addView({ height : 20 });

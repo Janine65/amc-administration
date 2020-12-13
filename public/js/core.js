@@ -1,3 +1,4 @@
+
 class WXAMC {
 
   /**
@@ -62,6 +63,9 @@ class WXAMC {
     this.isAuthenticated = false;
     this.loggedUser = "";
     this.UserRole = "";
+
+    webix.skin.flat.barHeight = 45; webix.skin.flat.tabbarHeight = 45; webix.skin.flat.rowHeight = 34; webix.skin.flat.listItemHeight = 34; webix.skin.flat.inputHeight = 38; webix.skin.flat.layoutMargin.wide = 10; webix.skin.flat.layoutMargin.space = 10; webix.skin.flat.layoutPadding.space = 10;
+    webix.skin.set('flat');
 
     // Custom window component so that by default windows will animated when opened and when hidden.
     webix.protoUI({
@@ -128,33 +132,30 @@ class WXAMC {
     // The base layout of the page.
     webix.ui(this.getBaseLayoutConfig());
 
-    // Sidemenu.
-    webix.ui(this.getSideMenuConfig());
-
     // Populate the day-at-a-glance screen.
     wxAMC.dayAtAGlance();
 
     wxAMC.setHidden();
 
     const promiseModule = await fetch('/System/env')
-    .then((response) => response.json())
-    .catch((error) => webix.message({
-      type: "error",
-      text: "Fetch Environemnt " + error,
-      expire: -1
-    }));
-  await Promise.resolve(promiseModule)
-    .then((env) => {
-      console.log('env: ', env);
-      if (env != null) {
-        wxAMC.env = env.env;
-      }
-    })
-    .catch((e) => webix.message({
-      type: "error",
-      text: "Resolve Environemt. " + e,
-      expire: -1
-    }));
+      .then((response) => response.json())
+      .catch((error) => webix.message({
+        type: "error",
+        text: "Fetch Environemnt " + error,
+        expire: -1
+      }));
+    await Promise.resolve(promiseModule)
+      .then((env) => {
+        console.log('env: ', env);
+        if (env != null) {
+          wxAMC.env = env.env;
+        }
+      })
+      .catch((e) => webix.message({
+        type: "error",
+        text: "Resolve Environemt. " + e,
+        expire: -1
+      }));
 
     if (wxAMC.env == 'development') {
       wxAMC.isAuthenticated = true;
@@ -211,9 +212,6 @@ class WXAMC {
       // Record the new active module.
       wxAMC.activeModule = inModuleName;
 
-      // Hide sidemenu.
-      $$("sidemenu").hide();
-
       // Set flags to indicate not editing an existing item.
       wxAMC.modules[wxAMC.activeModule].editingID = null;
       wxAMC.modules[wxAMC.activeModule].isEditingExisting = false;
@@ -224,9 +222,6 @@ class WXAMC {
 
       // Desktop mode.
     } else {
-
-      // Hide sidemenu.
-      $$("sidemenu").hide();
 
       let moduleWindow = $$(`moduleWindow-${inModuleName}`);
 
@@ -400,7 +395,7 @@ class WXAMC {
           return response.json();
         })
         .catch((e) => webix.message(`Datei ${file.name} konnte nicht erfolgreich importiert werden: ${e}`, "error", -1)
-      );
+        );
       Promise.resolve(promiseModule)
         .then((response) => {
           webix.message(fname + " wurde importiert.", "info", -1);
@@ -719,9 +714,6 @@ class WXAMC {
    */
   switchMode() {
 
-    // Hide the sidemenu (whether it's showing or even valid in the current mode or not).
-    $$("sidemenu").hide();
-
     // Destroy any existing module windows.
     for (let moduleName of wxAMC.registeredModules) {
       let moduleWindow = $$(`moduleWindow-${moduleName}`);
@@ -734,16 +726,16 @@ class WXAMC {
     wxAMC.activeModule = null;
 
     // Destroy existing base layout.
-    $$("baseLayout").destructor();
     $$("sidemenu").destructor();
+    $$("baseLayout").destructor();
 
 
     // Switch UI type.
-    switch (this.getValue()) {
-      case 0:
+    switch (wxAMC.uiType) {
+      case "desktop":
         wxAMC.uiType = "mobile";
         break;
-      case 1:
+      case "mobile":
         wxAMC.uiType = "desktop";
         break;
     }
@@ -765,7 +757,7 @@ class WXAMC {
       return;
 
     // Hide the sidemenu (whether it's showing or even valid in the current mode or not).
-    $$("sidemenu").hide();
+    //$$("sidemenu").hide();
 
     if (window.PasswordCredential) {
       if (!wxAMC.isAuthenticated) {
@@ -794,7 +786,7 @@ class WXAMC {
 
   doLogout() {
     // Hide the sidemenu (whether it's showing or even valid in the current mode or not).
-    $$("sidemenu").hide();
+    //$$("sidemenu").hide();
 
     const url = "/user/logout";
     fetch(url, {
@@ -879,7 +871,7 @@ class WXAMC {
                 closeWindow()
               )
           } else {
-            closeWindow();            
+            closeWindow();
             return Promise.resolve(resp);
           }
         }
@@ -892,42 +884,66 @@ class WXAMC {
   setHidden() {
 
     if (wxAMC.isAuthenticated) {
-      eachElement(".authenticate_logged_out", (e) => e.classList.add("hidden"));
-      eachElement(".authenticate_logged_in", (e) => e.classList.remove("hidden"));
-      $$("loggedUser").setValue(wxAMC.loggedUser);
+      var logged = $$("sidemenu").getItem("loggedUser");
+      logged.value = wxAMC.loggedUser;
+      logged.icon = "webix_icon mdi mdi-login-variant"
+      $$("sidemenu").updateItem("loggedUser", logged)
 
+      var ind = 1;
       for (let moduleName of wxAMC.registeredModules) {
         console.log('hotkey: ', moduleName, wxAMC.modules[moduleName].getUIConfig().winHotkey);
+        if (!$$("sidemenu").getItem(moduleName))
+          $$("sidemenu").add({
+            id: moduleName,
+            value: wxAMC.modules[moduleName].getUIConfig().winLabel + " (" + wxAMC.modules[moduleName].getUIConfig().winHotkey + ")",
+            icon: wxAMC.modules[moduleName].getUIConfig().winIcon
+          }, ind++);
         webix.UIManager.addHotKey(wxAMC.modules[moduleName].getUIConfig().winHotkey,
           function (code, e) {
             wxAMC.launchModule(moduleName);
           }
         );
       }
-
-      if (wxAMC.UserRole != "admin")
-        eachElement(".authenticate_admin", (e) => e.classList.add("hidden"));
+      if ($$("sidemenu").getItem("MainMenulogin"))
+        $$("sidemenu").remove("MainMenulogin");
       webix.UIManager.removeHotKey("ctrl+i");
+      if (!$$("sidemenu").getItem("MainMenulogout"))
+        $$("sidemenu").add({ id: "MainMenulogout", value: "Logout", icon: "webix_icon mdi mdi-logout" }, ind++);
       webix.UIManager.addHotKey("ctrl+o", wxAMC.doLogout);
+
+      if (wxAMC.UserRole == "admin")
+        if (!$$("sidemenu").getItem("MainMenuregister"))
+          $$("sidemenu").add({ id: "MainMenuregister", value: "Register", icon: "webix_icon mdi mdi-account-plus" }, ind);
+
     } else {
-      eachElement(".authenticate_logged_in", (e) => e.classList.add("hidden"));
-      eachElement(".authenticate_logged_out", (e) => e.classList.remove("hidden"));
-      $$("loggedUser").setValue("not logged in");
+      logged = $$("sidemenu").getItem("loggedUser");
+      console.log(logged);
+      logged.value = "not logged in";
+      logged.icon = "webix_icon mdi mdi-logout-variant"
+      $$("sidemenu").updateItem("loggedUser", logged)
 
       // disable hotkeys
       for (let moduleName of wxAMC.registeredModules) {
         let moduleWindow = $$(`moduleWindow-${moduleName}`);
 
-        // Module window already exists, just show it.
+        // Module window already exists, just close it.
         if (moduleWindow) {
           moduleWindow.close();
           $$("taskbar").removeView(`moduleTasbbarButton-${moduleName}`);
         }
 
+        if ($$("sidemenu").getItem(moduleName))
+          $$("sidemenu").remove(moduleName);
         webix.UIManager.removeHotKey(wxAMC.modules[moduleName].getUIConfig().winHotkey);
       }
       webix.UIManager.removeHotKey("ctrl+o");
+      if ($$("sidemenu").getItem("MainMenulogout"))
+        $$("sidemenu").remove("MainMenulogout");
       webix.UIManager.addHotKey("ctrl+i", this.showLoginGui);
+      if (!$$("sidemenu").getItem("MainMenulogin"))
+        $$("sidemenu").add({ id: "MainMenulogin", value: "Login", icon: "webis_icon mdi mdi-login" }, 1);
+      if ($$("sidemenu").getItem("MainMenuregister"))
+        $$("sidemenu").remove("MainMenuregister");
     }
   } /* End setHidden */
 } /* End WXAMC. */

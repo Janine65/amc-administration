@@ -27,7 +27,7 @@ wxAMC.moduleClasses.Journal = class {
   getUIConfig() {
 
     return {
-      winWidth: 1200, winHeight: 800, winLabel: "Journal Ctrl+J", winIcon: "mdi mdi-bank", winHotkey: "ctrl+j",
+      winWidth: 1200, winHeight: 800, winLabel: "Journal", winIcon: "mdi mdi-bank", winHotkey: "ctrl+j",
       winCss: "authenticate_admin",
       id: "moduleJournal-container",
       cells: [
@@ -509,9 +509,12 @@ wxAMC.moduleClasses.Journal = class {
         if (response.type == "error") {
           webix.message({type: "error", text: response.message});
         } else {
-          //TODO : richselect neu einlesen
-          $$("moduleJournal-dateSelect").refresh();
-          await wxAMC.modules['Journal'].refreshData();  
+          // Window schliessen
+          $$("moduleWindow-Journal").close();
+          $$("taskbar").removeView("moduleTasbbarButton-Journal");
+          
+          // Window neu starten
+          await wxAMC.launchModule('Journal');
           wxAMC.modules['Journal'].dayAtAGlance();
           webix.message({ type: "info", text: response.message });
         }
@@ -759,7 +762,7 @@ wxAMC.moduleClasses.Journal = class {
     // Add a section to the day-at-a-glance body for this module if there isn't one already.
     if (!$$("dayAtAGlanceScreen_Journal")) {
       $$("dayAtAGlanceBody").addView({
-        view: "fieldset", label: "Journal - Ctrl+J",
+        view: "fieldset", label: "Journal",
         body: { id: "dayAtAGlanceScreen_Journal", cols: [] }
       });
       $$("dayAtAGlanceBody").addView({ height: 20 });
