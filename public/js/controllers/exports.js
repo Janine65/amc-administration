@@ -1,6 +1,6 @@
 var db = require("../db");
 const {
-    Sequelize
+    Sequelize, Op
 } = require("sequelize");
 const Meisterschaft = require('../db').Meisterschaft;
 const Adressen = require('../db').Adressen;

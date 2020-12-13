@@ -608,7 +608,7 @@ class WXAMC {
    * @param inModuleName The name of the module.
    * @param inFormIDs    An array of form IDs.
    */
-  async writeAuswertung() {
+   writeAuswertung() {
 
     var objSave = {};
     const url = "/Anlaesse/writeAuswertung";
