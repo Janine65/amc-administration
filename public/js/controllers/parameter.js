@@ -31,7 +31,7 @@ module.exports = {
 		db.Parameter.findOne({where: 
 				{ key: {[Op.eq]: data.key } }
 		})
-		.then(data => res.json(data))
+		.then(data2 => res.json(data2))
 		.catch((e) => console.error(e));
 	},
 
@@ -69,7 +69,7 @@ module.exports = {
 					.then((updated) => global.Parameter.set(updated.key, updated.value))
 					.catch((e) => {ok = false; console.error(e);}))
 				.catch((e) => {ok = false; console.error(e);});
-			};
+			}
 			if (ok) {
 				res.json({});
 			}

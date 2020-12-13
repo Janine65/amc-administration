@@ -5,17 +5,26 @@
         "app_desc": "AMC Administration",
         "node_port": 3050,
         "json_indentation": 4,
-        "database": "amcmitglieder",
+        "database": "amcadmin",
         "db_user": "webuser",
         "db_pwd": "U2FsdGVkX1+91tP1h+l1dhQgbJOZ1PZllUtwQPzcdnk=",
         "port": "3306",
         "dbtype": "mysql",
-        "email_to": "janine@olconet.com",
-        "smtp": "smtp.zoho.com",
-        "smtp_port": 465,
-        "smtp_user": "janine@automoto-sr.info",
-        "smtp_pwd": "U2FsdGVkX1+Y4aoeuN0MyXS+fbREeiFmR0J+Oj7DdU8=",
-        "email_from": "Janine Franken <janine@automoto-sr.info>"
+        "defaultEmail" : "JanineFranken",
+        "JanineFranken" : {
+            "smtp": "smtp.zoho.com",
+            "smtp_port": 465,
+            "smtp_user": "janine@automoto-sr.info",
+            "smtp_pwd": "U2FsdGVkX1+Y4aoeuN0MyXS+fbREeiFmR0J+Oj7DdU8=",
+            "email_from": "Janine Franken <janine@automoto-sr.info>"
+        },
+        "HansjoergDutler" : {
+            "smtp": "smtp.zoho.com",
+            "smtp_port": 465,
+            "smtp_user": "info@automoto-sr.info",
+            "smtp_pwd": "U2FsdGVkX18yIspZA/tf0UZbBWNR1H8tJ8MMRHcO6xU=",
+            "email_from": "AutoMotoClub Swissair <info@automoto-sr.info>"    
+        }
     },
     "production": {
         "config_id": "production",
@@ -26,9 +35,6 @@
         "db_pwd_alt": "MGKlMb-MShwOeSN7u",
         "port": "3307",
         "dbtype": "mariadb",
-        "email_to": "",
-        "smtp_user": "info@automoto-sr.info",
-        "smtp_pwd": "U2FsdGVkX1+Y4aoeuN0MyXS+fbREeiFmR0J+Oj7DdU8=",
-        "email_from": "AutoMotoClub Swissair <info@automoto-sr.info>"
+        "defaultEmail" : "HansjoergDutler"
     }
 }

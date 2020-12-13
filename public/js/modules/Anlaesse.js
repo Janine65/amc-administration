@@ -32,14 +32,14 @@ wxAMC.moduleClasses.Anlaesse = class {
         return "<div class=' custom checked'> Aktiv </div>";
     else
         return "<div class=' custom notchecked'> Inaktiv </div>";
-};
+}
 
 custom_checkbox(obj, common, value){
   if (value)
       return "<div class='webix_icon mdi mdi-checkbox-marked'></div>";
   else
       return "<div class='webix_icon mdi mdi-checkbox-blank-outline'></div>";
-};
+}
 
 /**
    * Return the module's UI config object.
@@ -47,7 +47,7 @@ custom_checkbox(obj, common, value){
   getUIConfig() {
 
     return {
-      winWidth : 1000, winHeight : 800, winLabel : "Anlässe Ctrl+E", winIcon : "mdi mdi-calendar-check", winHotkey: "ctrl+e",
+      winWidth : 1000, winHeight : 800, winLabel : "Anlässe", winIcon : "mdi mdi-calendar-check", winHotkey: "ctrl+e",
       id : "moduleAnlaesse-container",
       cells : [
         /* ---------- Anlass list cell. ---------- */
@@ -141,6 +141,15 @@ custom_checkbox(obj, common, value){
               { },
               { id: "moduleAnlaesse-eventButton", view : "button", default : true, label : "Event", width : "80", type : "icon", disabled: true,
                 icon : "webix_icon mdi mdi-calendar-multiple-check", click : this.eventsEditing.bind(this)
+              },
+              { id: "moduleAnlaesse-printButton1", view : "button", default : true, label : "Datenblatt", width : "80", type : "icon", disabled: false,
+                icon : "webix_icon mdi mdi-file-excel", click : () => { wxAMC.excelDatasheet({id:0, type: 0}); }
+              },
+              { id: "moduleAnlaesse-printButton2", view : "button", default : true, label : "leer", width : "80", type : "icon", disabled: false,
+                icon : "webix_icon mdi mdi-file-excel", click : () => { wxAMC.excelDatasheet({id:0, type: 1}); }
+              },
+              { id: "moduleAnlaesse-printButton3", view : "button", default : true, label : "voll", width : "80", type : "icon", disabled: false,
+                icon : "webix_icon mdi mdi-file-excel", click : () => { wxAMC.excelDatasheet({id:0, type: 2}); }
               },
               { },
               { id: "moduleAnlaesse-editButton", view : "button", default : false, label : "Edit", width : "80", type : "icon", disabled: true,
@@ -728,7 +737,7 @@ custom_checkbox(obj, common, value){
     // Add a section to the day-at-a-glance body for this module if there isn't one already.
     if (!$$("dayAtAGlanceScreen_Anlaesse")) {
       $$("dayAtAGlanceBody").addView({
-        view : "fieldset", label : "Anlässe - Ctrl+E", 
+        view : "fieldset", label : "Anlässe", 
         body : { id: "dayAtAGlanceScreen_Anlaesse", cols: [ ] }
       });
       $$("dayAtAGlanceBody").addView({ height : 20 });
