@@ -30,7 +30,7 @@ wxAMC.actionSidemenu = function(id) {
 
   switch (id) {
     case "MainMenulogin":
-      wxAMC.doLogin();          
+      wxAMC.showLoginGui();          
       break;
   
     case "MainMenulogout":
