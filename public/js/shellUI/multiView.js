@@ -9,7 +9,7 @@ wxAMC.getMultiviewConfig = function() {
     for (let moduleName of wxAMC.registeredModules) {
       cellsConfig.push(wxAMC.modules[moduleName].getUIConfig());
     }
-  }
+  } 
 
   return {
     view : "multiview", id : "moduleArea", cells : cellsConfig,

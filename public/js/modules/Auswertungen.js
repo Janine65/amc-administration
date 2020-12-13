@@ -27,7 +27,7 @@ wxAMC.moduleClasses.Auswertungen = class {
   getUIConfig() {
 
     return {
-      winWidth: 1000, winHeight: 800, winLabel: "Auswertungen Ctrl+W", winIcon: "mdi mdi-chart-bar", winHotkey: "ctrl+w",
+      winWidth: 1000, winHeight: 800, winLabel: "Auswertungen", winIcon: "mdi mdi-chart-bar", winHotkey: "ctrl+w",
       id: "moduleAuswertungen-container",
       cells: [
         /* ---------- Auswertungen list cell. ---------- */

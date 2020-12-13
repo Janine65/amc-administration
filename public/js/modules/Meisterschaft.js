@@ -27,7 +27,7 @@ wxAMC.moduleClasses.Meisterschaft = class {
   getUIConfig() {
 
     return {
-      winWidth : 1000, winHeight : 800, winLabel : "Meisterschaft Ctrl+M", winIcon : "mdi mdi-numeric", winHotkey: "ctrl+m",
+      winWidth : 1000, winHeight : 800, winLabel : "Meisterschaft", winIcon : "mdi mdi-numeric", winHotkey: "ctrl+m",
       id : "moduleMeisterschaft-container",
       cells : [
         /* ---------- Anlass list cell. ---------- */
@@ -245,7 +245,7 @@ wxAMC.moduleClasses.Meisterschaft = class {
     // Add a section to the day-at-a-glance body for this module if there isn't one already.
     if (!$$("dayAtAGlanceScreen_Meisterschaft")) {
       $$("dayAtAGlanceBody").addView({
-        view : "fieldset", label : "Meisterschaft - Ctrl+M", 
+        view : "fieldset", label : "Meisterschaft", 
         body : { id: "dayAtAGlanceScreen_Meisterschaft", cols: [ ] }
       });
       $$("dayAtAGlanceBody").addView({ height : 20 });

@@ -1,12 +1,7 @@
-/* Background color of side menuu. */
-.cssSideMenu .webix_view {
-  background-color : #efeff3;
-}
-
 /* Sizing and coloring of sidemenu items. */
-.cssSideMenu .webix_list_item {
+.cssSideMenu {
   line-height : 35px;
-  border-bottom-color : #d0d0d0;
+  border-bottom-color : #9c9ca3;
 }
 
 /* Make shadow of windows extend in all directions and be more pronounced than the default. */
@@ -16,6 +11,42 @@
 .inactiveLine {
   color: brown;
 	font-style: italic;
+}
+
+.webix_sidebar {
+  background: #3498db;
+}
+.webix_sidebar .webix_tree_item {
+  color: #fff;
+}
+
+.webix_chart {
+  background-color: #666666;
+  color: #ffffff;
+}
+.webix_canvas_text {
+  color: #fff;
+}
+.webix_chart_legend_item {
+  color: #fff;
+}
+.webix_axis_item_y {
+  margin-top: 0px;
+  text-align: right;
+  font-size: 15px;
+  font-weight: bold;
+  left: 20px !important;
+  background-color: #666666;
+  color: #fff;
+}
+.webix_axis_item_x {
+  color: #fff;
+}
+.webix_axis_title_x {
+  color: #fff;
+}
+.webix_axis_title_y {
+  color: #fff;
 }
 
 .custom{

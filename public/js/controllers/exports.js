@@ -317,7 +317,7 @@ module.exports = {
 
 
     writeExcelData: async function (req, res) {
-        var sjahr = req.query.year;
+        var sjahr = req.query.jahr;
         var iJahr = eval(sjahr - 1);
 
         const workbook = new ExcelJS.Workbook();

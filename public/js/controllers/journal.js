@@ -57,7 +57,7 @@ module.exports = {
 				.catch((e) => console.error(e)))
 			.catch((e) => console.error(e));
 	},
-
+	
 	importJournal: async function (req, res) {
 		var data = req.body;
 		var filename = data.sname.replace(process.cwd(), ".");

@@ -27,7 +27,7 @@ wxAMC.moduleClasses.Journal = class {
   getUIConfig() {
 
     return {
-      winWidth: 1200, winHeight: 800, winLabel: "Journal Ctrl+J", winIcon: "mdi mdi-bank", winHotkey: "ctrl+j",
+      winWidth: 1200, winHeight: 800, winLabel: "Journal", winIcon: "mdi mdi-bank", winHotkey: "ctrl+j",
       winCss: "authenticate_admin",
       id: "moduleJournal-container",
       cells: [
@@ -53,6 +53,14 @@ wxAMC.moduleClasses.Journal = class {
                 {
                   view: "toolbar",
                   cols: [
+                    {
+                      id: "moduleJournal-closeFinalFiscalyear", view: "button", label: "Final Close", width: "120", type: "icon",
+                      icon: "webix_icon mdi mdi-close", click () { wxAMC.modules['Journal'].closeFiscalYear(3); }
+                    },
+                    {
+                      id: "moduleJournal-closeFiscalyear", view: "button", label: "Prov. Close", width: "120", type: "icon",
+                      icon: "webix_icon mdi mdi-close", click () { wxAMC.modules['Journal'].closeFiscalYear(2); }
+                    },
                     {
                       id: "moduleJournal-editFiscalyear", view: "button", label: "Edit", width: "80", type: "icon",
                       icon: "webix_icon mdi mdi-plus", click: this.editFiscalYear.bind(this)
@@ -96,7 +104,6 @@ wxAMC.moduleClasses.Journal = class {
                 onAfterLoad: function () {
                   this.hideOverlay();
                   $$("count_journal").setValue("Anzahl " + this.count());
-                  //webix.html.addCss($$('moduleJournal-dateSelect').getNode(), $$('moduleJournal-dateSelect').getList().getItem($$('moduleJournal-dateSelect').getValue()).$css);
                   if (wxAMC.fiscalyear.state < 3) {
                     $$("moduleJournal-editButton").show();
                     $$("moduleJournal-deleteButton").show();
@@ -480,6 +487,43 @@ wxAMC.moduleClasses.Journal = class {
 
   }
 
+  /**
+   * Close the Fiscalyear
+   */
+   closeFiscalYear(iStatus) {
+    var sJahr = $$("moduleJournal-dateSelect").getValue();
+    if (sJahr == "")
+      sJahr = wxAMC.parameter.get("CLUBJAHR");
+    const url = "/Fiscalyear/close?jahr=" + sJahr + "&status=" + iStatus;
+
+    const promiseModule = fetch(url, {method: 'POST'})
+      .then(function (response) {
+        if (!response.ok)
+          webix.message('Fehler beim Schliessen des Buchungsjahres', 'Error');
+        return response.json();
+      }).catch(function (error) {
+        webix.message({ type: "error", text: error })
+      });
+    Promise.resolve(promiseModule)
+      .then( async function (response) {
+        if (response.type == "error") {
+          webix.message({type: "error", text: response.message});
+        } else {
+          // Window schliessen
+          $$("moduleWindow-Journal").close();
+          $$("taskbar").removeView("moduleTasbbarButton-Journal");
+          
+          // Window neu starten
+          await wxAMC.launchModule('Journal');
+          wxAMC.modules['Journal'].dayAtAGlance();
+          webix.message({ type: "info", text: response.message });
+        }
+      })
+      .catch(function (error) {
+        webix.message({ type: "error", text: error })
+      });
+  }
+
   showFiscalYear() {
     var sJahr = $$("moduleJournal-dateSelect").getValue();
     if (sJahr == "")
@@ -598,7 +642,7 @@ wxAMC.moduleClasses.Journal = class {
       const sJahr = $$("moduleJournal-dateSelect").getValue();
 
       // read the fiscalyear to handle all the rights
-      const promiseFiscal = fetch("/Fiscalyear/export?year=" + sJahr)
+      const promiseFiscal = fetch("/Fiscalyear/export?jahr=" + sJahr)
         .then(function (response) {
           if (!response.ok)
             webix.message('Fehler beim Lesen des Buchhaltungsjahres', 'Error');
@@ -674,7 +718,7 @@ wxAMC.moduleClasses.Journal = class {
     const url = "/Journal/data?jahr=" + sJahr;
 
     // read the fiscalyear to handle all the rights
-    const promiseFiscal = fetch("/Fiscalyear/getOneData?year=" + sJahr)
+    const promiseFiscal = fetch("/Fiscalyear/getOneData?jahr=" + sJahr)
       .then(function (response) {
         if (!response.ok)
           webix.message('Fehler beim Lesen der Journaldaten', 'Error');
@@ -718,7 +762,7 @@ wxAMC.moduleClasses.Journal = class {
     // Add a section to the day-at-a-glance body for this module if there isn't one already.
     if (!$$("dayAtAGlanceScreen_Journal")) {
       $$("dayAtAGlanceBody").addView({
-        view: "fieldset", label: "Journal - Ctrl+J",
+        view: "fieldset", label: "Journal",
         body: { id: "dayAtAGlanceScreen_Journal", cols: [] }
       });
       $$("dayAtAGlanceBody").addView({ height: 20 });
@@ -730,7 +774,7 @@ wxAMC.moduleClasses.Journal = class {
     const sJahr = wxAMC.parameter.get("CLUBJAHR");
 
     // read the fiscalyear to handle all the rights
-    const promiseFiscal = fetch("/Fiscalyear/getOneData?year=" + sJahr)
+    const promiseFiscal = fetch("/Fiscalyear/getOneData?jahr=" + sJahr)
       .then(function (response) {
         if (!response.ok)
           webix.message('Fehler beim Lesen des Buchhaltungsjahres', 'Error');
