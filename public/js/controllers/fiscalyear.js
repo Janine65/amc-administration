@@ -61,8 +61,10 @@ module.exports = {
 	updateData: function (req, res) {
 		var data = req.body;
 		console.info('update: ',data);
-	
-		FiscalYear.findByPk(data.id)
+			
+		FiscalYear.findOne(
+			{where: {year: data.year}}
+		)
 		.then((fiscalyear) => fiscalyear.update(data)
 			.then((obj) => res.json({id: obj.id}))
 			.catch((e) => console.error(e)))

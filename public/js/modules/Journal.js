@@ -40,12 +40,12 @@ wxAMC.moduleClasses.Journal = class {
                 {
                   view: "richselect", id: "moduleJournal-dateSelect",
                   options: "/Fiscalyear/getFkData",
-                  value: wxAMC.parameter.get('CLUBJAHR'),
-                  css: 'open',
+                  //value: wxAMC.parameter.get("CLUBJAHR"),
+                  //css: "open",                  
                   on: {
-                    onChange: function(newV, oldV) {                      
-                      if (oldV) webix.html.removeCss(this.getNode(), this.getList().getItem(oldV).$css);
-                      if (newV) webix.html.addCss(this.getNode(), this.getList().getItem(newV).$css);
+                    onChange: function(newV, oldV) {                                    
+                      if (oldV != "" && this.getList().getItem(oldV)) webix.html.removeCss(this.getNode(), this.getList().getItem(oldV).$css);
+                      if (newV != "" && this.getList().getItem(newV)) webix.html.addCss(this.getNode(), this.getList().getItem(newV).$css);
                       wxAMC.modules['Journal'].refreshData();
                     }
                   }
@@ -102,6 +102,8 @@ wxAMC.moduleClasses.Journal = class {
                   this.showOverlay("Loading...");
                 },
                 onAfterLoad: function () {
+                  if ($$("moduleJournal-dateSelect").getValue() == "")
+                    $$("moduleJournal-dateSelect").setValue(wxAMC.parameter.get('CLUBJAHR'));
                   this.hideOverlay();
                   $$("count_journal").setValue("Anzahl " + this.count());
                   if (wxAMC.fiscalyear.state < 3) {
@@ -386,7 +388,7 @@ wxAMC.moduleClasses.Journal = class {
             }
           ]
         },
-        /* ---------- Journal details cell. ---------- */
+        /* ---------- Fiscalyear details cell. ---------- */
         {
           id: "moduleJournal-details",
           rows: [
@@ -402,40 +404,32 @@ wxAMC.moduleClasses.Journal = class {
                 }
               },
               elements: [
-                { label: "No.", view: "text", "labelWidth": 100, "type": "number", name: "journalNo" },
                 {
-                  view: "datepicker",
-                  label: "Date",
-                  "timepicker": false,
-                  "labelWidth": 100,
-                  "format": "%d.%m.%Y",
-                  name: "date"
-                },
-                {
-                  label: "From Account",
-                  view: "combo",
-                  suggest: "/Account/getFkData",
-                  required: true,
-                  name: "from_account",
-                  labelWidth: 100
-                },
-                {
-                  label: "To Account",
-                  view: "combo",
-                  suggest: "/Account/getFkData",
-                  required: true,
-                  name: "to_account",
-                  labelWidth: 100
-                },
-                {
-                  label: "Amount",
                   view: "text",
-                  "labelWidth": 100,
-                  "type": "text",
+                  label: "Jahr",
                   required: true,
-                  name: "amount"
+                  name: "year",
+                  labelWidth: 100
                 },
-                { label: "Memo", view: "textarea", labelPosition: "top", name: "memo" }
+                {
+                  label: "Name",
+                  view: "text",
+                  required: true,
+                  name: "name",
+                  labelWidth: 100
+                },
+                {
+                  label: "Status",
+                  view: "combo",
+                  options: [
+                    {id: 1, value: "Offen"},
+                    {id: 2, value: "Prov. Abgeschlossen"},
+                    {id: 3, value: "Abgeschlossen"}
+                  ],
+                  required: true,
+                  name: "state",
+                  labelWidth: 100
+                }
               ]
             }, /* End journal details form. */
             /* Journal details toolbar. */
@@ -455,7 +449,7 @@ wxAMC.moduleClasses.Journal = class {
                   view: "button", label: "Save", width: "80", type: "icon",
                   icon: "mdi mdi-content-save", id: "moduleJournal-saveButton", disabled: true, hotkey: "enter",
                   click: () => {
-                    wxAMC.saveHandler("Journal", "moduleJournal-detailsForm")
+                    wxAMC.modules["Journal"].saveFiscalyear()
                   }
                 },
                 { width: 6 }
@@ -484,8 +478,93 @@ wxAMC.moduleClasses.Journal = class {
   } /* End deactivate(). */
 
   editFiscalYear() {
+    const sJahr = $$("moduleJournal-dateSelect").getValue();
+    const value = $$("moduleJournal-dateSelect").getList().getItem(sJahr).value.split(' - ');    
+
+    var state = 1;
+    switch (value[1]) {
+      case "abgeschlossen":
+        state = 3
+        break;
+      case "prov. abgeschlossen":
+        state = 2
+        break;
+      
+      default:
+        state = 1
+        break;
+    }
+
+    var data = {year: sJahr, name: value[0], state: state};
+
+    $$("moduleJournal-details").show();
+    $$("moduleJournal-detailsForm").clear();
+    $$("moduleJournal-detailsForm").setValues(data);
 
   }
+
+  /**
+   * Save the edited Fiscalyear
+   */
+  saveFiscalyear() {    
+    // Merge all forms together.  Usually there's just one, but some modules may have more than one.
+    if ($$("moduleJournal-detailsForm").isDirty()) {
+      var itemData = $$("moduleJournal-detailsForm").getValues();
+    } else {
+      webix.message({
+        type: "info",
+        text: "Keine Änderungen vorgenommen"
+      });
+      $$("moduleJournal-itemsCell").show();
+      return;
+    }
+
+    console.log("saveHandler: itemData: ", itemData);
+    const url = "/Fiscalyear/data";
+
+    fetch(url, {
+      method: "PUT", // *GET, POST, PUT, DELETE, etc.
+      mode: 'cors', // no-cors, *cors, same-origin
+      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+      credentials: 'same-origin', // include, *same-origin, omit
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      redirect: 'follow', // manual, *follow, error
+      referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+      body: JSON.stringify(itemData) // body data type must match "Content-Type" header
+    })
+      .then((response) => {
+        if (!response.ok) { // ***
+          webix.message({
+            type: "error",
+            text: "HTTP error " + response.status
+          }); // ***
+        }
+      })
+      .then(function () {
+        // Refresh the module's summary list and return to that list.
+        $$("moduleJournal-itemsCell").show();
+        var list = $$("moduleJournal-dateSelect").getList();
+        list.clearAll();
+        list.load("/Fiscalyear/getFkData");
+        $$("moduleJournal-dateSelect").setValue();
+
+        // Give the day-at-a-glance screen a chance to update (needed for desktop mode).
+        wxAMC.dayAtAGlance();
+
+        // Finally, show a completion message.
+        webix.message({
+          type: "success",
+          text: "gesichert"
+        });
+      })
+      .catch((e) => webix.message({
+        type: "error",
+        text: e
+      }));
+
+   }
 
   /**
    * Close the Fiscalyear
@@ -524,6 +603,9 @@ wxAMC.moduleClasses.Journal = class {
       });
   }
 
+  /**
+   * Show details of Fiscalyear
+   */
   showFiscalYear() {
     var sJahr = $$("moduleJournal-dateSelect").getValue();
     if (sJahr == "")
@@ -713,8 +795,9 @@ wxAMC.moduleClasses.Journal = class {
   async refreshData() {
 
     var sJahr = $$("moduleJournal-dateSelect").getValue();
-    if (sJahr == "")
+    if (sJahr == "") {
       sJahr = wxAMC.parameter.get("CLUBJAHR");
+    }
     const url = "/Journal/data?jahr=" + sJahr;
 
     // read the fiscalyear to handle all the rights
