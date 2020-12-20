@@ -196,13 +196,15 @@ wxAMC.moduleClasses.Journal = class {
                       view: "combo", suggest: "/Account/getFkData", name: "from_account", label: "Konto",
                       labelPosition: "top",
                       required: true,
-                      width: 200
+                      css: "small",
+                      width: 250
                     },
                     {
                       view: "combo", suggest: "/Account/getFkData", name: "to_account", label: "Konto",
                       labelPosition: "top",
                       required: true,
-                      width: 200
+                      css: "small",
+                      width: 250
                     },
                     { label: "Text", view: "text", height: 28, labelPosition: "top", name: "memo" },
                     {
@@ -647,21 +649,33 @@ wxAMC.moduleClasses.Journal = class {
         const itemsAsArray = wxAMC.objectAsArray(dataItems);
 
         var arAktiv = itemsAsArray.filter(function(value, index, array) {
-          return value.level == 1;
+          if (value.amount != null)
+            return value.level == 1;
+          else 
+            return false;
         });
         var arPassiv = itemsAsArray.filter(function(value, index, array) {
-          return value.level == 2;
+          if (value.amount != null)
+            return value.level == 2;
+          else 
+            return false;
         });
         var arAufwand = itemsAsArray.filter(function(value, index, array) {
-          return value.level == 4;
+          if (value.amount != null)
+            return value.level == 4;
+          else 
+            return false;
         });
         var arErfolg = itemsAsArray.filter(function(value, index, array) {
-          return value.level == 6;
+          if (value.amount != null)
+            return value.level == 6;
+          else 
+            return false;
         });
 
         var iGewinnVerlust = 0;
         arAktiv.forEach(element => {
-          if (element.amount != null)
+          if (element.amount != null)            
             iGewinnVerlust -= parseFloat(element.amount);
         });
         arPassiv.forEach(element => {

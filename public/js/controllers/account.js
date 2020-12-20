@@ -65,7 +65,8 @@ module.exports = {
 	},
 
 	getAccountSummary: function (req, res) {
-		var qrySelect = "Select ac.`id`, ac.`level`, ac.`order`, ac.`name`, sum(j.`amount`) as amount ";
+		var qrySelect = "Select ac.`id`, ac.`level`, ac.`order`, ac.`name`, sum(j.`amount`) as amount, ";
+		qrySelect += "(CASE WHEN ac.`status`= 1 THEN '' ELSE 'inactive' END) as $css"
 		qrySelect += " from account ac ";
 		qrySelect += " left outer join journal j ";
 		qrySelect += " on ac.id = j.from_account ";

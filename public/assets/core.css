@@ -72,6 +72,10 @@
 	display: none;
   }
 
+.small {
+  font-size: small;
+}
+
   .open .webix_inp_static, .webix_list_item.open { 
   	background:#ddf7dd; 
   }
@@ -94,3 +98,7 @@
   	color:black;
   	font-weight:bold
   }
+.inactive {
+  font-style: italic;
+  color:lightgray;
+}
