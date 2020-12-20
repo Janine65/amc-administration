@@ -3,7 +3,7 @@
         "config_id": "development",
         "app_name": "amc-administration",
         "app_desc": "AMC Administration",
-        "node_port": 8080,
+        "node_port": 3050,
         "json_indentation": 4,
         "database": "amcadmin",
         "db_user": "webuser",
@@ -28,7 +28,7 @@
     },
     "production": {
         "config_id": "production",
-        "node_port": 88,
+        "node_port": 3050,
         "database": "amcadmin",
         "db_user": "webuser",
         "db_pwd": "U2FsdGVkX1+ynQVZJtDt5Lic6a9Ju/J0IZd5mEuhmJSgWaKZ7l6Vum2EYkvxzfD9",
