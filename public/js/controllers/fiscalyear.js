@@ -66,7 +66,7 @@ module.exports = {
 			{where: {year: data.year}}
 		)
 		.then((fiscalyear) => fiscalyear.update(data)
-			.then((obj) => res.json({id: obj.id}))
+			.then((obj) => res.json(obj))
 			.catch((e) => console.error(e)))
 		.catch((e) => console.error(e));
 	},

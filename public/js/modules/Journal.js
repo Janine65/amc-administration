@@ -102,20 +102,31 @@ wxAMC.moduleClasses.Journal = class {
                   this.showOverlay("Loading...");
                 },
                 onAfterLoad: function () {
-                  if ($$("moduleJournal-dateSelect").getValue() == "")
-                    $$("moduleJournal-dateSelect").setValue(wxAMC.parameter.get('CLUBJAHR'));
+                  var sJahr = $$("moduleJournal-dateSelect").getValue();
+                  if (sJahr == "") {
+                    $$("moduleJournal-dateSelect").setValue(wxAMC.parameter.get('CLUBJAHR'));                    
+                    sJahr = wxAMC.parameter.get('CLUBJAHR');
+                  }
                   this.hideOverlay();
                   $$("count_journal").setValue("Anzahl " + this.count());
-                  if (wxAMC.fiscalyear.state < 3) {
-                    $$("moduleJournal-editButton").show();
-                    $$("moduleJournal-deleteButton").show();
-                    $$("moduleJournal-addForm").show();
-                    $$("moduleJournal-editButton").disable();
-                    $$("moduleJournal-deleteButton").disable();
-                  } else {
-                    $$("moduleJournal-editButton").hide();
-                    $$("moduleJournal-deleteButton").hide();
-                    $$("moduleJournal-addForm").hide();
+                  const value = $$("moduleJournal-dateSelect").getList().getItem(sJahr);
+                  if (value) {
+                    console.log(value);
+                    webix.html.removeCss($$("moduleJournal-dateSelect").getNode(), 'open')
+                    webix.html.removeCss($$("moduleJournal-dateSelect").getNode(), 'prov-closed')
+                    webix.html.removeCss($$("moduleJournal-dateSelect").getNode(), 'closed')
+                    webix.html.addCss($$("moduleJournal-dateSelect").getNode(), value.$css)
+                    if (value.$css == "closed") {
+                      $$("moduleJournal-editButton").hide();
+                      $$("moduleJournal-deleteButton").hide();
+                      $$("moduleJournal-addForm").hide();
+                    } else {
+                      $$("moduleJournal-editButton").show();
+                      $$("moduleJournal-deleteButton").show();
+                      $$("moduleJournal-addForm").show();
+                      $$("moduleJournal-editButton").disable();
+                      $$("moduleJournal-deleteButton").disable();
+                    }
                   }
                 },
                 onAfterFilter: function () {
@@ -248,7 +259,7 @@ wxAMC.moduleClasses.Journal = class {
                   {
                     cols:
                       [
-                        {
+                          {
                           view: "treetable", id: "moduleJournal-FiscalYeardetailsTreeB1", borderless: true, scroll: true,
                           columns: [
                             { id: "order", header: "", css: { "text-align": "right" }, width: 50 },
@@ -300,14 +311,13 @@ wxAMC.moduleClasses.Journal = class {
                             $sort: { by: "order", as: "int", dir: "asc" }
                           }
                         }
-                      ]
+                    ] /* End cols */
                   }
                 },
                 {
                   header: "Erfolgsrechnung",
                   body:
-                  {
-                    cols:
+                    { cols:
                       [
                         {
                           view: "treetable", id: "moduleJournal-FiscalYeardetailsTreeE4", borderless: true, scroll: true,
@@ -361,10 +371,10 @@ wxAMC.moduleClasses.Journal = class {
                             $sort: { by: "order", as: "int", dir: "asc" }
                           }
                         }
-                      ]
+                    ] /* End cols */
                   }
                 }
-              ]
+              ] 
             },
             {
               view: "toolbar",
@@ -545,19 +555,31 @@ wxAMC.moduleClasses.Journal = class {
       .then(function () {
         // Refresh the module's summary list and return to that list.
         $$("moduleJournal-itemsCell").show();
+        const itemOld = $$("moduleJournal-dateSelect").getList().getItem(itemData.year);
         var list = $$("moduleJournal-dateSelect").getList();
         list.clearAll();
-        list.load("/Fiscalyear/getFkData");
-        $$("moduleJournal-dateSelect").setValue();
+        list.load("/Fiscalyear/getFkData", async function() {
+          const item = $$("moduleJournal-dateSelect").getList().getItem(itemData.year);
+          if (item) {
+            await wxAMC.modules['Journal'].refreshData();
 
-        // Give the day-at-a-glance screen a chance to update (needed for desktop mode).
-        wxAMC.dayAtAGlance();
-
-        // Finally, show a completion message.
-        webix.message({
-          type: "success",
-          text: "gesichert"
-        });
+            webix.html.removeCss($$("moduleJournal-dateSelect").getNode(), itemOld.$css);          
+            webix.html.addCss($$("moduleJournal-dateSelect").getNode(), item.$css);          
+            $$("moduleJournal-dateSelect").setValue(item.id);
+          }
+          // Give the day-at-a-glance screen a chance to update (needed for desktop mode).
+          wxAMC.dayAtAGlance();
+  
+          // Finally, show a completion message.
+          webix.message({
+            type: "success",
+            text: "gesichert"
+          });  
+        })
+        .catch(e => webix.message({
+          type: "error",
+          text: e
+          }));
       })
       .catch((e) => webix.message({
         type: "error",
@@ -608,8 +630,6 @@ wxAMC.moduleClasses.Journal = class {
    */
   showFiscalYear() {
     var sJahr = $$("moduleJournal-dateSelect").getValue();
-    if (sJahr == "")
-      sJahr = wxAMC.parameter.get("CLUBJAHR");
     const url = "/Account/showData?jahr=" + sJahr;
 
     const promiseModule = fetch(url)
@@ -638,10 +658,62 @@ wxAMC.moduleClasses.Journal = class {
         var arErfolg = itemsAsArray.filter(function(value, index, array) {
           return value.level == 6;
         });
+
+        var iGewinnVerlust = 0;
+        arAktiv.forEach(element => {
+          if (element.amount != null)
+            iGewinnVerlust -= parseFloat(element.amount);
+        });
+        arPassiv.forEach(element => {
+          if (element.amount != null)
+            iGewinnVerlust += parseFloat(element.amount);
+        });
+
         $$("moduleJournal-FiscalYeardetails").show();
+        console.log(iGewinnVerlust);
+        var record1 = {};
+        var record2 = {};
+
+        if (iGewinnVerlust >= 0) {
+          record1.id = 0;
+          record1.order = 9999
+          record1.name = "Verlust"
+          record1.amount = iGewinnVerlust
+          record1.level = 1
+          record1.$css = 'closed'
+          arAktiv.push(record1);  
+
+          record2.id = 0;
+          record2.order = 9999
+          record2.name = "Verlust"
+          record2.amount = iGewinnVerlust
+          record2.level = 6
+          record2.$css = 'closed'
+          arErfolg.push(record2);
+        } else {
+          iGewinnVerlust *= -1;
+
+          record1.id = 0;
+          record1.order = 9999
+          record1.name = "Gewinn"
+          record1.amount = iGewinnVerlust
+          record1.$css = 'open'
+          record1.level = 2
+          arPassiv.push(record1);  
+
+          record2.id = 0;
+          record2.order = 9999
+          record2.name = "Gewinn"
+          record2.amount = iGewinnVerlust
+          record2.$css = 'open'
+          record2.level = 4
+          arAufwand.push(record2);
+        }
+
         $$("moduleJournal-FiscalYeardetailsTreeB1").clearAll();
         $$("moduleJournal-FiscalYeardetailsTreeB1").parse(arAktiv);
         $$("moduleJournal-FiscalYeardetailsTreeB1").openAll();
+
         $$("moduleJournal-FiscalYeardetailsTreeB2").clearAll();
         $$("moduleJournal-FiscalYeardetailsTreeB2").parse(arPassiv);
         $$("moduleJournal-FiscalYeardetailsTreeB2").openAll();
@@ -649,6 +721,7 @@ wxAMC.moduleClasses.Journal = class {
         $$("moduleJournal-FiscalYeardetailsTreeE4").clearAll();
         $$("moduleJournal-FiscalYeardetailsTreeE4").parse(arAufwand);
         $$("moduleJournal-FiscalYeardetailsTreeE4").openAll();
+
         $$("moduleJournal-FiscalYeardetailsTreeE6").clearAll();
         $$("moduleJournal-FiscalYeardetailsTreeE6").parse(arErfolg);
         $$("moduleJournal-FiscalYeardetailsTreeE6").openAll();
