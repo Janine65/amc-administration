@@ -205,9 +205,9 @@ const account = require("./public/js/controllers/account");
 app.get('/Account/data', account.getData);
 app.post('/Account/data', upload.array(), account.addData);
 app.put('/Account/data', upload.array(), account.updateData);
-app.delete('/Account/data', account.removeData);
 app.get('/Account/getFkData', account.getFKData);
 app.get('/Account/showData', account.getAccountSummary);
+
 
 const journal = require("./public/js/controllers/journal");
 app.get('/Journal/data', journal.getData);
@@ -215,6 +215,7 @@ app.post('/Journal/data', upload.array(), journal.addData);
 app.put('/Journal/data', upload.array(), journal.updateData);
 app.delete('/Journal/data', journal.removeData);
 app.post('/Journal/import', journal.importJournal);
+app.get('/Journal/getAccData', journal.getAccData);
 
 // fileupload router
 app.use(fileUpload({debug: true, useTempFiles: true, tempFileDir: '/tmp/'}));

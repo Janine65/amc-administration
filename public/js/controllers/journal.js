@@ -58,6 +58,29 @@ module.exports = {
 			.catch((e) => console.error(e));
 	},
 	
+	getAccData: function(req, res) {
+		var qrySelect = "SELECT j.id, j.journalNo, concat(acc.order, ' ', acc.name) as account, j.date, j.memo, j.amount as soll, null as haben";
+		qrySelect += " FROM journal j, account acc"
+		qrySelect += " WHERE j.from_account = acc.id and acc.id = " + req.query.acc;
+		qrySelect += " AND year(j.date) = " + req.query.jahr;
+		qrySelect += " UNION SELECT j.id, j.journalNo, concat(acc.order, ' ', acc.name) as account, j.date, j.memo, null, j.amount";
+		qrySelect += " FROM journal j, account acc"
+		qrySelect += " WHERE j.to_account = acc.id and acc.id = " + req.query.acc;
+		qrySelect += " AND year(j.date) = " + req.query.jahr;
+		qrySelect += " ORDER BY 2, 4"
+
+		sequelize.query(qrySelect, 
+			{ 
+				type: Sequelize.QueryTypes.SELECT,
+				plain: false,
+				logging: console.log,
+				raw: true
+			}
+		)
+		.then((data) => res.json(data))
+		.catch((e) => console.error(e));
+	},
+
 	importJournal: async function (req, res) {
 		var data = req.body;
 		var filename = data.sname.replace(process.cwd(), ".");

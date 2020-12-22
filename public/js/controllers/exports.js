@@ -315,10 +315,15 @@ module.exports = {
         });
     },
 
+    /**
+     * Write Bilanz and Erfolgsrechnung to Excelfile
+     * @param {Request} req 
+     * @param {Resolve} res 
+     */
 
     writeExcelData: async function (req, res) {
         var sjahr = req.query.jahr;
-        var iJahr = eval(sjahr - 1);
+        var iVJahr = eval(sjahr - 1);
 
         const workbook = new ExcelJS.Workbook();
 
@@ -355,7 +360,7 @@ module.exports = {
             }
         });
 
-        var qrySelect = "Select ac.`id`, ac.`level`, ac.`order`, ac.`name`, 0 as amount, 0 as amountVJ ";
+        var qrySelect = "Select ac.`id`, ac.`level`, ac.`order`, ac.`name`, 0 as amount, 0 as amountVJ, ac.`status` ";
         qrySelect += " from account ac ";
         qrySelect += " order by ac.`level`, ac.`order`";
         var accData = await sequelize.query(qrySelect,
@@ -382,7 +387,7 @@ module.exports = {
         ).catch((e) => console.error(e));
         arrAmount.forEach(element => {
             var found = accData.findIndex(acc => acc.id == element.from_account);
-            accData[found].amount = eval(element.amount);
+            accData[found].amount = eval(element.amount + 0);
         })
 
 
@@ -415,7 +420,7 @@ module.exports = {
 
         qrySelect = "select j.from_account, sum(j.amount) as amount";
         qrySelect += " from journal j";
-        qrySelect += " where year(j.date) = " + iJahr;
+        qrySelect += " where year(j.date) = " + iVJahr;
         qrySelect += " group by j.from_account";
 
         arrAmount = await sequelize.query(qrySelect,
@@ -428,13 +433,13 @@ module.exports = {
         ).catch((e) => console.error(e));
         arrAmount.forEach(element => {
             var found = accData.findIndex(acc => acc.id == element.from_account);
-            accData[found].amountVJ = eval(element.amount);
+            accData[found].amountVJ = eval(element.amount + 0);
         })
 
 
         qrySelect = "select j.to_account, sum(j.amount) as amount";
         qrySelect += " from journal j";
-        qrySelect += " where year(j.date) = " + iJahr;
+        qrySelect += " where year(j.date) = " + iVJahr;
         qrySelect += " group by j.to_account";
 
         arrAmount = await sequelize.query(qrySelect,
@@ -464,13 +469,14 @@ module.exports = {
         setCellValueFormat(bsheet, 'C3', "Bezeichnung", true, false, { bold: true, size: 11, name: 'Tahoma' });
         setCellValueFormat(bsheet, 'D3', "Saldo " + sjahr, true, false, { bold: true, size: 11, name: 'Tahoma' });
         bsheet.getCell('D3').alignment = { horizontal: "right" };
-        setCellValueFormat(bsheet, 'E3', "Saldo " + iJahr, true, false, { bold: true, size: 11, name: 'Tahoma' });
+        setCellValueFormat(bsheet, 'E3', "Saldo " + iVJahr, true, false, { bold: true, size: 11, name: 'Tahoma' });
         bsheet.getCell('E3').alignment = { horizontal: "right" };
         setCellValueFormat(bsheet, 'F3', "Differenz", true, false, { bold: true, size: 11, name: 'Tahoma' });
         bsheet.getCell('F3').alignment = { horizontal: "right" };
 
         var accBData = accData.filter(function (value, index, array) {
-            return value.level < 3;
+
+            return (value.status == 1 || value.amount != 0 || value.amountVJ != 0) && value.level < 3;
         });
         var Total = writeArray(bsheet, accBData, 4);
         var row = Total.lastRow + 2;
@@ -495,13 +501,13 @@ module.exports = {
         setCellValueFormat(esheet, 'C3', "Bezeichnung", true, false, { bold: true, size: 11, name: 'Tahoma' });
         setCellValueFormat(esheet, 'D3', "Saldo " + sjahr, true, false, { bold: true, size: 11, name: 'Tahoma' });
         esheet.getCell('D3').alignment = { horizontal: "right" };
-        setCellValueFormat(esheet, 'E3', "Saldo " + iJahr, true, false, { bold: true, size: 11, name: 'Tahoma' });
+        setCellValueFormat(esheet, 'E3', "Saldo " + iVJahr, true, false, { bold: true, size: 11, name: 'Tahoma' });
         esheet.getCell('E3').alignment = { horizontal: "right" };
         setCellValueFormat(esheet, 'F3', "Differenz", true, false, { bold: true, size: 11, name: 'Tahoma' });
         esheet.getCell('F3').alignment = { horizontal: "right" };
 
         var accEData = accData.filter(function (value, index, array) {
-            return value.level > 2 && value.level < 9;
+            return (value.status == 1 || value.amount != 0 || value.amountVJ != 0) && value.level > 2 && value.level < 9;
         });
         Total = writeArray(esheet, accEData, 4);
         row = Total.lastRow + 2;

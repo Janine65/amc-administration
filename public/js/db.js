@@ -463,6 +463,8 @@ Journal.init({
 
   Journal.belongsTo(Account, { as: 'fromAccount', constraints: true, foreignKey: 'from_account' });
   Journal.belongsTo(Account, { as: 'toAccount', constraints: true, foreignKey: 'to_account' });
+  Account.hasMany(Journal, { as: 'fromAccount', constraints: true, foreignKey: 'from_account' });
+  Account.hasMany(Journal, { as: 'toAccount', constraints: true, foreignKey: 'to_account' });
 
 module.exports = {
   Adressen, Anlaesse, Parameter, Meisterschaft, Clubmeister, Kegelmeister, User, Session, Account, Journal, FiscalYear,

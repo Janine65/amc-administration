@@ -43,7 +43,7 @@ wxAMC.moduleClasses.Journal = class {
                   //value: wxAMC.parameter.get("CLUBJAHR"),
                   //css: "open",                  
                   on: {
-                    onChange: function(newV, oldV) {                                    
+                    onChange: function (newV, oldV) {
                       if (oldV != "" && this.getList().getItem(oldV)) webix.html.removeCss(this.getNode(), this.getList().getItem(oldV).$css);
                       if (newV != "" && this.getList().getItem(newV)) webix.html.addCss(this.getNode(), this.getList().getItem(newV).$css);
                       wxAMC.modules['Journal'].refreshData();
@@ -54,19 +54,19 @@ wxAMC.moduleClasses.Journal = class {
                   view: "toolbar",
                   cols: [
                     {
-                      id: "moduleJournal-closeFinalFiscalyear", view: "button", label: "Final Close", width: "120", type: "icon",
-                      icon: "webix_icon mdi mdi-close", click () { wxAMC.modules['Journal'].closeFiscalYear(3); }
+                      id: "moduleJournal-closeFinalFiscalyear", view: "button", label: "Final Close", autowidth: true, type: "icon",
+                      icon: "webix_icon mdi mdi-close", click() { wxAMC.modules['Journal'].closeFiscalYear(3); }
                     },
                     {
-                      id: "moduleJournal-closeFiscalyear", view: "button", label: "Prov. Close", width: "120", type: "icon",
-                      icon: "webix_icon mdi mdi-close", click () { wxAMC.modules['Journal'].closeFiscalYear(2); }
+                      id: "moduleJournal-closeFiscalyear", view: "button", label: "Prov. Close", autowidth: true, type: "icon",
+                      icon: "webix_icon mdi mdi-close", click() { wxAMC.modules['Journal'].closeFiscalYear(2); }
                     },
                     {
-                      id: "moduleJournal-editFiscalyear", view: "button", label: "Edit", width: "80", type: "icon",
+                      id: "moduleJournal-editFiscalyear", view: "button", label: "Edit", autowidth: true, type: "icon",
                       icon: "webix_icon mdi mdi-plus", click: this.editFiscalYear.bind(this)
                     },
                     {
-                      id: "moduleJournal-showFiscalyear", view: "button", label: "Show", width: "80", type: "icon",
+                      id: "moduleJournal-showFiscalyear", view: "button", label: "Show", autowidth: true, type: "icon",
                       icon: "webix_icon mdi mdi-waves", click: this.showFiscalYear.bind(this)
                     }
                   ]
@@ -104,7 +104,7 @@ wxAMC.moduleClasses.Journal = class {
                 onAfterLoad: function () {
                   var sJahr = $$("moduleJournal-dateSelect").getValue();
                   if (sJahr == "") {
-                    $$("moduleJournal-dateSelect").setValue(wxAMC.parameter.get('CLUBJAHR'));                    
+                    $$("moduleJournal-dateSelect").setValue(wxAMC.parameter.get('CLUBJAHR'));
                     sJahr = wxAMC.parameter.get('CLUBJAHR');
                   }
                   this.hideOverlay();
@@ -129,11 +129,9 @@ wxAMC.moduleClasses.Journal = class {
                     }
                   }
                 },
-                onAfterFilter: function () {
-                  $$("count_journal").setValue("Anzahl " + this.count());
-                },
                 onAfterSelect: function (selection, preserve) {
                   $$("moduleJournal-editButton").enable();
+                  $$("moduleJournal-copyButton").enable();
                   $$("moduleJournal-deleteButton").enable();
                 },
                 onItemDblClick: function (selection, preserve) {
@@ -147,24 +145,29 @@ wxAMC.moduleClasses.Journal = class {
                 { id: "count_journal", view: "label", label: "Anzahl 0" },
                 { width: 6 },
                 {
-                  id: "moduleJournal-editButton", view: "button", label: "Edit", width: "80", type: "icon", disabled: true,
+                  id: "moduleJournal-accEditButton", view: "button", label: "Accounts", autowidth: true, type: "icon",
+                  icon: "webix_icon mdi mdi-bank", click: this.showAccounts.bind(this)
+                },
+                { width: 6 },
+                {
+                  id: "moduleJournal-editButton", view: "button", label: "Edit", autowidth: true, type: "icon", disabled: true,
                   icon: "webix_icon mdi mdi-pen", click: this.editExisting.bind(this)
                 },
                 {
-                  id: "moduleJournal-copyButton", view: "button", label: "Copy", width: "80", type: "icon", disabled: true,
+                  id: "moduleJournal-copyButton", view: "button", label: "Copy", autowidth: true, type: "icon", disabled: true,
                   icon: "webix_icon mdi mdi-content-copy", click: this.copyExisting.bind(this)
                 },
                 {
-                  id: "moduleJournal-deleteButton", view: "button", label: "Delete", width: "80", type: "icon", disabled: true,
+                  id: "moduleJournal-deleteButton", view: "button", label: "Delete", autowidth: true, type: "icon", disabled: true,
                   icon: "webix_icon mdi mdi-delete", click: () => { wxAMC.deleteHandler("Journal"); }
                 },
                 { width: 6 },
                 {
-                  id: "moduleJournal-exportButton", view: "button", label: "Export", width: "80", type: "icon",
+                  id: "moduleJournal-exportButton", view: "button", label: "Export", autowidth: true, type: "icon",
                   icon: "webix_icon mdi mdi-export", click: this.exportData.bind(this)
                 },
                 {
-                  id: "moduleJournal-importButton", view: "button", label: "Import", width: "80", type: "icon",
+                  id: "moduleJournal-importButton", view: "button", label: "Import", autowidth: true, type: "icon",
                   icon: "webix_icon mdi mdi-import", click: this.importData.bind(this)
                 },
                 { width: 6 }
@@ -193,20 +196,32 @@ wxAMC.moduleClasses.Journal = class {
                       width: 120
                     },
                     {
-                      view: "combo", suggest: "/Account/getFkData", name: "from_account", label: "Konto",
+                      view: "combo",
+                      options: "/Account/getFkData",
+                      name: "from_account",
+                      label: "Konto Soll",
                       labelPosition: "top",
                       required: true,
                       css: "small",
                       width: 250
                     },
                     {
-                      view: "combo", suggest: "/Account/getFkData", name: "to_account", label: "Konto",
+                      view: "combo",
+                      options: "/Account/getFkData",
+                      name: "to_account",
+                      label: "Konto Haben",
                       labelPosition: "top",
                       required: true,
                       css: "small",
                       width: 250
                     },
-                    { label: "Text", view: "text", height: 28, labelPosition: "top", name: "memo" },
+                    {
+                      label: "Text",
+                      view: "text",
+                      labelPosition: "top",
+                      required: true,
+                      name: "memo"
+                    },
                     {
                       label: "Amount",
                       name: "amount",
@@ -261,7 +276,7 @@ wxAMC.moduleClasses.Journal = class {
                   {
                     cols:
                       [
-                          {
+                        {
                           view: "treetable", id: "moduleJournal-FiscalYeardetailsTreeB1", borderless: true, scroll: true,
                           columns: [
                             { id: "order", header: "", css: { "text-align": "right" }, width: 50 },
@@ -313,13 +328,14 @@ wxAMC.moduleClasses.Journal = class {
                             $sort: { by: "order", as: "int", dir: "asc" }
                           }
                         }
-                    ] /* End cols */
+                      ] /* End cols */
                   }
                 },
                 {
                   header: "Erfolgsrechnung",
                   body:
-                    { cols:
+                  {
+                    cols:
                       [
                         {
                           view: "treetable", id: "moduleJournal-FiscalYeardetailsTreeE4", borderless: true, scroll: true,
@@ -373,17 +389,17 @@ wxAMC.moduleClasses.Journal = class {
                             $sort: { by: "order", as: "int", dir: "asc" }
                           }
                         }
-                    ] /* End cols */
+                      ] /* End cols */
                   }
                 }
-              ] 
+              ]
             },
             {
               view: "toolbar",
               cols: [
                 { width: 6 },
                 {
-                  view: "button", label: "Zurück", width: "90",
+                  view: "button", label: "Zurück", autowidth: true,
                   type: "icon", icon: "mdi mdi-arrow-left",
                   click: () => {
                     $$("moduleJournal-itemsCell").show();
@@ -391,7 +407,7 @@ wxAMC.moduleClasses.Journal = class {
                 },
                 {},
                 {
-                  view: "button", label: "Export", width: "80", type: "icon",
+                  view: "button", label: "Export", autowidth: true, type: "icon",
                   icon: "mdi mdi-file-excel", id: "moduleJournal-excelFiscalButton", hotkey: "enter",
                   click: this.exportData.bind(this)
                 },
@@ -419,7 +435,7 @@ wxAMC.moduleClasses.Journal = class {
                 {
                   view: "text",
                   label: "Jahr",
-                  required: true,
+                  readonly: true,
                   name: "year",
                   labelWidth: 100
                 },
@@ -432,11 +448,11 @@ wxAMC.moduleClasses.Journal = class {
                 },
                 {
                   label: "Status",
-                  view: "combo",
+                  view: "radio",
                   options: [
-                    {id: 1, value: "Offen"},
-                    {id: 2, value: "Prov. Abgeschlossen"},
-                    {id: 3, value: "Abgeschlossen"}
+                    { id: 1, value: "<span class='open'>Offen</span>" },
+                    { id: 2, value: "<span class='prov-closed'>Prov. Abgeschlossen</span>" },
+                    { id: 3, value: "<span class='closed'>Abgeschlossen</span>" }
                   ],
                   required: true,
                   name: "state",
@@ -450,7 +466,7 @@ wxAMC.moduleClasses.Journal = class {
               cols: [
                 { width: 6 },
                 {
-                  view: "button", label: "Zurück", width: "90",
+                  view: "button", label: "Zurück", autowidth: true,
                   type: "icon", icon: "mdi mdi-arrow-left",
                   click: () => {
                     $$("moduleJournal-itemsCell").show();
@@ -458,7 +474,7 @@ wxAMC.moduleClasses.Journal = class {
                 },
                 {},
                 {
-                  view: "button", label: "Save", width: "80", type: "icon",
+                  view: "button", label: "Save", autowidth: true, type: "icon",
                   icon: "mdi mdi-content-save", id: "moduleJournal-saveButton", disabled: true, hotkey: "enter",
                   click: () => {
                     wxAMC.modules["Journal"].saveFiscalyear()
@@ -468,7 +484,232 @@ wxAMC.moduleClasses.Journal = class {
               ]
             } /* End journal details toolbar. */
           ]
-        }
+        },
+        {
+          id: "moduleJournal-listAccounts",
+          rows: [
+            {
+              cols: [
+                {
+                  width: 320,
+                  rows: [
+                    {
+                      cols: [
+                        { "label": "Account", "view": "text", "height": 48, id: "listAccountSearch" },
+                        {
+                          "icon": "mdi mdi-magnify", "view": "icon", "width": 38, "height": 0,
+                          click: function () {
+                            var value = $$("listAccountSearch").getValue().toLowerCase();
+                            $$("listAccountsList").filter("#name#", value);
+                          }
+                        },
+                        {
+                          view: "checkbox", label: "show all", value: 0, id: "listAccountAll",
+                          click: function () {
+                            wxAMC.modules['Journal'].refreshAccountList(this.getValue());
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      view: "list", id: "listAccountsList",
+                      template: function (obj) {
+                        if (obj.status == 0)
+                          return "<span class='inactive'>" + obj.order + " " + obj.name + "</span>";
+                        else
+                          return obj.order + " " + obj.name;
+                      },
+                      select: true,
+                      padding: 40,
+                      scheme: {
+                        $sort: {
+                          by: "order",
+                          dir: "asc"
+                        }
+                      },
+                      on: {
+                        onAfterSelect: function (id) {
+                          wxAMC.modules['Journal'].refreshAccountData();
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  id: "listAccountsData",
+                  "view": "datatable",
+                  css: "webix_header_border webix_data_border",
+                  select: true, autofit: true,
+                  resizeColumn: { headerOnly: true },
+                  scroll: true,
+                  editable: false,
+                  "columns": [
+                    { "id": "journalNo", "header": "No.", "fillspace": false, "hidden": false },
+                    {
+                      "id": "account",
+                      "header": "Account",
+                      "fillspace": true,
+                      "hidden": false,
+                      adjust: true
+                    },
+                    {
+                      "id": "date",
+                      "header": "Datum",
+                      "fillspace": false,
+                      "format": webix.i18n.dateFormatStr,
+                      "hidden": false,
+                      adjust: true
+                    },
+                    { "id": "memo", "header": "Memo", "fillspace": true, "hidden": false },
+                    {
+                      "id": "soll",
+                      "header": "Soll",
+                      "fillspace": false,
+                      "hidden": false,
+                      adjust: true,
+                      css: { 'text-align': 'right' },
+                      format: webix.i18n.numberFormat
+                    },
+                    {
+                      "id": "haben",
+                      "header": "Haben",
+                      "fillspace": false,
+                      "hidden": false,
+                      adjust: true,
+                      css: { 'text-align': 'right' },
+                      format: webix.i18n.numberFormat
+                    }
+                  ],
+                  hover: "hoverline",
+                  on: {
+                    onBeforeLoad: function () {
+                      this.showOverlay("Loading...");
+                    },
+                    onAfterLoad: function () {
+                      this.hideOverlay();
+                      $$("count_accjournal").setValue("Anzahl " + (this.count() - 1));
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "view": "toolbar",
+              "height": 44,
+              "cols": [
+                {
+                  view: "button", label: "Zurück", autowidth: true,
+                  type: "icon", icon: "mdi mdi-arrow-left",
+                  click: () => {
+                    $$("moduleJournal-itemsCell").show();
+                  }
+                },
+                { "view": "label", "label": "Anzahl", id: "count_accjournal" },
+                {},
+                {
+                  "label": "Add", "view": "button", "height": 0, "autowidth": true,
+                  type: "icon", icon: "mdi mdi-plus",
+                  click: this.addAccount.bind(this)
+                },
+                {
+                  "label": "Edit", "view": "button", "height": 0, "autowidth": true,
+                  type: "icon", icon: "mdi mdi-pencil",
+                  click: this.editAccount.bind(this)
+                },
+                {
+                  "view": "button", "label": "Export Active", "height": 0, "autowidth": true,
+                  type: "icon", icon: "mdi mdi-export",
+                  click: this.exportAccount.bind(this)
+                },
+                {
+                  "view": "button", "label": "Export All", "autowidth": true,
+                  type: "icon", icon: "mdi mdi-file-excel",
+                  click: this.exportAllAccounts.bind(this)
+                }
+              ]
+            }
+          ]
+        }, /* End AccountList */
+        /* ---------- Account details cell. ---------- */
+        {
+          id: "Account-details",
+          rows: [
+            /* Account details form. */
+            {
+              view: "form", id: "Account-detailsForm", borderless: false, scroll: true,
+              elementsConfig: {
+                on: {
+                  onChange: () => {
+                    $$("Account-saveButton")
+                    [$$("Account-detailsForm").validate() ? "enable" : "disable"]();
+                  }
+                }
+              },
+              elements: [
+                {
+                  label: "Level",
+                  view: "combo",
+                  options: [
+                    { id: "1", value: "Aktivkonto" },
+                    { id: "2", value: "Passivkonto" },
+                    { id: "4", value: "Aufwandkonto" },
+                    { id: "6", value: "Ertragkonto" },
+                    { id: "9", value: "Hilfskonto" }
+                  ],
+                  required: true,
+                  name: "level",
+                  labelWidth: 100
+                },
+                {
+                  view: "text",
+                  label: "Order",
+                  required: true,
+                  type: "int",
+                  name: "order",
+                  labelWidth: 100
+                },
+                {
+                  label: "Name",
+                  view: "text",
+                  required: true,
+                  name: "name",
+                  labelWidth: 100
+                },
+                {
+                  label: "Status",
+                  view: "checkbox",
+                  required: true,
+                  name: "status",
+                  labelWidth: 100,
+                  value: 1
+                }
+              ]
+            }, /* End account details form. */
+            /* Account details toolbar. */
+            {
+              view: "toolbar",
+              cols: [
+                { width: 6 },
+                {
+                  view: "button", label: "Zurück", autowidth: true,
+                  type: "icon", icon: "mdi mdi-arrow-left",
+                  click: () => {
+                    $$("moduleJournal-listAccounts").show();
+                  }
+                },
+                {},
+                {
+                  view: "button", label: "Save", autowidth: true, type: "icon",
+                  icon: "mdi mdi-content-save", id: "Account-saveButton", disabled: true, hotkey: "enter",
+                  click: () => {
+                    wxAMC.modules["Journal"].saveAccount()
+                  }
+                },
+                { width: 6 }
+              ]
+            } /* End account details toolbar. */
+          ]
+        },
       ] /* End main layout cells. */
     };
 
@@ -491,7 +732,7 @@ wxAMC.moduleClasses.Journal = class {
 
   editFiscalYear() {
     const sJahr = $$("moduleJournal-dateSelect").getValue();
-    const value = $$("moduleJournal-dateSelect").getList().getItem(sJahr).value.split(' - ');    
+    const value = $$("moduleJournal-dateSelect").getList().getItem(sJahr).value.split(' - ');
 
     var state = 1;
     switch (value[1]) {
@@ -501,13 +742,13 @@ wxAMC.moduleClasses.Journal = class {
       case "prov. abgeschlossen":
         state = 2
         break;
-      
+
       default:
         state = 1
         break;
     }
 
-    var data = {year: sJahr, name: value[0], state: state};
+    var data = { year: sJahr, name: value[0], state: state };
 
     $$("moduleJournal-details").show();
     $$("moduleJournal-detailsForm").clear();
@@ -518,7 +759,7 @@ wxAMC.moduleClasses.Journal = class {
   /**
    * Save the edited Fiscalyear
    */
-  saveFiscalyear() {    
+  saveFiscalyear() {
     // Merge all forms together.  Usually there's just one, but some modules may have more than one.
     if ($$("moduleJournal-detailsForm").isDirty()) {
       var itemData = $$("moduleJournal-detailsForm").getValues();
@@ -560,27 +801,27 @@ wxAMC.moduleClasses.Journal = class {
         const itemOld = $$("moduleJournal-dateSelect").getList().getItem(itemData.year);
         var list = $$("moduleJournal-dateSelect").getList();
         list.clearAll();
-        list.load("/Fiscalyear/getFkData", async function() {
+        list.load("/Fiscalyear/getFkData", async function () {
           const item = $$("moduleJournal-dateSelect").getList().getItem(itemData.year);
           if (item) {
             await wxAMC.modules['Journal'].refreshData();
 
-            webix.html.removeCss($$("moduleJournal-dateSelect").getNode(), itemOld.$css);          
-            webix.html.addCss($$("moduleJournal-dateSelect").getNode(), item.$css);          
+            webix.html.removeCss($$("moduleJournal-dateSelect").getNode(), itemOld.$css);
+            webix.html.addCss($$("moduleJournal-dateSelect").getNode(), item.$css);
             $$("moduleJournal-dateSelect").setValue(item.id);
           }
           // Give the day-at-a-glance screen a chance to update (needed for desktop mode).
           wxAMC.dayAtAGlance();
-  
+
           // Finally, show a completion message.
           webix.message({
             type: "success",
             text: "gesichert"
-          });  
+          });
         })
-        .catch(e => webix.message({
-          type: "error",
-          text: e
+          .catch(e => webix.message({
+            type: "error",
+            text: e
           }));
       })
       .catch((e) => webix.message({
@@ -588,18 +829,159 @@ wxAMC.moduleClasses.Journal = class {
         text: e
       }));
 
-   }
+  }
+
+  showAccounts() {
+    $$("moduleJournal-listAccounts").show();
+
+    $$("listAccountsList").clearAll();
+    $$("listAccountsData").clearAll();
+    $$("listAccountSearch").setValue("");
+    $$("listAccountAll").setValue(0);
+    this.refreshAccountList(0);
+  }
+
+  refreshAccountList(all) {
+    $$("listAccountsList").clearAll();
+    $$("listAccountsData").clearAll();
+    $$("listAccountsList").load("/Account/data?jahr=" + $$("moduleJournal-dateSelect").getValue() + "&all=" + all);
+  }
+
+  addAccount() {
+    var itemData = { id: 0, status: 1 };
+    $$("Account-detailsForm").clear();
+    $$("Account-details").show();
+    $$("Account-detailsForm").setValues(itemData);
+  }
+
+  editAccount() {
+    var itemData = $$("listAccountsList").getSelectedItem();
+    console.log(itemData);
+    $$("Account-detailsForm").clear();
+    $$("Account-detailsForm").setValues(itemData);
+    $$("Account-details").show();
+  }
+
+  exportAccount() {
+    webix.message({
+      type: "info",
+      text: "exportAccount"
+    })
+
+  }
+
+  exportAllAccounts() {
+    webix.message({
+      type: "info",
+      text: "exportAllAccounts"
+    })
+
+  }
+
+  saveAccount() {
+    const itemData = $$("Account-detailsForm").getValues();
+    if (!$$("Account-detailsForm").isDirty()) {
+      webix.message({
+        type: "info",
+        text: "Keine Änderungen vorgenommen"
+      });
+      $$("moduleJournal-listAccounts").show();
+      return;
+    }
+
+    const url = "/Account/data";
+    var smethond = (itemData.id > 0 ? "PUT" : "POST");
+
+    fetch(url, {
+      method: smethond, // *GET, POST, PUT, DELETE, etc.
+      mode: 'cors', // no-cors, *cors, same-origin
+      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+      credentials: 'same-origin', // include, *same-origin, omit
+      headers: {
+        'Content-Type': 'application/json'
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      redirect: 'follow', // manual, *follow, error
+      referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+      body: JSON.stringify(itemData) // body data type must match "Content-Type" header
+    })
+      .then((response) => {
+        if (!response.ok) { // ***
+          webix.message({
+            type: "error",
+            text: "HTTP error " + response.status
+          }); // ***
+        }
+      })
+      .then(function () {
+        // Refresh the module's summary list and return to that list.
+        wxAMC.modules['Journal'].refreshAccountData();
+        wxAMC.modules['Journal'].refreshAccountList($$("listAccountAll").getValue());
+        wxAMC.modules['Journal'].refreshData();
+        $$("moduleJournal-listAccounts").show();
+
+        // Finally, show a completion message.
+        webix.message({
+          type: "success",
+          text: "gesichert"
+        });
+      })
+      .catch((e) => webix.message({
+        type: "error",
+        text: e
+      }));
+  }
+
+  /**
+   * refreshAccountData: Read the entries for the selected amount
+   */
+  refreshAccountData() {
+    var sJahr = $$("moduleJournal-dateSelect").getValue();
+    var itemAcc = $$("listAccountsList").getSelectedItem();
+
+    var url = "/Journal/getAccData?jahr=" + sJahr + "&acc=" + itemAcc.id;
+
+    const promiseModule = fetch(url)
+      .then(function (response) {
+        if (!response.ok)
+          webix.message('Fehler beim Lesen der Buchungen', 'Error');
+        return response.json();
+      }).catch(function (error) {
+        webix.message({ type: "error", text: error })
+        console.log(error);
+      });
+    Promise.resolve(promiseModule)
+      .then(function (dataItems) {
+        const itemsAsArray = wxAMC.objectAsArray(dataItems);
+
+        var iSaldo = 0
+        itemsAsArray.forEach(element => {
+          iSaldo -= eval(element.soll * 1);
+          iSaldo += eval(element.haben * 1);
+        });
+        var record = { id: 0, journalNo: "", account: "", memo: "Saldo", date: new Date(), soll: (iSaldo < 0 ? iSaldo * -1 : null), haben: (iSaldo < 0 ? null : iSaldo) };
+
+        itemsAsArray.push(record);
+        $$("listAccountsData").clearAll();
+        $$("listAccountsData").parse(itemsAsArray);
+
+      })
+      .catch(function (error) {
+        webix.message({ type: "error", text: error });
+        console.log(error);
+      });
+  }
 
   /**
    * Close the Fiscalyear
    */
-   closeFiscalYear(iStatus) {
+  closeFiscalYear(iStatus) {
     var sJahr = $$("moduleJournal-dateSelect").getValue();
     if (sJahr == "")
       sJahr = wxAMC.parameter.get("CLUBJAHR");
     const url = "/Fiscalyear/close?jahr=" + sJahr + "&status=" + iStatus;
 
-    const promiseModule = fetch(url, {method: 'POST'})
+    const promiseModule = fetch(url, { method: 'POST' })
       .then(function (response) {
         if (!response.ok)
           webix.message('Fehler beim Schliessen des Buchungsjahres', 'Error');
@@ -608,14 +990,14 @@ wxAMC.moduleClasses.Journal = class {
         webix.message({ type: "error", text: error })
       });
     Promise.resolve(promiseModule)
-      .then( async function (response) {
+      .then(async function (response) {
         if (response.type == "error") {
-          webix.message({type: "error", text: response.message});
+          webix.message({ type: "error", text: response.message });
         } else {
           // Window schliessen
           $$("moduleWindow-Journal").close();
           $$("taskbar").removeView("moduleTasbbarButton-Journal");
-          
+
           // Window neu starten
           await wxAMC.launchModule('Journal');
           wxAMC.modules['Journal'].dayAtAGlance();
@@ -648,77 +1030,66 @@ wxAMC.moduleClasses.Journal = class {
         // Get the items as an array of objects.
         const itemsAsArray = wxAMC.objectAsArray(dataItems);
 
-        var arAktiv = itemsAsArray.filter(function(value, index, array) {
-          if (value.amount != null)
-            return value.level == 1;
-          else 
-            return false;
-        });
-        var arPassiv = itemsAsArray.filter(function(value, index, array) {
-          if (value.amount != null)
-            return value.level == 2;
-          else 
-            return false;
-        });
-        var arAufwand = itemsAsArray.filter(function(value, index, array) {
-          if (value.amount != null)
-            return value.level == 4;
-          else 
-            return false;
-        });
-        var arErfolg = itemsAsArray.filter(function(value, index, array) {
-          if (value.amount != null)
-            return value.level == 6;
-          else 
-            return false;
-        });
-
+        var arAktiv = [], arPassiv = [], arAufwand = [], arErtrag = [];
         var iGewinnVerlust = 0;
-        arAktiv.forEach(element => {
-          if (element.amount != null)            
-            iGewinnVerlust -= parseFloat(element.amount);
-        });
-        arPassiv.forEach(element => {
-          if (element.amount != null)
-            iGewinnVerlust += parseFloat(element.amount);
+
+        itemsAsArray.forEach(element => {
+          if (element.amount != null || element.$css == "") {
+            if (element.amount == null)
+              element.amount = 0
+            switch (element.level) {
+              case 1:
+                arAktiv.push(element);
+                iGewinnVerlust -= parseFloat(element.amount);
+                break;
+
+              case 2:
+                arPassiv.push(element);
+                iGewinnVerlust += parseFloat(element.amount);
+                break;
+
+              case 4:
+                arAufwand.push(element);
+                break;
+
+              case 6:
+                arErtrag.push(element);
+                break;
+
+              default:
+                break;
+            }
+          }
+
         });
 
         $$("moduleJournal-FiscalYeardetails").show();
-        console.log(iGewinnVerlust);
         var record1 = {};
+        record1.id = 0;
+        record1.order = 9998
+        record1.amount = Math.abs(iGewinnVerlust);
         var record2 = {};
+        record2.id = 0;
+        record2.order = 9998
+        record2.amount = Math.abs(iGewinnVerlust);
 
         if (iGewinnVerlust >= 0) {
-          record1.id = 0;
-          record1.order = 9999
           record1.name = "Verlust"
-          record1.amount = iGewinnVerlust
           record1.level = 1
           record1.$css = 'closed'
-          arAktiv.push(record1);  
+          arAktiv.push(record1);
 
-          record2.id = 0;
-          record2.order = 9999
           record2.name = "Verlust"
-          record2.amount = iGewinnVerlust
           record2.level = 6
           record2.$css = 'closed'
-          arErfolg.push(record2);
+          arErtrag.push(record2);
         } else {
-          iGewinnVerlust *= -1;
-
-          record1.id = 0;
-          record1.order = 9999
           record1.name = "Gewinn"
-          record1.amount = iGewinnVerlust
           record1.$css = 'open'
           record1.level = 2
-          arPassiv.push(record1);  
+          arPassiv.push(record1);
 
-          record2.id = 0;
-          record2.order = 9999
           record2.name = "Gewinn"
-          record2.amount = iGewinnVerlust
           record2.$css = 'open'
           record2.level = 4
           arAufwand.push(record2);
@@ -737,7 +1108,7 @@ wxAMC.moduleClasses.Journal = class {
         $$("moduleJournal-FiscalYeardetailsTreeE4").openAll();
 
         $$("moduleJournal-FiscalYeardetailsTreeE6").clearAll();
-        $$("moduleJournal-FiscalYeardetailsTreeE6").parse(arErfolg);
+        $$("moduleJournal-FiscalYeardetailsTreeE6").parse(arErtrag);
         $$("moduleJournal-FiscalYeardetailsTreeE6").openAll();
       });
   }
@@ -820,15 +1191,15 @@ wxAMC.moduleClasses.Journal = class {
         .catch(function (error) {
           webix.message({ type: "error", text: error })
         });
-  
+
       Promise.resolve(promiseFiscal)
         .then(function (data) {
-          webix.message({type: 'Info', content: 'Export finished'});
+          webix.message({ type: 'Info', content: 'Export finished' });
           webix.send("./exports/Bilanz.xlsx", {}, "GET", "_blank");
         })
         .catch(function (error) {
           webix.message({ type: "error", text: error })
-        });  
+        });
     } else {
       webix.toExcel($$("moduleJournal-items"), {
         filename: "Journal",
@@ -960,20 +1331,20 @@ wxAMC.moduleClasses.Journal = class {
         let status
         switch (data.state) {
           case 1:
-            status = " - offen"
+            status = "<span class='open'>" + data.name + " - offen</span>"
             break;
           case 2:
-            status = " - prov. abgeschlossen"
+            status = "<span class='prov-closed'>" + data.name + " - prov. abgeschlossen</span>"
             break;
           default:
-            status = " - abgeschlossen"
+            status = "<span class='closed'>" + data.name + " - abgeschlossen</span>"
             break;
         }
         rows.push(
           {
             view: "fieldset", label: "Buchhaltung", body: {
               rows: [
-                { view: "label", label: data.name + status }
+                { view: "label", label: status }
               ]
             }
           });

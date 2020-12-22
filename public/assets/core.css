@@ -77,19 +77,19 @@
 }
 
   .open .webix_inp_static, .webix_list_item.open { 
-  	background:#ddf7dd; 
+  	background:#91e991; 
   }
   .prov-closed .webix_inp_static,.webix_list_item.prov-closed { 
-  	background:#ffffe0; 
+  	background:#fafaac; 
   }
   .closed .webix_inp_static,.webix_list_item.closed { 
   	background:#fdbebe; 
   }
   .open { 
-  	background:#ddf7dd; 
+  	background:#91e991; 
   }
   .prov-closed { 
-  	background:#ffffe0; 
+  	background:#fafaac; 
   }
   .closed { 
   	background:#fdbebe; 
@@ -100,5 +100,5 @@
   }
 .inactive {
   font-style: italic;
-  color:lightgray;
+  color:rgb(202, 202, 202);
 }
