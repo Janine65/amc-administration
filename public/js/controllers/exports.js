@@ -16,8 +16,8 @@ const sFirstRow = 13;
 module.exports = {
     /**
    * Erstellt eine Exceldatei mit den Meisterschaftsauswertungen
-   * @param {*} req 
-   * @param {*} res 
+   * @param {Request} req 
+   * @param {Response} res 
    */
     writeAuswertung: async function (req, res) {
         console.log("writeExcelTemplate");
@@ -167,8 +167,8 @@ module.exports = {
 
     /**
      * Erstellt Stammblätter mit oder ohne Daten
-     * @param {*} req 
-     * @param {*} res 
+     * @param {Request} req 
+     * @param {Response} res 
      */
     writeExcelTemplate: async function (req, res) {
         console.log("writeExcelTemplate");
@@ -318,7 +318,7 @@ module.exports = {
     /**
      * Write Bilanz and Erfolgsrechnung to Excelfile
      * @param {Request} req 
-     * @param {Resolve} res 
+     * @param {Response} res 
      */
 
     writeExcelData: async function (req, res) {
@@ -542,8 +542,183 @@ module.exports = {
             filename: filename
         });
     },
+
+    /**
+     * Schreibe die Kontoauszüge in eine Exceldatei.
+     * Pro Konto ein Worksheet
+     * 
+     * @param {Request} req 
+     * @param {Response} res 
+    */
+    writeAccountToExcel: async function (req, res) {
+        const sJahr = req.query.jahr;
+        const sAll = req.query.all
+
+        // read all the data from the database
+        var qrySelect = "SELECT * FROM account";
+        qrySelect += " WHERE `order` > 9";
+        if (sAll == 0) {
+            qrySelect += " AND (id in (select from_account from journal where year(date) = " + req.query.jahr + ")";
+            qrySelect += " OR id in (select to_account from journal where year(date) = " + req.query.jahr + "))";
+        } else {
+            qrySelect += " AND status = 1";
+        }
+        qrySelect += " ORDER BY level ASC , `order` ASC";
+        var arData = await sequelize.query(qrySelect,
+            {
+                type: Sequelize.QueryTypes.SELECT,
+                plain: false,
+                logging: console.log,
+                model: db.Account,
+                raw: false
+            }
+        ).catch((e) => {
+            console.error(e);
+            res.json({
+                type: "error",
+                message: e,
+            });
+            return;
+        });
+
+        const workbook = new ExcelJS.Workbook();
+
+        // Force workbook calculation on load
+        workbook.calcProperties.fullCalcOnLoad = true;
+
+        for (let index = 0; index < arData.length; index++) {
+            const element = arData[index];
+
+            var sSheetName = element.order + " " + element.name.replace("/", "");
+            var sheet = workbook.addWorksheet(sSheetName.substr(0, 31), {
+                pageSetup: {
+                    fitToPage: true,
+                    fitToHeight: 1,
+                    fitToWidth: 1,
+                },
+                properties: {
+                    defaultRowHeight: 18
+                },
+                headerFooter: {
+                    oddHeader: "&18Auto-Moto-Club Swissair",
+                    oddFooter: "&14" + element.element + " " + element.name + " " + sJahr
+                }
+            });
+
+            setCellValueFormat(sheet, 'B1', element.order + " " + element.name, false, false, { bold: true, size: 18, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'B3', "No.", true, false, { bold: true, size: 11, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'C3', "Datum", true, false, { bold: true, size: 11, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'D3', "Gegenkonto", true, false, { bold: true, size: 11, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'E3', "Text ", true, false, { bold: true, size: 11, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'F3', "Soll ", true, false, { bold: true, size: 11, name: 'Tahoma' });
+            sheet.getCell('F3').alignment = { horizontal: "right" };
+            setCellValueFormat(sheet, 'G3', "Haben", true, false, { bold: true, size: 11, name: 'Tahoma' });
+            sheet.getCell('G3').alignment = { horizontal: "right" };
+            setCellValueFormat(sheet, 'H3', "Saldo", true, false, { bold: true, size: 11, name: 'Tahoma' });
+            sheet.getCell('H3').alignment = { horizontal: "right" };
+            sheet.getColumn('B').width = 12;
+            sheet.getColumn('C').width = 12;
+            sheet.getColumn('D').width = 35;
+            sheet.getColumn('E').width = 55;
+            sheet.getColumn('F').width = 12;
+            sheet.getColumn('G').width = 12;
+            sheet.getColumn('H').width = 12;
+
+
+            var iSaldo = 0.0;
+            var iRow = 4;
+            qrySelect = "SELECT journalNo,date, date_format(date, '%d.%m.%Y') as formdate, from_account, to_account, memo, amount FROM journal";
+            qrySelect += " WHERE year(date) = " + sJahr;
+            qrySelect += " AND (from_account = " + element.id;
+            qrySelect += " OR to_account = " + element.id;
+            qrySelect += ") ORDER by journalNo, date";
+
+            var arJournal = await sequelize.query(qrySelect,
+                {
+                    type: Sequelize.QueryTypes.SELECT,
+                    plain: false,
+                    logging: console.log,
+                    raw: false
+                }
+            ).catch((e) => {
+                console.error(e);
+                res.json({
+                    type: "error",
+                    message: e,
+                });
+                return;
+            });
+
+            for (let ind2 = 0; ind2 < arJournal.length; ind2++) {
+                const entry = arJournal[ind2];
+                const iAmount = eval(entry.amount + 0);
+
+                setCellValueFormat(sheet, 'B' + iRow, entry.journalNo, true, false, { size: 11, name: 'Tahoma' });
+                setCellValueFormat(sheet, 'C' + iRow, entry.formdate, true, false, { size: 11, name: 'Tahoma' });
+                setCellValueFormat(sheet, 'E' + iRow, entry.memo, true, false, { size: 11, name: 'Tahoma' });
+                sheet.getCell('F' + iRow).numFmt = '#,##0.00;[Red]\-#,##0.00';
+                sheet.getCell('G' + iRow).numFmt = '#,##0.00;[Red]\-#,##0.00';
+                sheet.getCell('H' + iRow).numFmt = '#,##0.00;[Red]\-#,##0.00';
+
+                if (entry.from_account == element.id) {
+                    const toAcc = arData.find(rec => rec.id == entry.to_account);
+                    if (toAcc)
+                        setCellValueFormat(sheet, 'D' + iRow, toAcc.order + " " + toAcc.name, true, false, { size: 11, name: 'Tahoma' });
+                    else
+                        setCellValueFormat(sheet, 'D' + iRow, entry.to_account, true, false, { size: 11, name: 'Tahoma' });
+
+                    setCellValueFormat(sheet, 'F' + iRow, iAmount, true, false, { size: 11, name: 'Tahoma' });
+                    setCellValueFormat(sheet, 'G' + iRow, "", true, false, { size: 11, name: 'Tahoma' });
+                    if (element.level == 2 || element.level == 6)
+                        iSaldo -= iAmount;
+                    else
+                        iSaldo += iAmount;
+                    setCellValueFormat(sheet, 'H' + iRow, iSaldo, true, false, { size: 11, name: 'Tahoma' });
+                } else {
+                    const fromAcc = arData.find(rec => rec.id == entry.from_account);
+                    if (fromAcc)
+                        setCellValueFormat(sheet, 'D' + iRow, fromAcc.order + " " + fromAcc.name, true, false, { size: 11, name: 'Tahoma' });
+                    else
+                        setCellValueFormat(sheet, 'D' + iRow, entry.from_account, true, false, { size: 11, name: 'Tahoma' });
+                    setCellValueFormat(sheet, 'F' + iRow, "", true, false, { size: 11, name: 'Tahoma' });
+                    setCellValueFormat(sheet, 'G' + iRow, iAmount, true, false, { size: 11, name: 'Tahoma' });
+                    if (element.level == 2 || element.level == 6)
+                        iSaldo += iAmount;
+                    else
+                        iSaldo -= iAmount;
+                    setCellValueFormat(sheet, 'H' + iRow, iSaldo, true, false, { size: 11, name: 'Tahoma' });
+                }
+                iRow++;
+            };
+
+            sheet.commit = true;
+        };
+
+        const filename = "Kontoauszug" + sJahr + ".xlsx";
+        await workbook.xlsx.writeFile("./public/exports/" + filename).catch((e) => {
+            console.error(e);
+            res.json({
+                type: "error",
+                message: e,
+            });
+            return;
+        });
+
+        return res.json({
+            type: "info",
+            message: "Excelfile erstellt",
+            filename: filename
+        });
+
+    },
 };
 
+/**
+ * 
+ * @param {ExcelJS.Worksheet} sheet 
+ * @param {Array} arData 
+ * @param {number} firstRow 
+ */
 function writeArray(sheet, arData, firstRow) {
     var row = firstRow;
 
@@ -596,6 +771,12 @@ function writeArray(sheet, arData, firstRow) {
     return { lastRow: row - 1, total1: firstRow + 1, total2: cellLevel };
 }
 
+/**
+ * 
+ * @param {ExcelJS.Worksheet} sheet 
+ * @param {number} id 
+ * @param {string} syear 
+ */
 async function fillTemplate(sheet, id, syear) {
     var qrySelect = "SELECT * FROM meisterschaft where eventid in (";
     qrySelect += "SELECT id FROM anlaesse where year(datum) = " + syear;
@@ -670,6 +851,11 @@ async function fillTemplate(sheet, id, syear) {
 
 }
 
+/**
+ * 
+ * @param {ExcelJS.Worksheet} sheet 
+ * @param {db.Adressen} adress 
+ */
 async function fillName(sheet, adress) {
 
     let cell = sheet.getCell(cName)
@@ -678,6 +864,12 @@ async function fillName(sheet, adress) {
     cell.value = adress.vorname;
 }
 
+/**
+ * 
+ * @param {string} syear 
+ * @param {ExcelJS.Worksheet} sheet 
+ * @param {number} inclPoints 
+ */
 async function createTemplate(syear, sheet, inclPoints) {
     // read all events
     let dbEvents = await db.Anlaesse.findAll({
@@ -815,6 +1007,15 @@ async function createTemplate(syear, sheet, inclPoints) {
 
 }
 
+/**
+ * 
+ * @param {ExcelJS.Worksheet} sheet Excel Worksheet
+ * @param {string} cell Range
+ * @param {*} value value to fill in cell
+ * @param {Boolean} border Set thin boarder line
+ * @param {Boolean} merge Merge the cells
+ * @param {*} font Object of font settings
+ */
 function setCellValueFormat(sheet, cell, value, border, merge, font) {
     sheet.getCell(cell).value = value;
     if (merge != "") {

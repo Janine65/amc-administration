@@ -863,20 +863,60 @@ wxAMC.moduleClasses.Journal = class {
   }
 
   exportAccount() {
-    webix.message({
-      type: "info",
-      text: "exportAccount"
-    })
+      const sJahr = $$("moduleJournal-dateSelect").getValue();
 
+      // read the fiscalyear to handle all the rights
+      const promiseAccount = fetch("/Account/export?jahr=" + sJahr + "&all=0")
+        .then(function (response) {
+          if (!response.ok)
+            webix.message('Fehler beim Schreiben der Kontoauszüge', 'Error');
+          return response.json();
+        })
+        .catch(function (error) {
+          webix.message({ type: "error", text: error })
+        });
+
+      Promise.resolve(promiseAccount)
+        .then(function (data) {
+          if (data.type == "info") {
+            webix.message(data.message, "Info");
+            webix.send("./exports/" + data.filename, {}, "GET");
+          } else {
+            webix.message(data.message, "Error");
+          }
+        })
+        .catch(function (error) {
+          webix.message({ type: "error", text: error })
+        });    
   }
 
   exportAllAccounts() {
-    webix.message({
-      type: "info",
-      text: "exportAllAccounts"
-    })
+    const sJahr = $$("moduleJournal-dateSelect").getValue();
 
-  }
+    // read the fiscalyear to handle all the rights
+    const promiseAccount = fetch("/Account/export?jahr=" + sJahr + "&all=1")
+      .then(function (response) {
+        if (!response.ok)
+          webix.message('Fehler beim Schreiben der Kontoauszüge', 'Error');
+        return response.json();
+      })
+      .catch(function (error) {
+        webix.message({ type: "error", text: error })
+      });
+
+    Promise.resolve(promiseAccount)
+      .then(function (data) {
+        if (data.type == "info") {
+          webix.message(data.message, "Info");
+          webix.send("./exports/" + data.filename, {}, "GET");
+        } else {
+          webix.message(data.message, "Error");
+        }
+      })
+      .catch(function (error) {
+        webix.message({ type: "error", text: error })
+      });    
+}
 
   saveAccount() {
     const itemData = $$("Account-detailsForm").getValues();

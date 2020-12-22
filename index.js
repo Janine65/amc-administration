@@ -207,6 +207,7 @@ app.post('/Account/data', upload.array(), account.addData);
 app.put('/Account/data', upload.array(), account.updateData);
 app.get('/Account/getFkData', account.getFKData);
 app.get('/Account/showData', account.getAccountSummary);
+app.get('/Account/export', exportData.writeAccountToExcel);
 
 
 const journal = require("./public/js/controllers/journal");

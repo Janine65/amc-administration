@@ -61,11 +61,11 @@ module.exports = {
 	getAccData: function(req, res) {
 		var qrySelect = "SELECT j.id, j.journalNo, concat(acc.order, ' ', acc.name) as account, j.date, j.memo, j.amount as soll, null as haben";
 		qrySelect += " FROM journal j, account acc"
-		qrySelect += " WHERE j.from_account = acc.id and acc.id = " + req.query.acc;
+		qrySelect += " WHERE j.to_account = acc.id and j.from_account = " + req.query.acc;
 		qrySelect += " AND year(j.date) = " + req.query.jahr;
 		qrySelect += " UNION SELECT j.id, j.journalNo, concat(acc.order, ' ', acc.name) as account, j.date, j.memo, null, j.amount";
 		qrySelect += " FROM journal j, account acc"
-		qrySelect += " WHERE j.to_account = acc.id and acc.id = " + req.query.acc;
+		qrySelect += " WHERE j.from_account = acc.id and j.to_account = " + req.query.acc;
 		qrySelect += " AND year(j.date) = " + req.query.jahr;
 		qrySelect += " ORDER BY 2, 4"
 
