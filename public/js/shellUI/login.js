@@ -1,8 +1,8 @@
 
 // Create a window with the app's layout inside it.
 wxAMC.loginGui = {
-    view : "ani-window", move : true, width: "450", height: "256",
-    left : centerX, top : centerY,
+    view : "ani-window", move : true, width: "450", height: "270",
+    position: "center",
     resize : false, id : "loginWindow", toFront : true,
     fullscreen : false,
     head : {

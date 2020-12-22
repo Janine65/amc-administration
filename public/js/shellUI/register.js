@@ -5,13 +5,11 @@ if (vpWidth > 650)
     vpWidth = 650;
 if (vpHeight > 700)
     vpHeight = 700;
-let centerX = (vpWidth  / 2) + 50;
-let centerY = (vpHeight / 3) - 50;
 
 // Create a window with the app's layout inside it.
 wxAMC.registGui = {
     view : "ani-window", move : true, width : vpWidth, height : vpHeight,
-    left : centerX, top : centerY,
+    position: "center",
     resize : true, id : "registerWindow", toFront : true,
     fullscreen : false,
     head : {

@@ -727,6 +727,8 @@ class WXAMC {
 
     // Destroy existing base layout.
     $$("sidemenu").destructor();
+    $$("dayAtAGlance").destructor();
+    $$("moduleArea").destructor();
     $$("baseLayout").destructor();
 
 
@@ -908,7 +910,7 @@ class WXAMC {
         $$("sidemenu").remove("MainMenulogin");
       webix.UIManager.removeHotKey("ctrl+i");
       if (!$$("sidemenu").getItem("MainMenulogout"))
-        $$("sidemenu").add({ id: "MainMenulogout", value: "Logout", icon: "webix_icon mdi mdi-logout" }, ind++);
+        $$("sidemenu").add({ id: "MainMenulogout", value: "Logout", icon: "webix_icon mdi mdi-logout", $css: 'logoutMenu'}, ind++);
       webix.UIManager.addHotKey("ctrl+o", wxAMC.doLogout);
 
       if (wxAMC.UserRole == "admin")

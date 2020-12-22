@@ -6,9 +6,11 @@
 wxAMC.getSideMenuConfig = function() {
 
   const listItems = [ ];
-  listItems.push({ id: "loggedUser", value: "not logged in", icon: "webis_icon mdi mdi-account"});
+  listItems.push({ id: "loggedUser", value: "not logged in", icon: "webis_icon mdi mdi-account", $css: "loggedinUser"});
+  listItems.push({id: "switchMode", value : (wxAMC.uiType == "mobile" ? "Mobile" : "Desktop"), 
+        icon: (wxAMC.uiType == "mobile" ? "webix_icon mdi mdi-tablet-cellphone" : "webix_icon mdi mdi-desktop-classic"),
+        $css: "logoutMenu"});
   listItems.push({ id: "home", value : "Home", icon : "webix_icon mdi mdi-home"});
-  listItems.push({id: "switchMode", value : (wxAMC.uiType == "mobile" ? "Mobile" : "Desktop"), icon: (wxAMC.uiType == "mobile" ? "webix_icon mdi mdi-tablet-cellphone" : "webix_icon mdi mdi-desktop-classic")});
 
   return {
     view : "sidebar", id : "sidemenu", width : 220,
