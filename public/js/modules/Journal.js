@@ -1246,7 +1246,7 @@ wxAMC.moduleClasses.Journal = class {
     Promise.resolve(promiseFiscal)
       .then(function (data) {
         webix.message({ type: 'Info', content: 'Export finished' });
-        webix.send("./exports/Bilanz.xlsx", {}, "GET", "_blank");
+        webix.send("./exports/Bilanz.xlsx", {}, "GET");
       })
       .catch(function (error) {
         webix.message({ type: "error", text: error })

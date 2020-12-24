@@ -139,29 +139,29 @@ custom_checkbox(obj, common, value){
             cols : [
               { id: "count_anlass", view : "label", label: "Anzahl 0"},
               { },
-              { id: "moduleAnlaesse-eventButton", view : "button", default : true, label : "Event", width : "80", type : "icon", disabled: true,
+              { id: "moduleAnlaesse-eventButton", view : "button", default : true, label : "Event", autowidth: true, type : "icon", disabled: true,
                 icon : "webix_icon mdi mdi-calendar-multiple-check", click : this.eventsEditing.bind(this)
               },
-              { id: "moduleAnlaesse-printButton1", view : "button", default : true, label : "Datenblatt", width : "80", type : "icon", disabled: false,
+              { id: "moduleAnlaesse-printButton1", view : "button", default : true, label : "Datenblatt", autowidth: true, type : "icon", disabled: false,
                 icon : "webix_icon mdi mdi-file-excel", click : () => { wxAMC.excelDatasheet({id:0, type: 0}); }
               },
-              { id: "moduleAnlaesse-printButton2", view : "button", default : true, label : "leer", width : "80", type : "icon", disabled: false,
+              { id: "moduleAnlaesse-printButton2", view : "button", default : true, label : "leer", autowidth: true, type : "icon", disabled: false,
                 icon : "webix_icon mdi mdi-file-excel", click : () => { wxAMC.excelDatasheet({id:0, type: 1}); }
               },
-              { id: "moduleAnlaesse-printButton3", view : "button", default : true, label : "voll", width : "80", type : "icon", disabled: false,
+              { id: "moduleAnlaesse-printButton3", view : "button", default : true, label : "voll", autowidth: true, type : "icon", disabled: false,
                 icon : "webix_icon mdi mdi-file-excel", click : () => { wxAMC.excelDatasheet({id:0, type: 2}); }
               },
               { },
-              { id: "moduleAnlaesse-editButton", view : "button", default : false, label : "Edit", width : "80", type : "icon", disabled: true,
+              { id: "moduleAnlaesse-editButton", view : "button", default : false, label : "Edit", autowidth: true, type : "icon", disabled: true,
                 icon : "webix_icon mdi mdi-pencil", click : this.editExisting.bind(this)
               },
-              { id: "moduleAnlaesse-copyButton", view : "button", default : false, label : "Copy", width : "80", type : "icon", disabled: true,
+              { id: "moduleAnlaesse-copyButton", view : "button", default : false, label : "Copy", autowidth: true, type : "icon", disabled: true,
                 icon : "webix_icon mdi mdi-content-duplicate", click : this.copyHandler.bind(this)
               },
-              { id : "moduleAnlaesse-deleteButton", view : "button", default : false, label : "Delete", width : "80", type : "icon", disabled: true,
+              { id : "moduleAnlaesse-deleteButton", view : "button", default : false, label : "Delete", autowidth: true, type : "icon", disabled: true,
               icon : "webix_icon mdi mdi-delete", click : () => { wxAMC.deleteHandler("Anlaesse"); }
               },
-              { id: "moduleAnlaesse-newButton", view : "button", default : false, label : "New", width : "80", type : "icon",
+              { id: "moduleAnlaesse-newButton", view : "button", default : false, label : "New", autowidth: true, type : "icon",
                 icon : "webix_icon mdi mdi-plus", click : this.newHandler.bind(this)
               },
               { width : 6 }
@@ -221,14 +221,14 @@ custom_checkbox(obj, common, value){
             { view : "toolbar",
               cols : [
                 { width : 6 },
-                { view : "button", label : "Zurück", width : "90",
+                { view : "button", label : "Zurück", autowidth: true,
                   type : "icon", icon : "webix_icon mdi mdi-arrow-left",
                   click : () => {
                     $$("moduleAnlaesse-itemsCell").show();
                   }
                 },
                 { },
-                { view : "button", label : "Save", width : "80",
+                { view : "button", label : "Save", autowidth: true,
                   type : "icon", icon : "webix_icon mdi mdi-content-save",
                   id : "moduleAnlaesse-saveButton", disabled : true, hotkey: "enter",
                   click : function() {
@@ -256,7 +256,7 @@ custom_checkbox(obj, common, value){
                   view: "label", 
                   label: ""
                 },
-                { view : "button", default : false, label : "Edit", width : "80", type : "icon", disabled: false,
+                { view : "button", default : false, label : "Edit", autowidth: true, type : "icon", disabled: false,
                   icon : "webix_icon mdi mdi-pencil", click : this.editExisting.bind(this)
                 }
               ]
@@ -345,25 +345,25 @@ custom_checkbox(obj, common, value){
             { view : "toolbar", 
               cols : [
                 { width : 6 },
-                { view : "button", label : "Zurück", width : "90",
+                { view : "button", label : "Zurück", autowidth: true,
                   type : "icon", icon : "webix_icon mdi mdi-arrow-left",
                   click : () => {
                     $$("moduleAnlaesse-itemsCell").show();
                   }
                 },
                 { width: 60},
-                { view : "button", label : "Add", width : "80",
+                { view : "button", label : "Add", autowidth: true,
                   type : "icon", icon : "webix_icon mdi mdi-plus",
                   id : "moduleAnlaesse-addPunkteButton", disabled : false,
                   click : this.addPunkteForm.bind(this)
                 },
-                { view : "button", label : "Delete", width : "80",
+                { view : "button", label : "Delete", autowidth: true,
                   type : "icon", icon : "webix_icon mdi mdi-delete",
                   id : "moduleAnlaesse-deletePunkteButton", disabled : true,
                   click : this.deletePunkteForm.bind(this)
                 },
                 { width : 100 },
-                { view : "button", label : "Save", width : "80",
+                { view : "button", label : "Save", autowidth: true,
                   type : "icon", icon : "webix_icon mdi mdi-content-save",
                   id : "moduleAnlaesse-savePunkteButton", disabled : true,
                   click : this.savePunkteForm.bind(this), hotkey: "enter"

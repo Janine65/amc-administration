@@ -40,7 +40,7 @@ wxAMC.registGui = {
                 label: "Name",
                 labelAlign: "right",
                 name: "name",
-                labelWidth: 100,
+                labelWidth: 200,
                 placeholder: "Max Muster",
                 required: true
             },            {
@@ -51,7 +51,7 @@ wxAMC.registGui = {
                 placeholder: "user@muster.com",
                 type: "email",
                 name: "email",
-                labelWidth: 100,
+                labelWidth: 200,
                 required: true
             },
             {
@@ -61,18 +61,18 @@ wxAMC.registGui = {
                 labelAlign: "right",
                 type: "password",
                 name: "password",
-                labelWidth: 100,
+                labelWidth: 200,
                 placeholder: "at least length of 8",
                 required: true
             },
             {
                 view: "text",
                 width: 500,
-                label: "Password to verify",
+                label: "Password verify",
                 labelAlign: "right",
                 type: "password",
                 name: "passwordVerify",
-                labelWidth: 100,
+                labelWidth: 200,
                 placeholder: "",
                 required: true
             },

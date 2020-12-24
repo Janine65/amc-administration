@@ -594,7 +594,7 @@ class WXAMC {
           text: "erstellt und downloaded"
         });
         // download file
-        webix.send("./exports/Stammblätter.xlsx", {}, "GET", "_blank");
+        webix.send("./exports/Stammblätter.xlsx", {}, "GET");
       })
       .catch((e) => webix.message({
         type: "error",
@@ -639,7 +639,7 @@ class WXAMC {
             text: "erstellt und downloaded"
           });
           // download file
-          webix.send("./exports/Meisterschaft-" + objSave.year + ".xlsx", {}, "GET", "_blank");
+          webix.send("./exports/Meisterschaft-" + objSave.year + ".xlsx", {}, "GET");
         }
       })
       .catch((e) => webix.message({

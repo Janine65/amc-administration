@@ -122,9 +122,9 @@ wxAMC.moduleClasses.Meisterschaft = class {
             cols : [
               { id: "moduleMeisterschaft-Ccount", view : "label", label: "Anzahl 0"},
               { width : 6 },
-              { id: "moduleMeisterschaft-refreshButton", view : "button", default : true, label : "Refresh", width : "80", type : "icon", disabled: false,
+              { id: "moduleMeisterschaft-refreshButton", view : "button", default : true, label : "Refresh", autowidth: true, type : "icon", disabled: false,
               icon : "webix_icon mdi mdi-refresh", click : this.refreshMeister.bind(this)},
-              { id: "moduleMeisterschaft-exporthButton", view : "button", default : true, label : "Excel", width : "80", type : "icon", disabled: false,
+              { id: "moduleMeisterschaft-exporthButton", view : "button", default : true, label : "Excel", autowidth: true, type : "icon", disabled: false,
               icon : "webix_icon mdi mdi-file-excel", click : this.exportMeister.bind(this)},
               { width : 6 },
               { id: "moduleMeisterschaft-Kendjahr", view : "label", label: "", align: "right"},

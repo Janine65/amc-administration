@@ -60,7 +60,7 @@ wxAMC.moduleClasses.Parameters = class {
             cols : [
               { id: "count_param", view : "label", label: "Anzahl 2"},
               { },
-              { view : "button", label : "Save", width : "80",
+              { view : "button", label : "Save", autowidth: true,
                 type : "icon", icon : "webix_icon mdi mdi-content-save",
                 id : "moduleParameters-saveButton", disabled : true,
                 click : this.saveParameters.bind(this)
