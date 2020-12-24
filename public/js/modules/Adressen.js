@@ -74,12 +74,12 @@ wxAMC.moduleClasses.Adressen = class {
                 { id: "mnr_sam", css: { 'text-align': 'right' }, header: [{ text: "SAM Nr." }, { content: "numberFilter" }], sort: "int", adjust: true },
                 { id: "sam_mitglied", css: { 'text-align': 'center' }, header: [{ text: "SAM Mitglied" }, { content: "selectFilter" }], sort: "int", template: this.custom_checkbox },
                 { id: "ehrenmitglied", css: { 'text-align': 'center' }, header: [{ text: "Ehrenmitglied" }, { content: "selectFilter" }], sort: "int", template: this.custom_checkbox },
-                { id: "vorstand", css: { 'text-align': 'center' }, header: [{ text: "Vorstand" }, { content: "selectFilter" }], sort: "int", template: this.custom_checkbox, hidden: true },
-                { id: "revisor", css: { 'text-align': 'center' }, header: [{ text: "Revisor" }, { content: "selectFilter" }], sort: "int", template: this.custom_checkbox, hidden: true },
-                { id: "allianz", css: { 'text-align': 'center' }, header: [{ text: "Allianz" }, { content: "selectFilter" }], sort: "int", template: this.custom_checkbox, hidden: true },
-                { id: "eintritt", header: [{ text: "Eintritt" }, { content: "textFilter" }], sort: "text", adjust: true, template: function (obj) { return new Date(obj.eintritt).getFullYear(); }, hidden: true },
-                { id: "austritt", header: [{ text: "Austritt" }, { content: "textFilter" }], sort: "text", adjust: true, template: function (obj) { return new Date(obj.austritt).getFullYear(); }, hidden: true },
-                { id: "adressenId", header: [{ text: "Geworben von" }, { content: "selectFilter" }], sort: "text", adjust: "header", template: this.show_geworben, hidden: true }
+                { id: "vorstand", css: { 'text-align': 'center' }, header: [{ text: "Vorstand" }, { content: "selectFilter" }], sort: "int", template: this.custom_checkbox, hidden: false },
+                { id: "revisor", css: { 'text-align': 'center' }, header: [{ text: "Revisor" }, { content: "selectFilter" }], sort: "int", template: this.custom_checkbox, hidden: false },
+                { id: "allianz", css: { 'text-align': 'center' }, header: [{ text: "Allianz" }, { content: "selectFilter" }], sort: "int", template: this.custom_checkbox, hidden: false },
+                { id: "eintritt", header: [{ text: "Eintritt" }, { content: "textFilter" }], sort: "text", adjust: true, template: function (obj) { return new Date(obj.eintritt).getFullYear(); }, hidden: false },
+                { id: "austritt", header: [{ text: "Austritt" }, { content: "textFilter" }], sort: "text", adjust: true, template: function (obj) { return new Date(obj.austritt).getFullYear(); }, hidden: false },
+                { id: "adressenId", header: [{ text: "Geworben von" }, { content: "selectFilter" }], sort: "text", adjust: "header", template: this.show_geworben, hidden: false }
               ],
               hover: "hoverline",
               sort: "multi",
@@ -433,9 +433,8 @@ wxAMC.moduleClasses.Adressen = class {
         { id: "revisor", header: "Revisor", exportType: "boolean" },
         { id: "allianz", header: "Allianz", exportType: "boolean" },
         { id: "eintritt", header: "Eintritt"},
-        { id: "austritt", header: "Austritt"},
-        { id: "adressenId", header: "Geworben von" }
-      ]
+        { id: "austritt", header: "Austritt"}
+      ] 
     });
   } /* End exportData(). */
 

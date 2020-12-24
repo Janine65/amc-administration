@@ -164,7 +164,7 @@ wxAMC.moduleClasses.Journal = class {
                 { width: 6 },
                 {
                   id: "moduleJournal-exportButton", view: "button", label: "Export", autowidth: true, type: "icon",
-                  icon: "webix_icon mdi mdi-export", click: this.exportData.bind(this)
+                  icon: "webix_icon mdi mdi-export", click: this.exportJournalData.bind(this)
                 },
                 {
                   id: "moduleJournal-importButton", view: "button", label: "Import", autowidth: true, type: "icon",
@@ -863,31 +863,31 @@ wxAMC.moduleClasses.Journal = class {
   }
 
   exportAccount() {
-      const sJahr = $$("moduleJournal-dateSelect").getValue();
+    const sJahr = $$("moduleJournal-dateSelect").getValue();
 
-      // read the fiscalyear to handle all the rights
-      const promiseAccount = fetch("/Account/export?jahr=" + sJahr + "&all=0")
-        .then(function (response) {
-          if (!response.ok)
-            webix.message('Fehler beim Schreiben der Kontoauszüge', 'Error');
-          return response.json();
-        })
-        .catch(function (error) {
-          webix.message({ type: "error", text: error })
-        });
+    // read the fiscalyear to handle all the rights
+    const promiseAccount = fetch("/Account/export?jahr=" + sJahr + "&all=0")
+      .then(function (response) {
+        if (!response.ok)
+          webix.message('Fehler beim Schreiben der Kontoauszüge', 'Error');
+        return response.json();
+      })
+      .catch(function (error) {
+        webix.message({ type: "error", text: error })
+      });
 
-      Promise.resolve(promiseAccount)
-        .then(function (data) {
-          if (data.type == "info") {
-            webix.message(data.message, "Info");
-            webix.send("./exports/" + data.filename, {}, "GET");
-          } else {
-            webix.message(data.message, "Error");
-          }
-        })
-        .catch(function (error) {
-          webix.message({ type: "error", text: error })
-        });    
+    Promise.resolve(promiseAccount)
+      .then(function (data) {
+        if (data.type == "info") {
+          webix.message(data.message, "Info");
+          webix.send("./exports/" + data.filename, {}, "GET");
+        } else {
+          webix.message(data.message, "Error");
+        }
+      })
+      .catch(function (error) {
+        webix.message({ type: "error", text: error })
+      });
   }
 
   exportAllAccounts() {
@@ -915,8 +915,8 @@ wxAMC.moduleClasses.Journal = class {
       })
       .catch(function (error) {
         webix.message({ type: "error", text: error })
-      });    
-}
+      });
+  }
 
   saveAccount() {
     const itemData = $$("Account-detailsForm").getValues();
@@ -1214,40 +1214,43 @@ wxAMC.moduleClasses.Journal = class {
 
   }
 
+  /**
+   * Exportiert das Journal
+   */
+  exportJournalData() {
+    webix.toExcel($$("moduleJournal-items"), {
+      filename: "Journal",
+      rawValues: false,
+      styles:true
+    });
+
+  } /* exportJournalData */
 
   /**
    * Export selected data to Excel
    */
   exportData() {
+    const sJahr = $$("moduleJournal-dateSelect").getValue();
 
-    if ($$("moduleJournal-FiscalYeardetails")) {
-      const sJahr = $$("moduleJournal-dateSelect").getValue();
-
-      // read the fiscalyear to handle all the rights
-      const promiseFiscal = fetch("/Fiscalyear/export?jahr=" + sJahr)
-        .then(function (response) {
-          if (!response.ok)
-            webix.message('Fehler beim Lesen des Buchhaltungsjahres', 'Error');
-          return response.json();
-        })
-        .catch(function (error) {
-          webix.message({ type: "error", text: error })
-        });
-
-      Promise.resolve(promiseFiscal)
-        .then(function (data) {
-          webix.message({ type: 'Info', content: 'Export finished' });
-          webix.send("./exports/Bilanz.xlsx", {}, "GET", "_blank");
-        })
-        .catch(function (error) {
-          webix.message({ type: "error", text: error })
-        });
-    } else {
-      webix.toExcel($$("moduleJournal-items"), {
-        filename: "Journal",
-        rawValues: false
+    // read the fiscalyear to handle all the rights
+    const promiseFiscal = fetch("/Fiscalyear/export?jahr=" + sJahr)
+      .then(function (response) {
+        if (!response.ok)
+          webix.message('Fehler beim Lesen des Buchhaltungsjahres', 'Error');
+        return response.json();
+      })
+      .catch(function (error) {
+        webix.message({ type: "error", text: error })
       });
-    }
+
+    Promise.resolve(promiseFiscal)
+      .then(function (data) {
+        webix.message({ type: 'Info', content: 'Export finished' });
+        webix.send("./exports/Bilanz.xlsx", {}, "GET", "_blank");
+      })
+      .catch(function (error) {
+        webix.message({ type: "error", text: error })
+      });
   } /* End exportData(). */
 
 
