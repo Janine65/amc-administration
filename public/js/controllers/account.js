@@ -101,7 +101,8 @@ module.exports = {
 					raw: false
 				}
 			).then(data2 => {
-				data2.forEach( acc2 => {
+				for (let ind2 = 0; ind2 < data2.length; ind2++) {
+					const acc2 = data2[ind2];
 					var found = data.findIndex(acc => acc.id == acc2.id);
 					switch (data[found].level) {
 						case 1:
@@ -113,7 +114,7 @@ module.exports = {
 							data[found].amount = eval(acc2.amount - data[found].amount);
 							break;
 					}				
-				})
+				}
 				res.json(data);
 			})
 			.catch((e) => console.error(e));

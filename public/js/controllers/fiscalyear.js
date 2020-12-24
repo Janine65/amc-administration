@@ -127,14 +127,15 @@ module.exports = {
 			});
 			return;
 		});
-		arAktiv2.forEach( record => {
+        for (let ind2 = 0; ind2 < arAktiv2.length; ind2++) {
+            const record = arAktiv2[ind2];
 			var found = arAktiv.findIndex(acc => acc.account == record.account);
 			if (found > -1) {
 				arAktiv[found].amount = arAktiv[found].amount - record.amount;
 			} else {
 				arAktiv.push(record);
 			}
-		})
+		}
 
 		// Passive
 		qrySelect = "SELECT j.from_account as account, SUM(j.amount) AS amount";
@@ -178,28 +179,31 @@ module.exports = {
 			});
 			return;
 		});
-		arPassiv2.forEach( record => {
-			var found = arPassiv.findIndex(acc => acc.account == record.account);
+        for (let ind2 = 0; ind2 < arPassiv2.length; ind2++) {
+            const record = arPassiv2[ind2];
+			found = arPassiv.findIndex(acc => acc.account == record.account);
 			if (found > -1) {
 				arPassiv[found].amount = record.amount - arPassiv[found].amount;
 			} else {
 				arPassiv.push(record);
 			}
-		})
+		}
 
 		var arEroeffnung = [];
 		var iGewinn = 0.0;
 
-		arAktiv.forEach (entry => {
+        for (let ind2 = 0; ind2 < arAktiv.length; ind2++) {
+            const entry = arAktiv[ind2];
 			if (entry.account != 39)
 				arEroeffnung.push({date: new Date('01.01.' + sNextJahr), from_account: entry.account, to_account: 39, amount: entry.amount, memo: "Kontoeröffnung (Saldovortrag)"})
 			iGewinn += parseFloat(entry.amount);
-		})
-		arPassiv.forEach (entry => {
+		}
+        for (let ind2 = 0; ind2 < arPassiv.length; ind2++) {
+            const entry = arPassiv[ind2];
 			if (entry.account != 39)
 				arEroeffnung.push({date: new Date('01.01.' + sNextJahr), from_account: 39, to_account: entry.account, amount: entry.amount, memo: "Kontoeröffnung (Saldovortrag)"})
 			iGewinn -= parseFloat(entry.amount);
-		})
+		}
 
 		 // Fiscalyear erfassen
 		var newFiscalyear = await FiscalYear.findOne(
@@ -294,7 +298,8 @@ module.exports = {
             }
 		).catch((e) => console.error(e));
 		var rownum = 1;
-		arJournal.forEach( record => {
+        for (let ind2 = 0; ind2 < arJournal.length; ind2++) {
+            const record = arJournal[ind2];
 			qrySelect = "UPDATE journal set journalNo = " + rownum++ + " WHERE id = " + record.id;
 			sequelize.query(qrySelect,
 				{
@@ -311,7 +316,7 @@ module.exports = {
 				});
 				return;
 			});
-		})
+		}
 
 		res.json({
 			type: "info",

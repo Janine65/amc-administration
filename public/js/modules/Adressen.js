@@ -643,9 +643,10 @@ wxAMC.moduleClasses.Adressen = class {
         $$("moduleAdressen-items").parse(itemsAsArray);
         $$("moduleAdressen-items").sort(sort);
         if (sort instanceof Array) {
-          sort.forEach(element => {
+          for (let ind2 = 0; ind2 < sort.length; ind2++) {
+            const element = sort[ind2];
             $$("moduleAdressen-items").markSorting(element.id, element.dir, true);
-          });
+          }
         } else {
           $$("moduleAdressen-items").markSorting(sort.id, sort.dir);
         }
@@ -676,7 +677,8 @@ wxAMC.moduleClasses.Adressen = class {
       .catch((e) => webix.message({ type: "error", text: e }));
     Promise.resolve(promiseModule)
       .then(function (totals) {
-        totals.forEach(total => {
+        for (let ind2 = 0; ind2 < totals.length; ind2++) {
+          const total = totals[ind2];
           rows.push(
             {
               view: "fieldset", label: total.label, body: {
@@ -685,7 +687,7 @@ wxAMC.moduleClasses.Adressen = class {
                 ]
               }
             });
-        })
+        }
         //console.log(rows);
         webix.ui(rows, $$("dayAtAGlanceScreen_Adressen"));
       })

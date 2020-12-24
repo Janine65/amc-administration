@@ -133,7 +133,8 @@ module.exports = {
 				Buchungstext = row.getCell(cBuchungstext).value;
 				Betrag = row.getCell(cBetrag).value;
 
-				arAccount.forEach(element => {
+				for (let ind2 = 0; ind2 < arAccount.length; ind2++) {
+					const element = arAccount[ind2];
 					if (element.order == Soll ) {
 						idSoll = element.id;
 						fSoll = true;
@@ -145,7 +146,7 @@ module.exports = {
 					
 					if (fHaben && fSoll)
 						return;
-				});	
+				}
 
 				if (!fSoll ) {
 					Meldung = "Konto " + Soll + " konnte nicht gefunden werden"

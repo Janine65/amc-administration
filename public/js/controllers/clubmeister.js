@@ -149,14 +149,15 @@ module.exports = {
 			qrySelect = "INSERT INTO clubmeister (jahr, rang, vorname, nachname, mitgliedid, punkte, anlaesse, werbungen, mitglieddauer, status) VALUES "
 			const cMinPunkte = arMeister[0].punkte * 0.4;
 			var status = 1;
-			arMeister.forEach((meister2, ind) => {
+			for (let ind = 0; ind < arMeister.length; ind++) {
+				const meister2 = arMeister[ind];
 				if (ind > 0) {
 					qrySelect += ","
 					status = meister2.punkte >= cMinPunkte;
 				}
 				qrySelect += "(" + req.query.jahr + "," + (ind + 1) + ",'" + meister2.vorname + "','" + meister2.nachname + "'," + meister2.mitgliedid
 				qrySelect += "," + meister2.punkte + "," + meister2.anlaesse + "," + meister2.werbungen + "," + meister2.mitglieddauer + "," + status + ")"			
-			});
+			}
 			await sequelize.query(qrySelect,
 				{
 					type: Sequelize.QueryTypes.INSERT,

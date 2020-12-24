@@ -466,12 +466,13 @@ custom_checkbox(obj, common, value){
         // Populate the list.
         //webix.i18n.dateFormatStr
         
-        dataItems.forEach((eintrag) => {
+        for (let ind2 = 0; ind2 < dataItems.length; ind2++) {
+          const eintrag = dataItems[ind2];
             eintrag.fullname = eintrag.teilnehmer.fullname;
             eintrag.mitgliedId = eintrag.teilnehmer.id;
             eintrag.zusatz = zusatz;
             $$("moduleAnlaesse-punkteList").add(eintrag);
-        });
+        }
         $$("moduleAnlaesse-punkteAnzahl").setValue("<div style='font-size:20px;'>Anzahl " + $$("moduleAnlaesse-punkteList").count() + "</div>");
         if(!$$("moduleAnlaesse-punkteList").count()){ // if there are no data items
           webix.message({ type: "info", text: "no data found"});
@@ -752,14 +753,15 @@ custom_checkbox(obj, common, value){
 
     Promise.resolve(promiseModule)
     .then(totals => {
-      totals.forEach(total => {
+      for (let ind2 = 0; ind2 < totals.length; ind2++) {
+        const total = totals[ind2];
         rows.push(
           { view:"fieldset", label: total.label, body: { 
             rows : [ 
               {view: "label", label : total.value}
             ]}
           });
-      })
+      }
     })
     .then(function(){
       //console.log(rows);

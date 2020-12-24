@@ -104,9 +104,10 @@ class WXAMC {
         console.log('lparam: ', lparam);
         if (lparam != null) {
           wxAMC.version = lparam.pop().value;
-          lparam.forEach(param => {
+          for (let ind2 = 0; ind2 < lparam.length; ind2++) {
+            const param = lparam[ind2];
             wxAMC.parameter.set(param.key, param.value);
-          })
+          }
         }
       })
       .catch((e) => webix.message({

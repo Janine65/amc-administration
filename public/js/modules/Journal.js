@@ -995,10 +995,11 @@ wxAMC.moduleClasses.Journal = class {
         const itemsAsArray = wxAMC.objectAsArray(dataItems);
 
         var iSaldo = 0
-        itemsAsArray.forEach(element => {
+        for (let ind2 = 0; ind2 < itemsAsArray.length; ind2++) {
+          const element = itemsAsArray[ind2];
           iSaldo -= eval(element.soll * 1);
           iSaldo += eval(element.haben * 1);
-        });
+        }
         var record = { id: 0, journalNo: "", account: "", memo: "Saldo", date: new Date(), soll: (iSaldo < 0 ? iSaldo * -1 : null), haben: (iSaldo < 0 ? null : iSaldo) };
 
         itemsAsArray.push(record);
@@ -1073,7 +1074,8 @@ wxAMC.moduleClasses.Journal = class {
         var arAktiv = [], arPassiv = [], arAufwand = [], arErtrag = [];
         var iGewinnVerlust = 0;
 
-        itemsAsArray.forEach(element => {
+        for (let ind2 = 0; ind2 < itemsAsArray.length; ind2++) {
+          const element = itemsAsArray[ind2];
           if (element.amount != null || element.$css == "") {
             if (element.amount == null)
               element.amount = 0
@@ -1101,7 +1103,7 @@ wxAMC.moduleClasses.Journal = class {
             }
           }
 
-        });
+        }
 
         $$("moduleJournal-FiscalYeardetails").show();
         var record1 = {};

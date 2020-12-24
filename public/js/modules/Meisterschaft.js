@@ -260,14 +260,15 @@ wxAMC.moduleClasses.Meisterschaft = class {
 
     await Promise.resolve(promiseModule)
     .then(totals => {
-      totals.forEach(total => {
+      for (let ind2 = 0; ind2 < totals.length; ind2++) {
+        const total = totals[ind2];
         rows.push(
           { view:"fieldset", label: total.label, body: { 
             rows : [ 
               {view: "label", label : total.value}
             ]}
           });
-      })
+      }
     })
     .then(function(){
       //console.log(rows);
@@ -280,14 +281,15 @@ wxAMC.moduleClasses.Meisterschaft = class {
 
     await Promise.resolve(promiseModule)
     .then(totals => {
-      totals.forEach(total => {
+      for (let ind2 = 0; ind2 < totals.length; ind2++) {
+        const total = totals[ind2];
         rows.push(
           { view:"fieldset", label: total.label, body: { 
             rows : [ 
               {view: "label", label : total.value}
             ]}
           });
-      })
+      }
     })
     .then(function(){
       //console.log(rows);

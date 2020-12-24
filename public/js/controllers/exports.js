@@ -385,10 +385,11 @@ module.exports = {
                 raw: false
             }
         ).catch((e) => console.error(e));
-        arrAmount.forEach(element => {
+        for (let ind2 = 0; ind2 < arrAmount.length; ind2++) {
+            const element = arrAmount[ind2];
             var found = accData.findIndex(acc => acc.id == element.from_account);
             accData[found].amount = eval(element.amount + 0);
-        })
+        }
 
 
         qrySelect = "select j.to_account, sum(j.amount) as amount";
@@ -404,8 +405,9 @@ module.exports = {
                 raw: false
             }
         ).catch((e) => console.error(e));
-        arrAmount.forEach(element => {
-            var found = accData.findIndex(acc => acc.id == element.to_account);
+        for (let ind2 = 0; ind2 < arrAmount.length; ind2++) {
+            const element = arrAmount[ind2];
+            found = accData.findIndex(acc => acc.id == element.to_account);
             switch (accData[found].level) {
                 case 1:
                 case 4:
@@ -416,7 +418,7 @@ module.exports = {
                     accData[found].amount = eval(element.amount - accData[found].amount);
                     break;
             }
-        })
+        }
 
         qrySelect = "select j.from_account, sum(j.amount) as amount";
         qrySelect += " from journal j";
@@ -431,10 +433,11 @@ module.exports = {
                 raw: false
             }
         ).catch((e) => console.error(e));
-        arrAmount.forEach(element => {
-            var found = accData.findIndex(acc => acc.id == element.from_account);
+        for (let ind2 = 0; ind2 < arrAmount.length; ind2++) {
+            const element = arrAmount[ind2];
+            found = accData.findIndex(acc => acc.id == element.from_account);
             accData[found].amountVJ = eval(element.amount + 0);
-        })
+        }
 
 
         qrySelect = "select j.to_account, sum(j.amount) as amount";
@@ -450,8 +453,9 @@ module.exports = {
                 raw: false
             }
         ).catch((e) => console.error(e));
-        arrAmount.forEach(element => {
-            var found = accData.findIndex(acc => acc.id == element.to_account);
+        for (let ind2 = 0; ind2 < arrAmount.length; ind2++) {
+            const element = arrAmount[ind2];
+            found = accData.findIndex(acc => acc.id == element.to_account);
             switch (accData[found].level) {
                 case 1:
                 case 4:
@@ -462,7 +466,7 @@ module.exports = {
                     accData[found].amountVJ = eval(element.amount - accData[found].amountVJ);
                     break;
             }
-        })
+        }
 
         setCellValueFormat(bsheet, 'B1', "Bilanz " + sjahr, false, false, { bold: true, size: 18, name: 'Tahoma' });
         setCellValueFormat(bsheet, 'B3', "Konto", true, false, { bold: true, size: 11, name: 'Tahoma' });
@@ -689,10 +693,10 @@ module.exports = {
                     setCellValueFormat(sheet, 'H' + iRow, iSaldo, true, false, { size: 11, name: 'Tahoma' });
                 }
                 iRow++;
-            };
+            }
 
             sheet.commit = true;
-        };
+        }
 
         const filename = "Kontoauszug" + sJahr + ".xlsx";
         await workbook.xlsx.writeFile("./public/exports/" + filename).catch((e) => {
@@ -724,7 +728,8 @@ function writeArray(sheet, arData, firstRow) {
 
     var cellLevel;
 
-    arData.forEach(element => {
+    for (let ind2 = 0; ind2 < arData.length; ind2++) {
+        const element = arData[ind2];
         if (element.level == element.order) {
             row++;
             cellLevel = row;
@@ -766,7 +771,7 @@ function writeArray(sheet, arData, firstRow) {
         }
 
         row++;
-    });
+    }
 
     return { lastRow: row - 1, total1: firstRow + 1, total2: cellLevel };
 }

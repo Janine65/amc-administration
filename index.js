@@ -127,9 +127,10 @@ function sendEmail(req, res) {
 
   if (email.uploadFiles) {
     var files = email.uploadFiles.split(',');
-    files.forEach(file => {
+    for (let ind2 = 0; ind2 < files.length; ind2++) {
+      const file = files[ind2];
       attachments.push({filename: file, path: path.join(__dirname, '/public/uploads/'+file)});
-    });
+    }
   }
 
   transporter.sendMail({

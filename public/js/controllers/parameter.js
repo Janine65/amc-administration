@@ -17,9 +17,10 @@ module.exports = {
 		db.Parameter.findAll()
 		.then(data => {
 			global.Parameter.set("Version", global.system.version);
-			data.forEach(param => {
+			for (let ind2 = 0; ind2 < data.length; ind2++) {
+				const param = data[ind2];
 				global.Parameter.set(param.key, param.value);	
-			});
+			}
 			
 			return true;
 		})
