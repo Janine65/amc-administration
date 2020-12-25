@@ -277,54 +277,47 @@ wxAMC.moduleClasses.Journal = class {
                     cols:
                       [
                         {
-                          view: "treetable", id: "moduleJournal-FiscalYeardetailsTreeB1", borderless: true, scroll: true,
+                          view: "datatable", id: "moduleJournal-FiscalYeardetailsTreeB1", borderless: true, scroll: true, footer: true,
                           columns: [
-                            { id: "order", header: "", css: { "text-align": "right" }, width: 50 },
                             {
-                              id: "name", header: "Konto", width: 250,
-                              template: function (obj, common) {
-                                if (obj.$group) return common.treetable(obj, common) + obj.name;
-                                return obj.name;
-                              }
+                              id: "order", header: { text: "Konto", colspan: 2 }, css: { "text-align": "right" }, width: 50,
+                              footer: { text: "1", css: { "text-align": "right", "font-weight": "bold" } }
                             },
-                            { id: "amount", header: "Amount", width: 200, css: { "text-align": "right" }, format: webix.i18n.numberFormat }
+                            {
+                              id: "name", header: "", fillspace: true, footer: { text: "Aktiv", css: { "font-weight": "bold" } }
+                            },
+                            {
+                              id: "amount", header: { text: "Amount", css: { "text-align": "right" } }, width: 120, css: { "text-align": "right" },
+                              format: webix.i18n.numberFormat,
+                              footer: { content: "summColumn", css: { "text-align": "right", "font-weight": "bold" } }
+                            }
                           ],
                           autoheight: false,
                           autowidth: false,
                           scheme: {
-                            $group: {
-                              by: "level",
-                              map: {
-                                amount: ["amount", "sum"],
-                                name: ["name"]
-                              }
-                            },
                             $sort: { by: "order", as: "int", dir: "asc" }
                           }
                         },
+                        { width: 6, css: { "background": "#3498db" } },
                         {
-                          view: "treetable", id: "moduleJournal-FiscalYeardetailsTreeB2", borderless: true, scroll: true,
+                          view: "datatable", id: "moduleJournal-FiscalYeardetailsTreeB2", borderless: true, scroll: true, footer: true,
                           columns: [
-                            { id: "order", header: "", css: { "text-align": "right" }, width: 50 },
                             {
-                              id: "name", header: "Konto", width: 250,
-                              template: function (obj, common) {
-                                if (obj.$group) return common.treetable(obj, common) + obj.name;
-                                return obj.name;
-                              }
+                              id: "order", header: { text: "Konto", colspan: 2 }, css: { "text-align": "right" }, width: 50,
+                              footer: { text: "2", css: { "text-align": "right", "font-weight": "bold" } }
                             },
-                            { id: "amount", header: "Amount", width: 200, css: { "text-align": "right" }, format: webix.i18n.numberFormat }
+                            {
+                              id: "name", header: "", fillspace: true, footer: { text: "Passiv", css: { "font-weight": "bold" } }
+                            },
+                            {
+                              id: "amount", header: { text: "Amount", css: { "text-align": "right" } }, width: 120, css: { "text-align": "right" },
+                              format: webix.i18n.numberFormat,
+                              footer: { content: "summColumn", css: { "text-align": "right", "font-weight": "bold" } }
+                            }
                           ],
                           autoheight: false,
                           autowidth: false,
                           scheme: {
-                            $group: {
-                              by: "level",
-                              map: {
-                                amount: ["amount", "sum"],
-                                name: ["name"]
-                              }
-                            },
                             $sort: { by: "order", as: "int", dir: "asc" }
                           }
                         }
@@ -338,54 +331,47 @@ wxAMC.moduleClasses.Journal = class {
                     cols:
                       [
                         {
-                          view: "treetable", id: "moduleJournal-FiscalYeardetailsTreeE4", borderless: true, scroll: true,
+                          view: "datatable", id: "moduleJournal-FiscalYeardetailsTreeE4", borderless: true, scroll: true, footer: true,
                           columns: [
-                            { id: "order", header: "", css: { "text-align": "right" }, width: 50 },
                             {
-                              id: "name", header: "Konto", width: 250,
-                              template: function (obj, common) {
-                                if (obj.$group) return common.treetable(obj, common) + obj.name;
-                                return obj.name;
-                              }
+                              id: "order", header: { text: "Konto", colspan: 2 }, css: { "text-align": "right" }, width: 50,
+                              footer: { text: "4", css: { "text-align": "right", "font-weight": "bold" } }
                             },
-                            { id: "amount", header: "Amount", width: 200, css: { "text-align": "right" }, format: webix.i18n.numberFormat }
+                            {
+                              id: "name", header: "", fillspace: true, footer: { text: "Aufwand", css: { "font-weight": "bold" } }
+                            },
+                            {
+                              id: "amount", header: { text: "Amount", css: { "text-align": "right" } }, width: 120, css: { "text-align": "right" },
+                              format: webix.i18n.numberFormat,
+                              footer: { content: "summColumn", css: { "text-align": "right", "font-weight": "bold" } }
+                            }
                           ],
                           autoheight: false,
                           autowidth: false,
                           scheme: {
-                            $group: {
-                              by: "level",
-                              map: {
-                                amount: ["amount", "sum"],
-                                name: ["name"]
-                              }
-                            },
                             $sort: { by: "order", as: "int", dir: "asc" }
                           }
                         },
+                        { width: 6, css: { "background": "#3498db" } },
                         {
-                          view: "treetable", id: "moduleJournal-FiscalYeardetailsTreeE6", borderless: true, scroll: true,
+                          view: "datatable", id: "moduleJournal-FiscalYeardetailsTreeE6", borderless: true, scroll: true, footer: true,
                           columns: [
-                            { id: "order", header: "", css: { "text-align": "right" }, width: 50 },
                             {
-                              id: "name", header: "Konto", width: 250,
-                              template: function (obj, common) {
-                                if (obj.$group) return common.treetable(obj, common) + obj.name;
-                                return obj.name;
-                              }
+                              id: "order", header: { text: "Konto", colspan: 2 }, css: { "text-align": "right" }, width: 50,
+                              footer: { text: "6", css: { "text-align": "right", "font-weight": "bold" } }
                             },
-                            { id: "amount", header: "Amount", width: 200, css: { "text-align": "right" }, format: webix.i18n.numberFormat }
+                            {
+                              id: "name", header: "", fillspace: true, footer: { text: "Ertrag", css: { "font-weight": "bold" } }
+                            },
+                            {
+                              id: "amount", header: { text: "Amount", css: { "text-align": "right" } }, width: 120, css: { "text-align": "right" },
+                              format: webix.i18n.numberFormat,
+                              footer: { content: "summColumn", css: { "text-align": "right", "font-weight": "bold" } }
+                            }
                           ],
                           autoheight: false,
                           autowidth: false,
                           scheme: {
-                            $group: {
-                              by: "level",
-                              map: {
-                                amount: ["amount", "sum"],
-                                name: ["name"]
-                              }
-                            },
                             $sort: { by: "order", as: "int", dir: "asc" }
                           }
                         }
@@ -495,7 +481,7 @@ wxAMC.moduleClasses.Journal = class {
                   rows: [
                     {
                       cols: [
-                        { "label": "Account", "view": "text", "height": 48, id: "listAccountSearch" },
+                        { "label": "", "view": "text", "height": 48, id: "listAccountSearch"},
                         {
                           "icon": "mdi mdi-magnify", "view": "icon", "width": 38, "height": 0,
                           click: function () {
@@ -504,7 +490,7 @@ wxAMC.moduleClasses.Journal = class {
                           }
                         },
                         {
-                          view: "checkbox", label: "show all", value: 0, id: "listAccountAll",
+                          view: "checkbox", label: "all", value: 0, id: "listAccountAll", labelWidth: 38, width: 76 ,
                           click: function () {
                             wxAMC.modules['Journal'].refreshAccountList(this.getValue());
                           }
@@ -534,6 +520,9 @@ wxAMC.moduleClasses.Journal = class {
                       }
                     }
                   ]
+                },
+                {
+                  view: "resizer", css: {"background" : "#3498db"}
                 },
                 {
                   id: "listAccountsData",
@@ -664,6 +653,7 @@ wxAMC.moduleClasses.Journal = class {
                   view: "text",
                   label: "Order",
                   required: true,
+                  length: 4,
                   type: "int",
                   name: "order",
                   labelWidth: 100
@@ -918,7 +908,7 @@ wxAMC.moduleClasses.Journal = class {
       });
   }
 
-  saveAccount() {
+  async saveAccount() {
     const itemData = $$("Account-detailsForm").getValues();
     if (!$$("Account-detailsForm").isDirty()) {
       webix.message({
@@ -929,47 +919,83 @@ wxAMC.moduleClasses.Journal = class {
       return;
     }
 
-    const url = "/Account/data";
-    var smethond = (itemData.id > 0 ? "PUT" : "POST");
+    if (itemData.level != itemData.order.substr(0, 1)) {
+      webix.message({
+        type: "error",
+        text: "Kontonummer passt nicht zur gewählten Kontogruppe", expire: 0
+      })
+      return;
+    }
 
-    fetch(url, {
-      method: smethond, // *GET, POST, PUT, DELETE, etc.
-      mode: 'cors', // no-cors, *cors, same-origin
-      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-      credentials: 'same-origin', // include, *same-origin, omit
-      headers: {
-        'Content-Type': 'application/json'
-        // 'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      redirect: 'follow', // manual, *follow, error
-      referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-      body: JSON.stringify(itemData) // body data type must match "Content-Type" header
-    })
-      .then((response) => {
-        if (!response.ok) { // ***
+    var fValid = true;
+
+    const promiseModule = fetch("/Account/getOneDataByOrder?order=" + itemData.order)
+      .then(function (response) {
+        if (!response.ok)
+          webix.message('Fehler beim Lesen der Konten', 'Error');
+        return response.json();
+      }).catch(function (error) {
+        webix.message({ type: "error", text: error })
+        console.log(error);
+      });
+    Promise.resolve(promiseModule)
+      .then(function (counts) {
+        console.log('count', counts);
+        if (counts > 0) {
+          fValid = false;
           webix.message({
             type: "error",
-            text: "HTTP error " + response.status
-          }); // ***
+            text: "Kontonummer ist nicht eindeutig"
+          })
+          return;
+        }
+        if (fValid) {
+          const url = "/Account/data";
+          var smethond = (itemData.id > 0 ? "PUT" : "POST");
+
+          fetch(url, {
+            method: smethond, // *GET, POST, PUT, DELETE, etc.
+            mode: 'cors', // no-cors, *cors, same-origin
+            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: 'same-origin', // include, *same-origin, omit
+            headers: {
+              'Content-Type': 'application/json'
+              // 'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            redirect: 'follow', // manual, *follow, error
+            referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+            body: JSON.stringify(itemData) // body data type must match "Content-Type" header
+          })
+            .then((response) => {
+              if (!response.ok) { // ***
+                webix.message({
+                  type: "error",
+                  text: "Error " + response.status + " - " + response.statusText
+                });
+              }
+            }).then(function () {
+              // Refresh the module's summary list and return to that list.
+              
+              wxAMC.modules['Journal'].refreshAccountList($$("listAccountAll").getValue());
+              wxAMC.modules['Journal'].refreshData();
+              $$("moduleJournal-listAccounts").show();
+
+              // Finally, show a completion message.
+              webix.message({
+                type: "success",
+                text: "gesichert"
+              });
+            })
+            .catch((e) => webix.message({
+              type: "error",
+              text: e
+            }));
         }
       })
-      .then(function () {
-        // Refresh the module's summary list and return to that list.
-        wxAMC.modules['Journal'].refreshAccountData();
-        wxAMC.modules['Journal'].refreshAccountList($$("listAccountAll").getValue());
-        wxAMC.modules['Journal'].refreshData();
-        $$("moduleJournal-listAccounts").show();
-
-        // Finally, show a completion message.
-        webix.message({
-          type: "success",
-          text: "gesichert"
-        });
-      })
-      .catch((e) => webix.message({
-        type: "error",
-        text: e
-      }));
+      .catch(function (error) {
+        webix.message({ type: "error", text: error });
+        console.log(error);
+      });
   }
 
   /**
@@ -1076,7 +1102,7 @@ wxAMC.moduleClasses.Journal = class {
 
         for (let ind2 = 0; ind2 < itemsAsArray.length; ind2++) {
           const element = itemsAsArray[ind2];
-          if (element.amount != null || element.$css == "") {
+          if ((element.amount != null || element.$css == "") && element.level != element.order) {
             if (element.amount == null)
               element.amount = 0
             switch (element.level) {
@@ -1139,19 +1165,15 @@ wxAMC.moduleClasses.Journal = class {
 
         $$("moduleJournal-FiscalYeardetailsTreeB1").clearAll();
         $$("moduleJournal-FiscalYeardetailsTreeB1").parse(arAktiv);
-        $$("moduleJournal-FiscalYeardetailsTreeB1").openAll();
 
         $$("moduleJournal-FiscalYeardetailsTreeB2").clearAll();
         $$("moduleJournal-FiscalYeardetailsTreeB2").parse(arPassiv);
-        $$("moduleJournal-FiscalYeardetailsTreeB2").openAll();
 
         $$("moduleJournal-FiscalYeardetailsTreeE4").clearAll();
         $$("moduleJournal-FiscalYeardetailsTreeE4").parse(arAufwand);
-        $$("moduleJournal-FiscalYeardetailsTreeE4").openAll();
 
         $$("moduleJournal-FiscalYeardetailsTreeE6").clearAll();
         $$("moduleJournal-FiscalYeardetailsTreeE6").parse(arErtrag);
-        $$("moduleJournal-FiscalYeardetailsTreeE6").openAll();
       });
   }
 
@@ -1221,7 +1243,7 @@ wxAMC.moduleClasses.Journal = class {
     webix.toExcel($$("moduleJournal-items"), {
       filename: "Journal",
       rawValues: false,
-      styles:true
+      styles: true
     });
 
   } /* exportJournalData */

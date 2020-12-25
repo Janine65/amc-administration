@@ -5,17 +5,18 @@ const ExcelJS = require("exceljs");
 module.exports = {
 	getData: function (req, res) {
 		db.Journal.findAll(
-			{ where: sequelize.where(sequelize.fn('YEAR', sequelize.col('date')), req.query.jahr),
-			include: [
-				{ model: db.Account, as: 'fromAccount', required: true, attributes: ['id', 'order',  'name']},
-				{ model: db.Account, as: 'toAccount', required: true, attributes: ['id', 'order', 'name']}
-			],
-			order: [
-				['journalNo', 'asc'],
-				['date', 'asc'],
-				['from_account', 'asc'],
-			]
-		}
+			{
+				where: sequelize.where(sequelize.fn('YEAR', sequelize.col('date')), req.query.jahr),
+				include: [
+					{ model: db.Account, as: 'fromAccount', required: true, attributes: ['id', 'order', 'name'] },
+					{ model: db.Account, as: 'toAccount', required: true, attributes: ['id', 'order', 'name'] }
+				],
+				order: [
+					['journalNo', 'asc'],
+					['date', 'asc'],
+					['from_account', 'asc'],
+				]
+			}
 		)
 			.then(data => res.json(data))
 			.catch((e) => console.error(e));
@@ -38,7 +39,7 @@ module.exports = {
 			.catch((e) => console.error(e));
 	},
 
-	addData: function (req, res) {
+	addData: async function (req, res) {
 		var data = req.body;
 
 		console.info('insert: ', data);
@@ -57,8 +58,8 @@ module.exports = {
 				.catch((e) => console.error(e)))
 			.catch((e) => console.error(e));
 	},
-	
-	getAccData: function(req, res) {
+
+	getAccData: function (req, res) {
 		var qrySelect = "SELECT j.id, j.journalNo, concat(acc.order, ' ', acc.name) as account, j.date, j.memo, j.amount as soll, null as haben";
 		qrySelect += " FROM journal j, account acc"
 		qrySelect += " WHERE j.to_account = acc.id and j.from_account = " + req.query.acc;
@@ -69,16 +70,16 @@ module.exports = {
 		qrySelect += " AND year(j.date) = " + req.query.jahr;
 		qrySelect += " ORDER BY 2, 4"
 
-		sequelize.query(qrySelect, 
-			{ 
+		sequelize.query(qrySelect,
+			{
 				type: Sequelize.QueryTypes.SELECT,
 				plain: false,
 				logging: console.log,
 				raw: true
 			}
 		)
-		.then((data) => res.json(data))
-		.catch((e) => console.error(e));
+			.then((data) => res.json(data))
+			.catch((e) => console.error(e));
 	},
 
 	importJournal: async function (req, res) {
@@ -98,23 +99,23 @@ module.exports = {
 			{ header: 'Timestamp', key: 'timestam', width: 10 },
 			{ header: 'Type', key: 'type', width: 10 },
 			{ header: 'Message', key: 'message', width: 50 }
-		  ];
-		
-		
+		];
+
+
 		// einlesen vom Kontoplan
 		var qrySelect = "SELECT `id`, `level`, `order`, `name` from account order by `level`, `order`";
-		var arAccount = await sequelize.query(qrySelect, 
-			{ 
+		var arAccount = await sequelize.query(qrySelect,
+			{
 				type: Sequelize.QueryTypes.SELECT,
 				plain: false,
 				logging: console.log,
 				raw: true
 			}
 		)
-		.catch((e) => {
-			logWorksheet.addRow({'timestamp' : new Date().toUTCString(), 'type' : 'Warnung', 'message' : e});					
-		});
-		
+			.catch((e) => {
+				logWorksheet.addRow({ 'timestamp': new Date().toUTCString(), 'type': 'Warnung', 'message': e });
+			});
+
 		const cNr = 1
 		const cDatum = 2
 		const cSoll = 3
@@ -135,42 +136,42 @@ module.exports = {
 
 				for (let ind2 = 0; ind2 < arAccount.length; ind2++) {
 					const element = arAccount[ind2];
-					if (element.order == Soll ) {
+					if (element.order == Soll) {
 						idSoll = element.id;
 						fSoll = true;
 					}
-					if (element.order == Haben ) {
+					if (element.order == Haben) {
 						idHaben = element.id;
 						fHaben = true;
 					}
-					
+
 					if (fHaben && fSoll)
 						return;
 				}
 
-				if (!fSoll ) {
+				if (!fSoll) {
 					Meldung = "Konto " + Soll + " konnte nicht gefunden werden"
-					logWorksheet.addRow({'timestamp' : new Date().toISOString(), 'type' : 'Warnung', 'message' : Meldung});
+					logWorksheet.addRow({ 'timestamp': new Date().toISOString(), 'type': 'Warnung', 'message': Meldung });
 					idSoll = 43;
 				}
-				if (!fHaben ) {
+				if (!fHaben) {
 					Meldung = "Konto " + Haben + " konnte nicht gefunden werden"
-					logWorksheet.addRow({'timestamp' : new TDate().toISOString(), 'type' : 'Warnung', 'message' : Meldung});
+					logWorksheet.addRow({ 'timestamp': new TDate().toISOString(), 'type': 'Warnung', 'message': Meldung });
 					idHaben = 43;
 				}
 
 				var formDate;
-				if ( Datum instanceof Date ) {
+				if (Datum instanceof Date) {
 					const offset = Datum.getTimezoneOffset()
-					Datum = new Date(Datum.getTime() - (offset*60*1000))
+					Datum = new Date(Datum.getTime() - (offset * 60 * 1000))
 					formDate = Datum.toISOString().split('T')[0]
 				} else {
 					formDate = Datum.split('.')[2] + '-' + Datum.split('.')[1] + '-' + Datum.split('.')[0]
 				}
-				
+
 				qrySelect = "INSERT INTO journal (`journalNo`, `date`, `from_account`,`to_account`,`memo`, `amount`) VALUES (";
 				qrySelect += Nr + ",'" + formDate + "'," + idSoll + "," + idHaben + ",'" + Buchungstext + "'," + Betrag + ")";
-				logWorksheet.addRow({'timestamp' : new Date().toString(), 'type' : 'Warnung', 'message' : qrySelect});
+				logWorksheet.addRow({ 'timestamp': new Date().toString(), 'type': 'Warnung', 'message': qrySelect });
 
 				await sequelize.query(qrySelect,
 					{
@@ -180,22 +181,22 @@ module.exports = {
 						raw: true
 					}
 				)
-				.catch((e) => {
-					logWorksheet.addRow({'timestamp' : new Date().toISOString(), 'type' : 'Warnung', 'message' : e});					
-				});			
+					.catch((e) => {
+						logWorksheet.addRow({ 'timestamp': new Date().toISOString(), 'type': 'Warnung', 'message': e });
+					});
 			}
 
 		})
 
 		var filenamenew = filename.replace('.xlsx', 'imported.xlsx');
 		await workbook.xlsx.writeFile(filenamenew)
-		.catch((e) => {
-			console.error(e);
-			res.json({
-			  type: "error",
-			  message: e,
+			.catch((e) => {
+				console.error(e);
+				res.json({
+					type: "error",
+					message: e,
+				});
 			});
-		});
 
 	}
 

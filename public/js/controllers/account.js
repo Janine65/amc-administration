@@ -29,6 +29,12 @@ module.exports = {
 			.catch((e) => console.error(e));
 	},
 
+	getOneDataByOrder: function (req, res) {
+		db.Account.count({where: {"order": req.query.order}})
+			.then(data => res.json(data))
+			.catch((e) => console.error(e));
+	},
+
 	getFKData: function(req, res) {
 		var qrySelect = "SELECT `id`, CONCAT('<span class=\"small\">', `order`,' ',`name`, '</span>') as value";
 		qrySelect += " FROM `account` WHERE `status` = 1 and `level` != `order` " ;
@@ -54,7 +60,7 @@ module.exports = {
 		console.info('insert: ',data);
 		db.Account.create(data)
 			.then((obj) => res.json(obj))
-			.catch((e) => console.error(e));
+			.catch((e) => res.json({type: "error", message: e}));
 	},
 	
 	updateData: function (req, res) {
