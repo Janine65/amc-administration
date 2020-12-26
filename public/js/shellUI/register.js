@@ -76,6 +76,22 @@ wxAMC.registGui = {
                 placeholder: "",
                 required: true
             },
+            {
+                view: "radio",
+                width: 500,
+                label: "User Role",
+                labelAlign: "right",
+                name: "role",
+                labelWidth: 200,
+                value: "user",
+                required: true,
+                vertical: true,
+                options: [
+                    {id: "user", value: "User"},
+                    {id: "revisor", value: "Revisor"},
+                    {id: "admin", value: "Administration"}
+                ]
+            },
             {cols: [
                 {
                     id : "register-detailsformSave",
@@ -134,12 +150,6 @@ function doRegister() {
       referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
       body: JSON.stringify(user) // body data type must match "Content-Type" header
     })
-    // .then((response) => {
-    //     console.log(response);
-    //     if (!response.ok) {                                  // ***
-    //         $$("message").setValue("An error occurred while creating user") ; // ***
-    //         return response.json();
-    //     }})
     .then(function(resp) {
         if (!resp.ok) {
             $$("message").setValue("an error occurred while creating user");
@@ -153,9 +163,9 @@ function doRegister() {
         if (resp.status == 'error') {
             $$("message").setValue(resp.message);
         } else {
-            closeWindow();
+            $$("registerWindow").close();
         }
-        })
+    })
     .catch((e) => $$("message").setValue(e));  // ***;
 
 }

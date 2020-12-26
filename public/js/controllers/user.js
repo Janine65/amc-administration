@@ -88,7 +88,7 @@ module.exports = {
             userid: userid,
             name: req.body.name,
             email: req.body.email,
-            role: "user",
+            role: req.body.role,
             password: password,
             salt: salt
         })

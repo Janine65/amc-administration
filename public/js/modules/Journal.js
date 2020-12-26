@@ -55,15 +55,15 @@ wxAMC.moduleClasses.Journal = class {
                   cols: [
                     {
                       id: "moduleJournal-closeFinalFiscalyear", view: "button", label: "Final Close", autowidth: true, type: "icon",
-                      icon: "webix_icon mdi mdi-close", click() { wxAMC.modules['Journal'].closeFiscalYear(3); }
+                      icon: "webix_icon mdi mdi-close", click() { wxAMC.modules['Journal'].closeFiscalYear(3); }, disabled: (wxAMC.UserRole == 'admin' ? false : true)
                     },
                     {
                       id: "moduleJournal-closeFiscalyear", view: "button", label: "Prov. Close", autowidth: true, type: "icon",
-                      icon: "webix_icon mdi mdi-close", click() { wxAMC.modules['Journal'].closeFiscalYear(2); }
+                      icon: "webix_icon mdi mdi-close", click() { wxAMC.modules['Journal'].closeFiscalYear(2); }, disabled: (wxAMC.UserRole == 'admin' ? false : true)
                     },
                     {
                       id: "moduleJournal-editFiscalyear", view: "button", label: "Edit", autowidth: true, type: "icon",
-                      icon: "webix_icon mdi mdi-plus", click: this.editFiscalYear.bind(this)
+                      icon: "webix_icon mdi mdi-plus", click: this.editFiscalYear.bind(this), disabled: (wxAMC.UserRole == 'admin' ? false : true)
                     },
                     {
                       id: "moduleJournal-showFiscalyear", view: "button", label: "Show", autowidth: true, type: "icon",
@@ -116,7 +116,7 @@ wxAMC.moduleClasses.Journal = class {
                     webix.html.removeCss($$("moduleJournal-dateSelect").getNode(), 'prov-closed')
                     webix.html.removeCss($$("moduleJournal-dateSelect").getNode(), 'closed')
                     webix.html.addCss($$("moduleJournal-dateSelect").getNode(), value.$css)
-                    if (value.$css == "closed") {
+                    if (value.$css == "closed" || wxAMC.UserRole != 'admin') {
                       $$("moduleJournal-editButton").hide();
                       $$("moduleJournal-deleteButton").hide();
                       $$("moduleJournal-addForm").hide();
@@ -130,12 +130,15 @@ wxAMC.moduleClasses.Journal = class {
                   }
                 },
                 onAfterSelect: function (selection, preserve) {
-                  $$("moduleJournal-editButton").enable();
-                  $$("moduleJournal-copyButton").enable();
-                  $$("moduleJournal-deleteButton").enable();
+                  if (wxAMC.UserRole == 'admin') {
+                    $$("moduleJournal-editButton").enable();
+                    $$("moduleJournal-copyButton").enable();
+                    $$("moduleJournal-deleteButton").enable();
+                  }
                 },
                 onItemDblClick: function (selection, preserve) {
-                  wxAMC.modules['Journal'].editExisting();
+                  if (wxAMC.UserRole == 'admin')
+                    wxAMC.modules['Journal'].editExisting();
                 }
               }
             },
@@ -168,7 +171,7 @@ wxAMC.moduleClasses.Journal = class {
                 },
                 {
                   id: "moduleJournal-importButton", view: "button", label: "Import", autowidth: true, type: "icon",
-                  icon: "webix_icon mdi mdi-import", click: this.importData.bind(this)
+                  icon: "webix_icon mdi mdi-import", click: this.importData.bind(this), disabled: (wxAMC.UserRole == 'admin' ? false : true)
                 },
                 { width: 6 }
               ] /* End toolbar items. */
@@ -598,12 +601,12 @@ wxAMC.moduleClasses.Journal = class {
                 {
                   "label": "Add", "view": "button", "height": 0, "autowidth": true,
                   type: "icon", icon: "mdi mdi-plus",
-                  click: this.addAccount.bind(this)
+                  click: this.addAccount.bind(this), disabled: (wxAMC.UserRole == 'admin' ? false : true)
                 },
                 {
                   "label": "Edit", "view": "button", "height": 0, "autowidth": true,
                   type: "icon", icon: "mdi mdi-pencil",
-                  click: this.editAccount.bind(this)
+                  click: this.editAccount.bind(this), disabled: (wxAMC.UserRole == 'admin' ? false : true)
                 },
                 {
                   "view": "button", "label": "Export Active", "height": 0, "autowidth": true,
