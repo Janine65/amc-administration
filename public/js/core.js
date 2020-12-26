@@ -802,9 +802,9 @@ class WXAMC {
           wxAMC.loggedUser = "";
           wxAMC.UserRole = "";
           wxAMC.setHidden();
-          if (navigator.credentials && navigator.credentials.preventSilentAccess) {
-            navigator.credentials.preventSilentAccess();
-          }
+          // if (navigator.credentials && navigator.credentials.preventSilentAccess) {
+          //   navigator.credentials.preventSilentAccess();
+          // }
         }
       })
       .catch((e) => console.error(e)); // ***

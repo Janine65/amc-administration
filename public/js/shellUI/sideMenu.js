@@ -166,7 +166,7 @@ wxAMC.setHidden = function () {
     for (element of loginAdminMenu) {
       css = $$("sidemenu").getItem(element).$css
       if (css == undefined || css.length == 0)
-        css = ""
+        css = " disabledMenuItem"
       else
         css += " disabledMenuItem"
       $$("sidemenu").getItem(element).$css = css;
