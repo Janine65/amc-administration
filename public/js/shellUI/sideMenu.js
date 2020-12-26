@@ -6,7 +6,7 @@
 
 const loginUserMenu = ["MainMenulogout", "Adressen", "Anlaesse", "Meisterschaft", "Auswertungen", "Parameters"]
 const loginRevisorMenu = ["MainMenulogout", "Journal"]
-const loginAdminMenu = ["MainMenulogout", "MainMenuregister", "Adressen", "Anlaesse", "Meisterschaft", "Auswertungen", "Parameters"]
+const loginAdminMenu = ["MainMenulogout", "MainMenuregister", "Adressen", "Anlaesse", "Meisterschaft", "Auswertungen", "Parameters", "Journal"]
 const logoffMenu = ["MainMenulogin"]
 
 wxAMC.getSideMenuConfig = function () {
@@ -99,12 +99,12 @@ wxAMC.setHidden = function () {
   if (wxAMC.isAuthenticated) {
     logged.value = wxAMC.loggedUser;
     logged.icon = "webix_icon mdi mdi-login-variant"
-    //$$("sidemenu").updateItem("loggedUser", logged)
+//    $("sidemenu").updateItem("loggedUser", logged)
 
 
     for (element of logoffMenu) {
       css = $$("sidemenu").getItem(element).$css
-      if (css == undefined)
+      if (css == undefined || css.length == 0)
         css = " disabledMenuItem"
       else
         css += " disabledMenuItem"
@@ -112,10 +112,10 @@ wxAMC.setHidden = function () {
     }
 
     switch (wxAMC.UserRole) {
-      case "use3r":
+      case "user":
         for (element of loginUserMenu) {
           css = $$("sidemenu").getItem(element).$css
-          if (css == undefined)
+          if (css == undefined || css.length == 0)
             css = ""
           else
             css = css.replace(" disabledMenuItem", "")
@@ -126,7 +126,7 @@ wxAMC.setHidden = function () {
       case "admin":
         for (element of loginAdminMenu) {
           css = $$("sidemenu").getItem(element).$css
-          if (css == undefined)
+          if (css == undefined || css.length == 0)
             css = ""
           else
             css = css.replace(" disabledMenuItem", "")
@@ -137,7 +137,7 @@ wxAMC.setHidden = function () {
       case "revisor":
         for (element of loginRevisorMenu) {
           css = $$("sidemenu").getItem(element).$css
-          if (css == undefined)
+          if (css == undefined || css.length == 0)
             css = ""
           else
             css = css.replace(" disabledMenuItem", "")
@@ -153,22 +153,22 @@ wxAMC.setHidden = function () {
     console.log(logged);
     logged.value = "not logged in";
     logged.icon = "webix_icon mdi mdi-logout-variant"
-    // $$("sidemenu").updateItem("loggedUser", logged)
+//    $$("sidemenu").updateItem("loggedUser", logged)
 
     for (element of logoffMenu) {
       css = $$("sidemenu").getItem(element).$css
-      if (css == undefined)
-        css = " disabledMenuItem"
+      if (css == undefined || css.length == 0)
+        css = ""
       else
-        css += " disabledMenuItem"
+        css = css.replace(" disabledMenuItem", "")
       $$("sidemenu").getItem(element).$css = css;
     }
     for (element of loginAdminMenu) {
       css = $$("sidemenu").getItem(element).$css
-      if (css == undefined)
+      if (css == undefined || css.length == 0)
         css = ""
       else
-        css = css.replace(" disabledMenuItem", "")
+        css += " disabledMenuItem"
       $$("sidemenu").getItem(element).$css = css;
     }
   }
