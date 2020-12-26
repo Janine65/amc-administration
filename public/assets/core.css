@@ -103,6 +103,11 @@
   color:rgb(202, 202, 202);
 }
 
+.disabledMenuItem {
+  font-style: italic;
+  text-decoration: line-through;
+}
+
 .logoutMenu {
   padding-top: 1cm;
 }
