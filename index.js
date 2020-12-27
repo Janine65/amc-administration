@@ -67,7 +67,12 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 const userRouter = require('./public/js/controllers/user');
-//renders register view
+app.get('/Users/data', userRouter.getData);
+app.put('/Users/data', userRouter.updateData);
+app.delete('/Users/data', userRouter.deleteData);
+app.get('/Users/readUser', userRouter.readUser);
+app.put('/Users/updateProfile', userRouter.updateProfle);
+
 app.get('/user/register', userRouter.registerView);
 app.post('/user/register', userRouter.registerPost);
 app.post('/user/login', userRouter.loginUser);

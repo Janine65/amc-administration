@@ -4,9 +4,9 @@
  * Get the UI config object for the sidemenu.
  */
 
-const loginUserMenu = ["MainMenulogout", "Adressen", "Anlaesse", "Meisterschaft", "Auswertungen", "Parameters"]
-const loginRevisorMenu = ["MainMenulogout", "Journal"]
-const loginAdminMenu = ["MainMenulogout", "MainMenuregister", "Adressen", "Anlaesse", "Meisterschaft", "Auswertungen", "Parameters", "Journal"]
+const loginUserMenu = ["MainMenulogout", "MainMenuprofile", "Adressen", "Anlaesse", "Meisterschaft", "Auswertungen", "Parameters"]
+const loginRevisorMenu = ["MainMenulogout", "MainMenuprofile", "Journal"]
+const loginAdminMenu = ["MainMenulogout", "MainMenuprofile", "Adressen", "Anlaesse", "Meisterschaft", "Auswertungen", "Parameters", "Journal", "Users"]
 const logoffMenu = ["MainMenulogin"]
 
 wxAMC.getSideMenuConfig = function () {
@@ -16,8 +16,8 @@ wxAMC.getSideMenuConfig = function () {
     id: "loggedUser", value: "not logged in", icon: "webis_icon mdi mdi-account",
     data: [
       { id: "MainMenulogin", value: "Login", icon: "webis_icon mdi mdi-login" },
-      { id: "MainMenulogout", value: "Logout", icon: "webix_icon mdi mdi-logout" },
-      { id: "MainMenuregister", value: "Register", icon: "webix_icon mdi mdi-account-plus" }
+      { id: "MainMenuprofile", value: "Profile", icon: "webis_icon mdi mdi-face-profile" },
+      { id: "MainMenulogout", value: "Logout", icon: "webix_icon mdi mdi-logout" }
     ]
   });
   listItems.push({value: ""});
@@ -184,12 +184,12 @@ wxAMC.actionSidemenu = function (id) {
       wxAMC.showLoginGui();
       break;
 
-    case "MainMenulogout":
+      case "MainMenuprofile":
+        wxAMC.showProfileGui();
+        break;
+  
+      case "MainMenulogout":
       wxAMC.doLogout();
-      break;
-
-    case "MainMenuregister":
-      wxAMC.showRegistGui();
       break;
 
     case "switchMode":

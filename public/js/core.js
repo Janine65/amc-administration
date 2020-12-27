@@ -58,8 +58,8 @@ class WXAMC {
 
     this.parameter = new Map();
 
-    this.registGui = null;
     this.loginGui = null;
+    this.profileGui = null;
     this.isAuthenticated = false;
     this.loggedUser = "";
     this.UserRole = "";
@@ -748,13 +748,6 @@ class WXAMC {
 
   } /* End switchMode(). */
 
-  showRegistGui() {
-    if (wxAMC.registGui == null)
-      return;
-
-    webix.ui(wxAMC.registGui).show();
-  }
-
   showLoginGui() {
     if (wxAMC.loginGui == null)
       return;
@@ -784,6 +777,27 @@ class WXAMC {
     }
 
     webix.ui(wxAMC.loginGui).show();
+  }
+
+  showProfileGui() {
+    if (wxAMC.ProfileGui == null)
+      return;
+
+    const promiseModule = fetch('/Users/readUser?name=' + wxAMC.loggedUser)
+      .then(function (response) {
+        if (!response.ok)
+          webix.message('Fehler beim Lesen der Userdaten', 'Error');
+        return response.json();
+      }).catch(function (error) {
+        webix.message({ type: "error", text: error });
+        return -1;
+      });
+    Promise.resolve(promiseModule)
+      .then(function (dataItem) {
+        webix.ui(wxAMC.ProfileGui).show();
+        $$("profile-detailsform").setValues(dataItem);
+      })
+      .catch(error => webix.message(error, "error"));
   }
 
 

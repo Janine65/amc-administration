@@ -7,31 +7,31 @@ if (vpHeight > 700)
     vpHeight = 700;
 
 // Create a window with the app's layout inside it.
-wxAMC.registGui = {
+wxAMC.ProfileGui = {
     view : "ani-window", move : true, width : vpWidth, height : vpHeight,
     position: "center",
-    resize : true, id : "registerWindow", toFront : true,
+    resize : true, id : "profileWindow", toFront : true,
     fullscreen : false,
     head : {
         view : "toolbar",
         cols : [
-        { view : "label", label: "Register" },
+        { view : "label", label: "Profile" },
         ]
     },
-    body : { id : "register-details",
+    body : { id : "profile-details",
     rows : [
-        {view:"form", id : "register-detailsform",
+        {view:"form", id : "profile-detailsform",
             elementsConfig : { 
                 on : { onChange : () => {
-                    $$("register-detailsformSave")
-                        [$$("register-detailsform").validate()? "enable" : "disable"]();
+                    $$("profile-detailsformSave")
+                        [$$("profile-detailsform").validate()? "enable" : "disable"]();
                 } }
             },
             elements: [
             {
                 view: "label",
                 css: "hiddeen",
-                id: "message",
+                id: "messageprofile",
                 label: ""
             },
             {
@@ -41,8 +41,7 @@ wxAMC.registGui = {
                 labelAlign: "right",
                 name: "name",
                 labelWidth: 200,
-                placeholder: "Max Muster",
-                required: true
+                placeholder: "Max Muster"
             },            {
                 view: "text",
                 width: 500,
@@ -51,19 +50,17 @@ wxAMC.registGui = {
                 placeholder: "user@muster.com",
                 type: "email",
                 name: "email",
-                labelWidth: 200,
-                required: true
+                labelWidth: 200
             },
             {
                 view: "text",
                 width: 500,
-                label: "Password",
+                label: "New Password",
                 labelAlign: "right",
                 type: "password",
                 name: "password",
                 labelWidth: 200,
-                placeholder: "at least length of 8",
-                required: true
+                placeholder: "at least length of 8"
             },
             {
                 view: "text",
@@ -73,34 +70,17 @@ wxAMC.registGui = {
                 type: "password",
                 name: "passwordVerify",
                 labelWidth: 200,
-                placeholder: "",
-                required: true
-            },
-            {
-                view: "radio",
-                width: 500,
-                label: "User Role",
-                labelAlign: "right",
-                name: "role",
-                labelWidth: 200,
-                value: "user",
-                required: true,
-                vertical: true,
-                options: [
-                    {id: "user", value: "User"},
-                    {id: "revisor", value: "Revisor"},
-                    {id: "admin", value: "Administration"}
-                ]
+                placeholder: ""
             },
             {cols: [
                 {
-                    id : "register-detailsformSave",
-                    label: "Register",
+                    id : "profile-detailsformSave",
+                    label: "Save",
                     type: "form",
                     view: "button",
                     width: 200,
-                    icon: "webix_icon mdi mdi-account-plus",
-                    click: doRegister.bind(this),
+                    icon: "webix_icon mdi mdi-content-save",
+                    click: updateProfile.bind(this),
                     disabled: true
                 },
                 {
@@ -118,27 +98,36 @@ wxAMC.registGui = {
 };
 
 function closeWindow() {
-    $$("registerWindow").close();
+    $$("profileWindow").close();
 }
 
-function doRegister() {
-    if (!$$("register-detailsform").validate()) {
-        $$("message").setValue("Not all fields are filled")
+function updateProfile() {
+    if (!$$("profile-detailsform").isDirty()) {
+        webix.message({
+            type: "info",
+            text: "Keine Änderungen vorgenommen"
+          });
+          $$("profileWindow").close();
+          return;
+        }
+
+    if (!$$("profile-detailsform").validate()) {
+        $$("messageprofile").setValue("Not all fields are filled")
         return;
     }
 
-    const user = $$("register-detailsform").getValues();
+    const user = $$("profile-detailsform").getValues();
     if (user.password !== user.passwordVerify) {
-        $$("message").setValue("Passwords ar not equal")
+        $$("messageprofile").setValue("Passwords ar not equal")
         return;
     }
 
-    const url = "/user/register";
+    const url = "/Users/updateProfile";
 
-    $$("message").setValue("")
+    $$("messageprofile").setValue("")
 
     const promiseModule = fetch(url, {
-      method: 'POST', // *GET, POST, PUT, DELETE, etc.
+      method: 'PUT', // *GET, POST, PUT, DELETE, etc.
       mode: 'cors', // no-cors, *cors, same-origin
       cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
       credentials: 'same-origin', // include, *same-origin, omit
@@ -152,20 +141,20 @@ function doRegister() {
     })
     .then(function(resp) {
         if (!resp.ok) {
-            $$("message").setValue("an error occurred while creating user");
+            $$("messageprofile").setValue("an error occurred while creating user");
         }
         return resp.json();
     })
-    .catch((e) => $$("message").setValue(e));  // ***
+    .catch((e) => $$("messageprofile").setValue(e));  // ***
     
     Promise.resolve(promiseModule)
     .then(function(resp) {
         if (resp.status == 'error') {
-            $$("message").setValue(resp.message);
+            $$("messageprofile").setValue(resp.message);
         } else {
-            $$("registerWindow").close();
+            $$("profileWindow").close();
         }
     })
-    .catch((e) => $$("message").setValue(e));  // ***;
+    .catch((e) => $$("messageprofile").setValue(e));  // ***;
 
 }

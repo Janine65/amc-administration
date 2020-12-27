@@ -104,8 +104,7 @@
 }
 
 .disabledMenuItem {
-  font-style: italic;
-  text-decoration: line-through;
+  display: none;
 }
 
 .logoutMenu {
