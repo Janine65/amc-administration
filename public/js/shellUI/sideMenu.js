@@ -77,11 +77,10 @@ wxAMC.getSideMenuConfig = function () {
       for (var i=1; i<=obj.$level; i++) {
           if (i==obj.$level && obj.$count) {
               var icon = "mdi-menu-"+(obj.open?"down":"left");
-              var className = "webix_sidebar_dir_icon webix_icon mdi "+ icon;
+              var className = "webix_sidebar_dir_icon mdi "+ icon;
               html+="<span class='"+className+"'></span>";
           }
       }
-      console.log(html);
       return html;
     },
     on: {
@@ -157,7 +156,6 @@ wxAMC.setHidden = function () {
     }
 
   } else {
-    console.log(logged);
     logged.value = "not logged in";
     logged.icon = "webix_icon mdi mdi-logout-variant"
 
