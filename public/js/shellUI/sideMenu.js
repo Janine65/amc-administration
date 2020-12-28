@@ -72,6 +72,17 @@ wxAMC.getSideMenuConfig = function () {
     borderless: true,
     scroll: true,
     data: listItems,
+    arrow: function(obj) {
+      var html = "";
+      for (var i=1; i<=obj.$level; i++) {
+          if (i==obj.$level && obj.$count) {
+              var icon = "mdi-menu-"+(obj.open?"down":"left");
+              var className = "webix_sidebar_dir_icon webix_icon mdi "+ icon;
+              html+="<span class='"+className+"'></span>";
+          }
+      }
+      return html;
+    },
     on: {
       onBeforeSelect: function (id) {
         let css = $$("sidemenu").getItem(id).$css
