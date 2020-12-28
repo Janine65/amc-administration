@@ -81,6 +81,7 @@ wxAMC.getSideMenuConfig = function () {
               html+="<span class='"+className+"'></span>";
           }
       }
+      console.log(html);
       return html;
     },
     on: {
@@ -95,9 +96,6 @@ wxAMC.getSideMenuConfig = function () {
       }
     }
   };
-
-  console.log(sidemenu);
-
   return sidemenu;
 }; /* End getSideMenuConfig(). */
 
@@ -110,8 +108,6 @@ wxAMC.setHidden = function () {
   if (wxAMC.isAuthenticated) {
     logged.value = wxAMC.loggedUser;
     logged.icon = "webix_icon mdi mdi-login-variant"
-//    $("sidemenu").updateItem("loggedUser", logged)
-
 
     for (element of logoffMenu) {
       css = $$("sidemenu").getItem(element).$css
@@ -164,7 +160,6 @@ wxAMC.setHidden = function () {
     console.log(logged);
     logged.value = "not logged in";
     logged.icon = "webix_icon mdi mdi-logout-variant"
-//    $$("sidemenu").updateItem("loggedUser", logged)
 
     for (element of logoffMenu) {
       css = $$("sidemenu").getItem(element).$css
@@ -188,8 +183,6 @@ wxAMC.setHidden = function () {
 } /* End setHidden */
 
 wxAMC.actionSidemenu = function (id) {
-  console.log(id);
-
   switch (id) {
     case "MainMenulogin":
       wxAMC.showLoginGui();
