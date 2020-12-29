@@ -4,7 +4,7 @@ wxAMC.loginGui = {
     view : "ani-window", move : true, width: "450", height: "270",
     position: "center",
     resize : false, id : "loginWindow", toFront : true,
-    fullscreen : false,
+    fullscreen : false, modal: true,
     head : {
         view : "toolbar",
         cols : [
