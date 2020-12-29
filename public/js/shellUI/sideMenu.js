@@ -31,11 +31,11 @@ wxAMC.getSideMenuConfig = function () {
 
   listItems.push({value: ""});
   listItems.push({
-    id: "switchMode", value: (wxAMC.uiType == "mobile" ? "Mobile" : "Desktop"),
+    id: "switchMode", value: (wxAMC.uiType == "mobile" ? "Mobile" : "Desktop"), $css: "",
     icon: (wxAMC.uiType == "mobile" ? "webix_icon mdi mdi-tablet-cellphone" : "webix_icon mdi mdi-desktop-classic")
   });
 
-  listItems.push({ id: "home", value: "Home", icon: "webix_icon mdi mdi-home" });
+  listItems.push({ id: "home", value: "Home", icon: "webix_icon mdi mdi-home", $css: "" });
 
   webix.UIManager.addHotKey("ctrl+o",
     function (code, e) {
