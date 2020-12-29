@@ -1,14 +1,6 @@
-
-let vpWidth = document.documentElement.clientWidth - 100;
-let vpHeight = document.documentElement.clientHeight - 100;
-if (vpWidth > 650)
-    vpWidth = 650;
-if (vpHeight > 700)
-    vpHeight = 700;
-
 // Create a window with the app's layout inside it.
 wxAMC.ProfileGui = {
-    view: "ani-window", move: true, width: vpWidth, height: vpHeight,
+    view: "ani-window", move: true, width: 450, height: 300,
     position: "center",
     resize: false, id: "profileWindow", toFront: true,
     fullscreen: false, modal: true,
@@ -33,7 +25,6 @@ wxAMC.ProfileGui = {
                         label: "Save",
                         type: "form",
                         view: "button",
-                        width: 200,
                         icon: "webix_icon mdi mdi-content-save",
                         click: updateProfile.bind(this)
                     },
@@ -41,7 +32,6 @@ wxAMC.ProfileGui = {
                         label: "Cancel",
                         type: "form",
                         view: "button",
-                        width: 200,
                         icon: "webix_icon mdi mdi-close",
                         click: closeWindow.bind(this)
                     }

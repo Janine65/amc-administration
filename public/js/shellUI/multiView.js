@@ -13,7 +13,7 @@ wxAMC.getMultiviewConfig = function() {
 
   return {
     view : "multiview", id : "moduleArea", cells : cellsConfig,
-    animate : { type : "flip", subtype : "horizontal" }
+    animate : { type : "flip", subtype : "horizontal" }, fitBiggest:true
   };
 
 }; /* End getMultiviewConfig(). */

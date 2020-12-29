@@ -70,6 +70,7 @@ wxAMC.getSideMenuConfig = function () {
     position: "left",
     css: "cssSideMenu",
     borderless: true,
+    collapsed: (wxAMC.uiType == "mobile"),
     scroll: true,
     data: listItems,
     arrow: function(obj) {
