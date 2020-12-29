@@ -4,7 +4,7 @@ wxAMC.loginGui = {
     view : "ani-window", move : true, width: "450", height: "270",
     position: "center",
     resize : false, id : "loginWindow", toFront : true,
-    fullscreen : false, modal: true,
+    fullscreen : (wxAMC.uiType === "mobile"), modal: true,
     head : {
         view : "toolbar",
         cols : [
@@ -13,7 +13,7 @@ wxAMC.loginGui = {
     },
     body : { id : "login-details",
     rows : [
-        {view: "label", id: "message", value: ""},
+        {view: "label", id: "loginmessage", value: ""},
         {view: "htmlform", id : "login-detailsform",
             template: "http->js/shellUI/loginUI.html"
         },

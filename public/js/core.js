@@ -833,7 +833,7 @@ class WXAMC {
       user = $$("login-detailsform").getValues();
 
       if (user.username == "" || user.password == "") {
-        $$("message").setValue("Not all fields are filled");
+        $$("loginmessage").setValue("Not all fields are filled");
         return;
       }
       user.email = user.username;
@@ -843,7 +843,7 @@ class WXAMC {
 
     const url = "/user/login";
 
-    $$("message").setValue("")
+    $$("loginmessage").setValue("")
 
     const promiseModule = fetch(url, {
       method: 'POST', // *GET, POST, PUT, DELETE, etc.
@@ -860,16 +860,16 @@ class WXAMC {
     })
       .then(resp => {
         if (!resp.ok) {
-          $$("message").setValue("an error occurred while creating user");
+          $$("loginmessage").setValue("an error occurred while creating user");
         }
         return resp.json();
       })
-      .catch((e) => $$("message").setValue(e)); // ***
+      .catch((e) => $$("loginmessage").setValue(e)); // ***
 
     Promise.resolve(promiseModule)
       .then(function (resp) {
         if (resp.status == 'error') {
-          $$("message").setValue(resp.message);
+          $$("loginmessage").setValue(resp.message);
         } else {
           wxAMC.isAuthenticated = true;
           wxAMC.loggedUser = resp.name;
@@ -893,7 +893,7 @@ class WXAMC {
           }
         }
       })
-      .catch((e) => $$("message").setValue(e)); // ***;
+      .catch((e) => $$("loginmessage").setValue(e)); // ***;
 
   }
 

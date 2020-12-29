@@ -1,9 +1,9 @@
 // Create a window with the app's layout inside it.
 wxAMC.ProfileGui = {
-    view: "ani-window", move: true, width: 450, height: 300,
+    view: "ani-window", move: true, width: 400, height: 300,
     position: "center",
     resize: false, id: "profileWindow", toFront: true,
-    fullscreen: false, modal: true,
+    fullscreen: (wxAMC.uiType === "mobile"), modal: true,
     head: {
         view: "toolbar",
         cols: [
