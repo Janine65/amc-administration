@@ -88,6 +88,17 @@ module.exports = {
 
   },
 
+  checkEmail: function (req, res, next) {
+    var email = req.query.email;
+
+    User.findOne({ where: { email: email }} )
+      .then((user) => {
+        res.json(user)
+      })
+      .catch((e) => console.error(e));
+
+  },
+
   updateProfle: function (req, res, next) {
     var data = req.body;
 

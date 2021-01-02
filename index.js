@@ -17,7 +17,7 @@ const fileUpload = require('express-fileupload');
 
 // environment variables
 if (process.env.NODE_ENV == undefined)
-	process.env.NODE_ENV = 'development';
+  process.env.NODE_ENV = 'development';
 
 // config variables
 const config = require('./config/config.js');
@@ -33,7 +33,7 @@ function extendDefaultFields(defaults, session) {
     userId: session.userId,
   };
 }
- 
+
 var store = new SequelizeStore({
   db: sequelize,
   table: "Session",
@@ -72,24 +72,25 @@ app.put('/Users/data', userRouter.updateData);
 app.delete('/Users/data', userRouter.deleteData);
 app.get('/Users/readUser', userRouter.readUser);
 app.put('/Users/updateProfile', userRouter.updateProfle);
+app.get('/Users/checkEmail', userRouter.checkEmail);
 
 app.get('/user/register', userRouter.registerView);
 app.post('/user/register', userRouter.registerPost);
 app.post('/user/login', userRouter.loginUser);
-app.post('/user/logout',function(req, res){
+app.post('/user/logout', function (req, res) {
   req.logout();
   res.redirect('/');
 });
 
-passport.serializeUser(function(user, done) {
-  done(null, {id: user.id});
+passport.serializeUser(function (user, done) {
+  done(null, { id: user.id });
 });
-passport.deserializeUser(function(user, done) {
-  done(null, {id: user.id});
+passport.deserializeUser(function (user, done) {
+  done(null, { id: user.id });
 });
 
-app.get('/System/env', function(req,res) {
-  res.json({env: process.env.NODE_ENV});
+app.get('/System/env', function (req, res) {
+  res.json({ env: process.env.NODE_ENV });
 })
 const exportData = require("./public/js/controllers/exports");
 
@@ -128,31 +129,47 @@ function sendEmail(req, res) {
     }
   });
 
+  // verify connection configuration
+  transporter.verify(function(error, success) {
+  if (error) {
+    res.json({type: "error", message: "SMTP Connection can not be verified"})
+  } else {
+    console.log("Server is ready to take our messages");
+  }
+  });
+
   let attachments = []
 
   if (email.uploadFiles) {
     var files = email.uploadFiles.split(',');
     for (let ind2 = 0; ind2 < files.length; ind2++) {
       const file = files[ind2];
-      attachments.push({filename: file, path: path.join(__dirname, '/public/uploads/'+file)});
+      attachments.push({ filename: file, path: path.join(__dirname, '/public/uploads/' + file) });
     }
   }
 
   transporter.sendMail({
-        from: emailConfig.email_from, // sender address
-        to: email.email_an, // list of receivers
-        cc: email.email_cc,
-        bcc: email.email_bcc,
-        attachments: attachments,
-        subject: email.email_subject, // Subject line
-        text: decodeURI(email.email_body), // plain text body
-        html: email.email_body, // html body
-    })
-    .then((result) => console.info(result))
-    .catch((error) => console.error(error));
-      
+    from: emailConfig.email_from, // sender address
+    to: email.email_an, // list of receivers
+    cc: email.email_cc,
+    bcc: email.email_bcc,
+    attachments: attachments,
+    subject: email.email_subject, // Subject line
+    text: decodeURI(email.email_body), // plain text body
+    html: email.email_body, // html body
+    dsn: {
+      id: 'AMC',
+      return: 'headers',
+      notify: ['failure', 'delay'],
+      recipient: emailConfig.email_from
+    }
+  }, (err, info) => {
+    console.log(info.envelope);
+    console.log(info.messageId);
+    res.json(info);
+  });
 }
-  
+
 const anlaesse = require("./public/js/controllers/anlaesse");
 app.get('/Anlaesse/data', anlaesse.getData);
 app.post('/Anlaesse/data', anlaesse.updateData);
@@ -226,7 +243,7 @@ app.post('/Journal/import', journal.importJournal);
 app.get('/Journal/getAccData', journal.getAccData);
 
 // fileupload router
-app.use(fileUpload({debug: true, useTempFiles: true, tempFileDir: '/tmp/'}));
+app.use(fileUpload({ debug: true, useTempFiles: true, tempFileDir: '/tmp/' }));
 
 app.post('/uploadFiles', fncUploadFiles);
 
@@ -241,8 +258,8 @@ function fncUploadFiles(req, res) {
   let uploadFiles = req.files.upload;
 
   // Use the mv() method to place the file somewhere on your server
-  let newFileName = path.join(__dirname, '/public/uploads/'+uploadFiles.name);
-  uploadFiles.mv(newFileName, function(err) {
+  let newFileName = path.join(__dirname, '/public/uploads/' + uploadFiles.name);
+  uploadFiles.mv(newFileName, function (err) {
     if (err) {
       console.error(err);
       res.send('{"status" : "error", "error" : "' + err + '"}');
@@ -252,24 +269,9 @@ function fncUploadFiles(req, res) {
   });
 }
 
-
-/**
- * A common handler to deal with DB operation errors.  Returns a 500 and an error object.
- *
- * @param inError    Error object from the DB call.
- * @param inResponse The response being serviced.
- */
-const commonErrorHandler = function(inError, inResponse) {
-
-console.log(inError);
-inResponse.status(500);
-inResponse.send(`{ "error" : "Server error" }`);
-
-}; /* End commonErrorHandler(). */
-
-process.stdout.on('error', function( err ) {
+process.stdout.on('error', function (err) {
   if (err.code == "EPIPE") {
-      process.exit(0);
+    process.exit(0);
   }
 });
 

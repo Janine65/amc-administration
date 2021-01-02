@@ -75,7 +75,7 @@ wxAMC.moduleClasses.Users = class {
                 { id: "count_users", view: "label", label: "Anzahl 0" },
                 { width: 6 },
                 {
-                  id: "moduleUsers-registButton", view: "button", label: "Register", autowidth: true, type: "icon", 
+                  id: "moduleUsers-registButton", view: "button", label: "Register", autowidth: true, type: "icon",
                   icon: "webix_icon mdi mdi-account-plus", click: () => { wxAMC.modules['Users'].showRegistGUI(); }
                 },
                 {
@@ -85,7 +85,8 @@ wxAMC.moduleClasses.Users = class {
                 { width: 6 }
               ] /* End toolbar items. */
             }, /* End toolbar. */
-            { id: "moduleUsers-detail", hidden: true,
+            {
+              id: "moduleUsers-detail", hidden: true,
               rows: [
                 {
                   view: "form", id: "moduleUsers-addForm",
@@ -164,112 +165,97 @@ wxAMC.moduleClasses.Users = class {
                       ]
                     }
                   ]
-                }                    
+                }
               ]
             }
           ] /* End users list rows. */
         }, /* End users list cell. */
         {
-          id : "register-details",
-          rows : [
-              {view:"form", id : "register-detailsform",
-                  elementsConfig : { 
-                      on : { onChange : () => {
-                          $$("register-detailsformSave")
-                              [$$("register-detailsform").validate()? "enable" : "disable"]();
-                      } }
-                  },
-                  elements: [
-                  {
-                      view: "label",
-                      css: "hiddeen",
-                      id: "message",
-                      label: ""
-                  },
-                  {
-                      view: "text",
-                      width: 500,
-                      label: "Name",
-                      labelAlign: "right",
-                      name: "name",
-                      labelWidth: 200,
-                      placeholder: "Max Muster",
-                      required: true
-                  },            {
-                      view: "text",
-                      width: 500,
-                      label: "Email",
-                      labelAlign: "right",
-                      placeholder: "user@muster.com",
-                      type: "email",
-                      name: "email",
-                      labelWidth: 200,
-                      required: true
-                  },
-                  {
-                      view: "text",
-                      width: 500,
-                      label: "Password",
-                      labelAlign: "right",
-                      type: "password",
-                      name: "password",
-                      labelWidth: 200,
-                      placeholder: "at least length of 8",
-                      required: true
-                  },
-                  {
-                      view: "text",
-                      width: 500,
-                      label: "Password verify",
-                      labelAlign: "right",
-                      type: "password",
-                      name: "passwordVerify",
-                      labelWidth: 200,
-                      placeholder: "",
-                      required: true
-                  },
-                  {
-                      view: "radio",
-                      width: 500,
-                      label: "User Role",
-                      labelAlign: "right",
-                      name: "role",
-                      labelWidth: 200,
-                      value: "user",
-                      required: true,
-                      vertical: true,
-                      options: [
-                          {id: "user", value: "User"},
-                          {id: "revisor", value: "Revisor"},
-                          {id: "admin", value: "Administration"}
-                      ]
-                  },
-                  {cols: [
-                      {
-                          id : "register-detailsformSave",
-                          label: "Register",
-                          type: "form",
-                          view: "button",
-                          width: 200,
-                          icon: "webix_icon mdi mdi-account-plus",
-                          click: () => {
-                            wxAMC.modules['Users'].doRegister()},
-                          disabled: true
+          id: "register-details",
+          rows: [
+            {
+              view: "form", id: "register-detailsform",
+              elementsConfig: {
+                on: {
+                  onChange: () => {
+                    $$("register-detailsformSave")
+                    [$$("register-detailsform").validate() ? "enable" : "disable"]();
+                  }
+                }
+              },
+              elements: [
+                {
+                  view: "label",
+                  css: "hiddeen",
+                  id: "message",
+                  label: ""
+                },
+                {
+                  view: "text",
+                  width: 500,
+                  label: "Name",
+                  labelAlign: "right",
+                  name: "name",
+                  labelWidth: 200,
+                  placeholder: "Max Muster",
+                  required: true
+                }, {
+                  view: "text",
+                  width: 500,
+                  label: "Email",
+                  labelAlign: "right",
+                  placeholder: "user@muster.com",
+                  type: "email",
+                  name: "email",
+                  labelWidth: 200,
+                  required: true
+                },
+                {
+                  view: "radio",
+                  width: 500,
+                  label: "User Role",
+                  labelAlign: "right",
+                  name: "role",
+                  labelWidth: 200,
+                  value: "user",
+                  required: true,
+                  vertical: true,
+                  options: [
+                    { id: "user", value: "User" },
+                    { id: "revisor", value: "Revisor" },
+                    { id: "admin", value: "Administration" }
+                  ]
+                },
+                {
+                  cols: [
+                    {
+                      id: "register-detailsformSave",
+                      label: "Register",
+                      type: "form",
+                      view: "button",
+                      width: 200,
+                      icon: "webix_icon mdi mdi-account-plus",
+                      click: () => {
+                        wxAMC.modules['Users'].doRegister()
                       },
-                      {
-                          label: "Cancel",
-                          type: "form",
-                          view: "button",
-                          width: 200,
-                          icon: "webix_icon mdi mdi-close",
-                          click: () => {
-                            $$("moduleUsers-itemsCell").show();
-                          }
+                      disabled: true
+                    },
+                    {
+                      label: "Cancel",
+                      type: "form",
+                      view: "button",
+                      width: 200,
+                      icon: "webix_icon mdi mdi-close",
+                      click: () => {
+                        $$("moduleUsers-itemsCell").show();
                       }
-          
-                  ]}
-              ]}        
-          ]          
+                    }
+
+                  ]
+                }
+              ]
+            }
+          ]
         },
       ] /* End main layout cells. */
     };
@@ -290,29 +276,32 @@ wxAMC.moduleClasses.Users = class {
   } /* End deactivate(). */
 
 
-showRegistGUI() {
-  $$("register-details").show();
-  $$("register-detailsform").clear();
+  showRegistGUI() {
+    $$("register-details").show();
+    $$("register-detailsform").clear();
 
-}
+  }
 
- doRegister() {
+  doRegister() {
     if (!$$("register-detailsform").validate()) {
-        $$("message").setValue("Not all fields are filled")
-        return;
+      $$("message").setValue("Not all fields are filled")
+      return;
     }
 
     const user = $$("register-detailsform").getValues();
-    if (user.password !== user.passwordVerify) {
-        $$("message").setValue("Passwords ar not equal")
-        return;
-    }
 
-    const url = "/user/register";
+    user.password = Math.random().toString(36).slice(-8);
+    var mailbody = `<p>Hallo ${user.name}</p><p>Du wurdest von Janine Franken auf der Auto-Moto-Club Swissair internen Applikation registriert.</br>Die Adresse ist <a href='https://automoto-sr.info:3050'>https://automoto-sr.info:3050</a></p><p>Hier sind deine Logininformationen: </br>Username: ${user.email}</br>Passwort: ${user.password} (bitte ändere dies beim ersten Zugriff im Profile)</br>Rolle: ${user.role}</p><p>Bei Fragen wende Dich bitte an Janine über <a href='mailto:janine@automoto-sr.info'>janine@automoto-sr.info</a></p><p>Mit lieben Clubgrüssen</p>`
+    var mail = {
+      email_an: user.email, email_subject: "Auto-Moto-Club Swissair : Login für Internes", email_body: mailbody,
+      email_signature: "JanineFranken"
+    };
 
-    $$("message").setValue("")
+    var url = "/user/register";
 
-    const promiseModule = fetch(url, {
+    $$("message").setValue("");
+
+    const promiseModuleU = fetch(url, {
       method: 'POST', // *GET, POST, PUT, DELETE, etc.
       mode: 'cors', // no-cors, *cors, same-origin
       cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
@@ -325,26 +314,63 @@ showRegistGUI() {
       referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
       body: JSON.stringify(user) // body data type must match "Content-Type" header
     })
-    .then(function(resp) {
+      .then(function (resp) {
         if (!resp.ok) {
-            $$("message").setValue("an error occurred while creating user");
+          $$("message").setValue("an error occurred while creating user");
         }
         return resp.json();
-    })
-    .catch((e) => $$("message").setValue(e));  // ***
-    
-    Promise.resolve(promiseModule)
-    .then(function(resp) {
+      })
+      .catch(e => $$("message").setValue(e));  // ***
+
+    Promise.resolve(promiseModuleU)
+      .then(function (resp) {
         if (resp.status == 'error') {
-            $$("message").setValue(resp.message);
+          $$("message").setValue(resp.message);
         } else {
           $$("moduleUsers-itemsCell").show();
           wxAMC.modules['Users'].refreshData();
         }
-    })
-    .catch((e) => $$("message").setValue(e));  // ***;
+      })
+      .catch((e) => $$("message").setValue(e));  // ***;
 
-}
+    // Mail senden
+    url = "/Adressen/email/";
+
+    const promiseModuleM = fetch(url, {
+      method: 'POST', // *GET, POST, PUT, DELETE, etc.
+      mode: 'cors', // no-cors, *cors, same-origin
+      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+      credentials: 'same-origin', // include, *same-origin, omit
+      headers: {
+        'Content-Type': 'application/json'
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      redirect: 'follow', // manual, *follow, error
+      referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+      body: JSON.stringify(mail) // body data type must match "Content-Type" header
+    })
+      .then((response) => {
+        if (!response.ok) {                                  // ***
+          webix.message({ type: "error", text: "HTTP error " + response.status });  // ***
+          return null;
+        }
+        return response.json();
+      })
+      .catch((e) => {
+        webix.message("Mail konnte nicht erfolgreich gesendet werden: " + e, "error", -1);
+        return null;
+      });
+      
+    Promise.resolve(promiseModuleM)
+      .then((response) => {
+        webix.message("Email wurde gesendet.", "info");
+      })
+      .catch((e) => {
+        webix.message(`Fehler beim Senden der Nachricht: ${e}`, "error", -1)
+        return null;
+      });
+
+  }
 
   /**
    * Handles clicks on the Save button.
@@ -395,7 +421,7 @@ showRegistGUI() {
         $$("moduleUsers-items").clearAll();
         $$("moduleUsers-items").parse(itemsAsArray.filter(element => element.name != wxAMC.loggedUser));
 
-});
+      });
   } /* End refreshData(). */
 
 
