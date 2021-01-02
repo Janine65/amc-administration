@@ -62,6 +62,7 @@ class WXAMC {
     this.profileGui = null;
     this.isAuthenticated = false;
     this.loggedUser = "";
+    this.loggedInUser = null;
     this.UserRole = "";
 
     webix.skin.flat.barHeight = 45; webix.skin.flat.tabbarHeight = 45; webix.skin.flat.rowHeight = 34; webix.skin.flat.listItemHeight = 34; webix.skin.flat.inputHeight = 38; webix.skin.flat.layoutMargin.wide = 10; webix.skin.flat.layoutMargin.space = 10; webix.skin.flat.layoutPadding.space = 10;
@@ -162,9 +163,9 @@ class WXAMC {
       wxAMC.isAuthenticated = true;
       wxAMC.loggedUser = 'Development';
       wxAMC.UserRole = 'admin';
+      wxAMC.loggedInUser = {id: 19, name: 'Development', email: 'janine@olconet.com'}
       webix.message("Welcome " + wxAMC.loggedUser, "Info");
       wxAMC.setHidden();
-
     } else
       if (window.PasswordCredential) {
         if (!wxAMC.isAuthenticated) {
@@ -782,22 +783,8 @@ class WXAMC {
   showProfileGui() {
     if (wxAMC.ProfileGui == null)
       return;
-
-    const promiseModule = fetch('/Users/readUser?name=' + wxAMC.loggedUser)
-      .then(function (response) {
-        if (!response.ok)
-          webix.message('Fehler beim Lesen der Userdaten', 'Error');
-        return response.json();
-      }).catch(function (error) {
-        webix.message({ type: "error", text: error });
-        return -1;
-      });
-    Promise.resolve(promiseModule)
-      .then(function (dataItem) {
-        webix.ui(wxAMC.ProfileGui).show();
-        $$("profile-detailsform").setValues(dataItem);
-      })
-      .catch(error => webix.message(error, "error"));
+    webix.ui(wxAMC.ProfileGui).show();
+    $$("profile-detailsform").setValues(wxAMC.loggedInUser);
   }
 
 
@@ -815,6 +802,7 @@ class WXAMC {
           wxAMC.isAuthenticated = false;
           wxAMC.loggedUser = "";
           wxAMC.UserRole = "";
+          wxAMC.loggedInUser = null;
           wxAMC.setHidden();
           if (wxAMC.env == 'production')
             if (navigator.credentials && navigator.credentials.preventSilentAccess)
@@ -874,11 +862,13 @@ class WXAMC {
           wxAMC.isAuthenticated = true;
           wxAMC.loggedUser = resp.name;
           wxAMC.UserRole = resp.role;
+          wxAMC.loggedInUser = resp;
           webix.message("Welcome " + wxAMC.loggedUser, "Info");
           wxAMC.setHidden();
           if (window.PasswordCredential) {
             var data = {
               id: resp.email,
+              userId: resp.userId,
               name: resp.name,
               password: resp.password
             }

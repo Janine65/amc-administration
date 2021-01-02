@@ -48,10 +48,12 @@ function closeWindow() {
 
 function updateProfile() {
     const user = $$("profile-detailsform").getValues();
-    if (user.password !== user.passwordVerify) {
+    if (user.passwordnew !== user.passwordverify) {
         $$("messageprofile").setValue("Passwords ar not equal")
         return;
     }
+
+    user.password = user.passwordnew;
 
     const url = "/Users/updateProfile";
 

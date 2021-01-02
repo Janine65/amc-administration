@@ -419,7 +419,7 @@ wxAMC.moduleClasses.Users = class {
         const itemsAsArray = wxAMC.objectAsArray(dataItems);
 
         $$("moduleUsers-items").clearAll();
-        $$("moduleUsers-items").parse(itemsAsArray.filter(element => element.name != wxAMC.loggedUser));
+        $$("moduleUsers-items").parse(itemsAsArray.filter(element => element.id != wxAMC.loggedInUser.id));
 
       });
   } /* End refreshData(). */

@@ -83,10 +83,10 @@ app.post('/user/logout', function (req, res) {
 });
 
 passport.serializeUser(function (user, done) {
-  done(null, { id: user.id });
+  done(null, { id: user.userId });
 });
 passport.deserializeUser(function (user, done) {
-  done(null, { id: user.id });
+  done(null, { id: user.userId });
 });
 
 app.get('/System/env', function (req, res) {
