@@ -33,6 +33,7 @@
     "express": "^4.17.1",
     "express-fileupload": "^1.2.0",
     "express-session": "^1.17.1",
+    "file-saver": "^2.0.5",
     "formidable": "^1.2.2",
     "helmet": "^3.23.3",
     "mariadb": "^2.5.2",

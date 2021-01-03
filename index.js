@@ -241,6 +241,8 @@ app.put('/Journal/data', upload.array(), journal.updateData);
 app.delete('/Journal/data', journal.removeData);
 app.post('/Journal/import', journal.importJournal);
 app.get('/Journal/getAccData', journal.getAccData);
+app.post('/Journal/addAtt', journal.addAttachment);
+app.delete('/Journal/delAtt', journal.delAttachment);
 
 // fileupload router
 app.use(fileUpload({ debug: true, useTempFiles: true, tempFileDir: '/tmp/' }));

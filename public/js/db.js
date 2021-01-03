@@ -453,7 +453,8 @@ Journal.init({
     }
   },
   amount: DataTypes.DECIMAL(7, 2),
-  status: DataTypes.INTEGER
+  status: DataTypes.INTEGER,
+  receipt: DataTypes.BLOB("long")
 },
   {
     sequelize,

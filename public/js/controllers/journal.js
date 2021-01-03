@@ -1,6 +1,8 @@
 var db = require("../db");
 const { Op, Sequelize } = require("sequelize");
 const ExcelJS = require("exceljs");
+const fs = require("fs");
+const path = require("path");
 
 module.exports = {
 	getData: function (req, res) {
@@ -18,7 +20,15 @@ module.exports = {
 				]
 			}
 		)
-			.then(data => res.json(data))
+			.then(data => {
+				for (const journal of data) {
+					if (journal.receipt != undefined) {
+						const filename = path.join(__dirname, '../../../public/uploads/Attachment-' + journal.id + '.pdf');
+						//fs.writeFileSync(filename, Buffer.concat([journal.blob]));
+					}
+				}
+				res.json(data);
+			})
 			.catch((e) => console.error(e));
 	},
 
@@ -44,7 +54,7 @@ module.exports = {
 
 		console.info('insert: ', data);
 		db.Journal.create(data)
-			.then((obj) => res.json({ id: obj.id }))
+			.then((obj) => res.json(obj))
 			.catch((e) => console.error(e));
 	},
 
@@ -54,11 +64,39 @@ module.exports = {
 
 		db.Journal.findByPk(data.id)
 			.then((journal) => journal.update(data)
-				.then((obj) => res.json({ id: obj.id }))
+				.then((obj) => res.json(obj))
 				.catch((e) => console.error(e)))
 			.catch((e) => console.error(e));
 	},
 
+	addAttachment: function (req, res) {
+		const data = req.body;
+
+		if (data.uploadFiles == undefined) {
+			// nothing to do -> return
+			res.json({type: "error", message: "No file to store in database"});
+			return;
+		}
+		var filename = path.join(__dirname, '../../../public/uploads/' + data.uploadFiles)
+
+		if (fs.existsSync(filename)) {
+			fs.readFile(filename, (err, pdfFile) => {
+				if (err)
+					throw err;
+
+				db.Journal.update({receipt: pdfFile}, {where: {id: data.id}})
+					.then(resp => res.json(resp))
+					.catch(e => console.error(e));						
+			});
+		} else {
+			res.json({type: "error", message: "Error while reading the file"});
+		}
+	},
+
+	delAttachment: function (req, res) {
+		console.log(req);
+	},
+	
 	getAccData: function (req, res) {
 		var qrySelect = "SELECT j.id, j.journalNo, concat(acc.order, ' ', acc.name) as account, j.date, j.memo, j.amount as soll, null as haben";
 		qrySelect += " FROM journal j, account acc"
