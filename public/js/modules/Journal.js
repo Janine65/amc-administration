@@ -95,7 +95,7 @@ wxAMC.moduleClasses.Journal = class {
                 { id: "memo", header: "Memo", fillspace: true, hidden: false },
                 {
                   id: "filename", header: "Receipt", adjust: true, hidden: false, template: function (obj) {
-                    return (obj.tilename == undefined ? "" : "<span class='mdi mdi-paperclip'></span>");
+                    return (obj.filename == undefined ? "" : "<span class='mdi mdi-paperclip'></span>");
                   }
                 }
               ],
