@@ -23,8 +23,10 @@ module.exports = {
 			.then(data => {
 				for (const journal of data) {
 					if (journal.receipt != undefined) {
-						const filename = path.join(__dirname, '../../../public/uploads/Attachment-' + journal.id + '.pdf');
-						//fs.writeFileSync(filename, Buffer.concat([journal.blob]));
+						const filename = path.join(__dirname, '../../uploads/Attachment-' + journal.id + '.pdf');
+						console.log(filename);
+						fs.writeFileSync(filename, Buffer.concat([journal.receipt]));
+						journal.filename = filename;
 					}
 				}
 				res.json(data);
@@ -94,7 +96,12 @@ module.exports = {
 	},
 
 	delAttachment: function (req, res) {
-		console.log(req);
+		const data = req.body;
+
+		db.Journal.update({receipt: null}, {where: {id: data.id}})
+			.then(resp => res.json(resp))
+			.catch(e => console.error(e));
+			
 	},
 	
 	getAccData: function (req, res) {

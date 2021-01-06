@@ -154,8 +154,9 @@ wxAMC.moduleClasses.Journal = class {
                       // Anhang anzeigen oder hinzufügen, wenn null
                       data.journaltext = data.date + " " + data.memo;
                       // save blob to file
-                      data.downloadFile = "/uploads/Attachment-" + data.id + ".pdf";
+                      data.downloadFile = "/uploads/Attachment-" + data.id + ".pdf";                      
                       $$("journalAtt-ViewForm").setValues(data);
+                      $$("pdfFilename").load(data.downloadFile);
                       $$("journalAtt-View").show();
                       //webix.message("Anhang kann noch nicht dargestellt werden");
                     }
@@ -785,9 +786,7 @@ wxAMC.moduleClasses.Journal = class {
                 //   padding: 20,
                 //   master:"areaA"
                 // }
-                { view: "iframe", name: "downloadFile"
-
-                }
+                { view: "iframe", id: "pdfFilename" }
               ]
             },
             { /* Begin Journal Attachment Toolbar */
@@ -801,10 +800,15 @@ wxAMC.moduleClasses.Journal = class {
                     $$("moduleJournal-itemsCell").show();
                   }
                 },
-                {}
+                {},
+                {
+                  view: "button", label: "Löschen", autowidth: true,
+                  type: "icon", icon: "webix_icon mdi mdi-delete",
+                  click: this.del_attachment.bind(this)
+                },
               ]
             } /* End Journal Attachment toolbar */
-      ]
+          ]
         },
       ] /* End main layout cells. */
     };
@@ -826,6 +830,9 @@ wxAMC.moduleClasses.Journal = class {
 
   } /* End deactivate(). */
 
+  /**
+   * save_attachment
+   */
   save_attachment() {
     $$("journalupload").send(function() {
       fetch('/Journal/addAtt', {
@@ -849,6 +856,33 @@ wxAMC.moduleClasses.Journal = class {
       })
       .catch(e => webix.message(e, "error", -1))
     });
+  }
+
+  /**
+   * del_attachment
+   */
+  del_attachment() {
+    const data = $$("journalAtt-ViewForm").getValues();
+    fetch('/Journal/delAtt', {
+        method: "DELETE", 
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({id: data.id})})
+      .then(resp => {
+        if (!resp.ok) {
+          webix.message(resp.statusText, "error")
+          return null
+        }
+        if (resp.type == "error") {
+          webix.message(resp.message, "error")
+          return null
+        }
+        $$("moduleJournal-itemsCell").show();
+        wxAMC.modules['Journal'].refreshData();
+        return resp.json();
+      })
+      .catch(e => webix.message(e, "error", -1));
   }
 
   editFiscalYear() {
