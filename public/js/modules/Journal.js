@@ -94,8 +94,8 @@ wxAMC.moduleClasses.Journal = class {
                 },
                 { id: "memo", header: "Memo", fillspace: true, hidden: false },
                 {
-                  id: "receipt", header: "Receipt", adjust: true, hidden: false, template: function (obj) {
-                    return (obj.receipt == undefined ? "" : "<span class='mdi mdi-paperclip'></span>");
+                  id: "filename", header: "Receipt", adjust: true, hidden: false, template: function (obj) {
+                    return (obj.tilename == undefined ? "" : "<span class='mdi mdi-paperclip'></span>");
                   }
                 }
               ],
@@ -141,9 +141,9 @@ wxAMC.moduleClasses.Journal = class {
                 },
                 onItemDblClick: function (selection, preserve) {
                   console.log(selection, preserve);
-                  if (selection.column == "receipt") {
+                  if (selection.column == "filename") {
                     const data = this.getItem(selection.row);
-                    if (data.receipt == undefined) {
+                    if (data.filename == undefined) {
                       if (wxAMC.UserRole == 'admin') {
                         // show add attachment
                         data.journaltext = data.date + " " + data.memo;

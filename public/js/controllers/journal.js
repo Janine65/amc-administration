@@ -27,6 +27,7 @@ module.exports = {
 						console.log(filename);
 						fs.writeFileSync(filename, Buffer.concat([journal.receipt]));
 						journal.filename = filename;
+						journal.receipt = null;
 					}
 				}
 				res.json(data);
