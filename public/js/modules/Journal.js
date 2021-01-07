@@ -94,8 +94,8 @@ wxAMC.moduleClasses.Journal = class {
                 },
                 { id: "memo", header: "Memo", fillspace: true, hidden: false },
                 {
-                  id: "filename", header: "Receipt", adjust: true, hidden: false, template: function (obj) {
-                    return (obj.filename == undefined ? "" : "<span class='mdi mdi-paperclip'></span>");
+                  id: "receipt", header: "Receipt", adjust: true, hidden: false, template: function (obj) {
+                    return (obj.receipt ? "<span class='mdi mdi-paperclip'></span>" : "");
                   }
                 }
               ],
@@ -114,7 +114,6 @@ wxAMC.moduleClasses.Journal = class {
                   $$("count_journal").setValue("Anzahl " + this.count());
                   const value = $$("moduleJournal-dateSelect").getList().getItem(sJahr);
                   if (value) {
-                    console.log(value);
                     webix.html.removeCss($$("moduleJournal-dateSelect").getNode(), 'open')
                     webix.html.removeCss($$("moduleJournal-dateSelect").getNode(), 'prov-closed')
                     webix.html.removeCss($$("moduleJournal-dateSelect").getNode(), 'closed')
@@ -140,31 +139,13 @@ wxAMC.moduleClasses.Journal = class {
                   }
                 },
                 onItemDblClick: function (selection, preserve) {
-                  console.log(selection, preserve);
-                  if (selection.column == "filename") {
+                  if (selection.column == "receipt") {
                     const data = this.getItem(selection.row);
-                    if (data.filename == undefined) {
-                      if (wxAMC.UserRole == 'admin') {
-                        // show add attachment
-                        data.journaltext = data.date + " " + data.memo;
-                        $$("journalAtt-Form").setValues(data);
-                        $$("journalAtt-Detail").show();
-                      }
-                    } else {
-                      // Anhang anzeigen oder hinzufügen, wenn null
-                      data.journaltext = data.date + " " + data.memo;
-                      // save blob to file
-                      data.downloadFile = "/uploads/Attachment-" + data.id + ".pdf";                      
-                      $$("journalAtt-ViewForm").setValues(data);
-                      $$("pdfFilename").load(data.downloadFile);
-                      $$("journalAtt-View").show();
-                      //webix.message("Anhang kann noch nicht dargestellt werden");
-                    }
+                    wxAMC.modules['Journal'].show_attachment(data);
                   } else {
                     if (wxAMC.UserRole == 'admin')
                       wxAMC.modules['Journal'].editExisting();
-                  }
-                }
+                  }                }
               }
             },
             {
@@ -667,11 +648,11 @@ wxAMC.moduleClasses.Journal = class {
                   label: "Level",
                   view: "combo",
                   options: [
-                    { id: "1", value: "Aktivkonto" },
-                    { id: "2", value: "Passivkonto" },
-                    { id: "4", value: "Aufwandkonto" },
-                    { id: "6", value: "Ertragkonto" },
-                    { id: "9", value: "Hilfskonto" }
+                    { id: "1", value: "1 Aktivkonto" },
+                    { id: "2", value: "2 Passivkonto" },
+                    { id: "4", value: "4 Aufwandkonto" },
+                    { id: "6", value: "6 Ertragkonto" },
+                    { id: "9", value: "9 Hilfskonto" }
                   ],
                   required: true,
                   name: "level",
@@ -680,11 +661,15 @@ wxAMC.moduleClasses.Journal = class {
                 {
                   view: "text",
                   label: "Order",
-                  required: true,
-                  length: 4,
-                  type: "int",
+                  attributes:{
+                    maxlength:4,
+                    required:"true",
+                    title:"Order"
+                  }, 
                   name: "order",
-                  labelWidth: 100
+                  type: "number",
+                  labelWidth: 100,
+                  validate:"isNumber", validateEvent:"key"
                 },
                 {
                   label: "Name",
@@ -830,6 +815,38 @@ wxAMC.moduleClasses.Journal = class {
 
   } /* End deactivate(). */
 
+  show_attachment(data) {
+    if (!data.receipt) {
+      if (wxAMC.UserRole == 'admin') {
+        // show add attachment
+        data.journaltext = data.date + " " + data.memo;
+        $$("journalAtt-Form").setValues(data);
+        $$("journalAtt-Detail").show();
+      }
+    } else {
+      // Anhang anzeigen oder hinzufügen, wenn null
+      data.journaltext = data.date + " " + data.memo;
+      const promiseObj = fetch('/Journal/getAtt?id=' + data.id)
+      .then(function (response) {
+        if (!response.ok)
+          webix.message('Fehler beim Schreiben der Kontoauszüge', 'Error');
+        return response.json();
+      })
+      .catch(function (error) {
+        webix.message({ type: "error", text: error })
+      });
+
+      Promise.resolve(promiseObj)
+        .then(function (res) {
+          console.log(res.filename);
+          data.downloadFile = res.filename;                      
+          $$("journalAtt-ViewForm").setValues(data);
+          $$("pdfFilename").load(data.downloadFile);
+          $$("journalAtt-View").show();
+        })
+        .catch(err => webix.message(err, "error"));
+    }
+  }
   /**
    * save_attachment
    */
@@ -1088,6 +1105,14 @@ wxAMC.moduleClasses.Journal = class {
       webix.message({
         type: "error",
         text: "Kontonummer passt nicht zur gewählten Kontogruppe", expire: 0
+      })
+      return;
+    }
+
+    if (itemData.order.length != 4) {
+      webix.message({
+        type: "error",
+        text: "Kontonummer muss 4-stelig sein.", expire: 0
       })
       return;
     }

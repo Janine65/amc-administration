@@ -3,6 +3,7 @@ const { Op, Sequelize } = require("sequelize");
 const ExcelJS = require("exceljs");
 const fs = require("fs");
 const path = require("path");
+const { v4: uuid } = require('uuid');
 
 module.exports = {
 	getData: function (req, res) {
@@ -21,18 +22,33 @@ module.exports = {
 			}
 		)
 			.then(data => {
+				let index = 0;
 				for (const journal of data) {
-					if (journal.receipt != undefined) {
-						const filename = path.join(__dirname, '../../uploads/Attachment-' + journal.id + '.pdf');
-						console.log(filename);
-						fs.writeFileSync(filename, Buffer.concat([journal.receipt]));
-						journal.filename = filename;
-						journal.receipt = null;
-					}
+					journal.receipt = (journal.receipt != null ? true : false);
+					data.slice(index, 1, journal);
+					index++;
 				}
 				res.json(data);
 			})
 			.catch((e) => console.error(e));
+	},
+
+	getAttachment: function (req, res) {
+		db.Journal.findByPk(req.query.id)
+			.then(data => {
+				if (data.receipt != null) {
+					const filename = 'uploads/' + uuid() + '-' + data.id + '.pdf';
+					const pathname = path.join(__dirname, '../../');
+					console.log(pathname + filename);
+					fs.writeFileSync(pathname + filename, Buffer.concat([data.receipt]));
+
+					res.json({filename: filename});
+				} else {
+					res.json({filename: undefined})
+				}
+			})
+			.catch((e) => console.error(e));
+
 	},
 
 	getOneData: function (req, res) {

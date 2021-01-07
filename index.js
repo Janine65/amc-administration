@@ -243,6 +243,7 @@ app.post('/Journal/import', journal.importJournal);
 app.get('/Journal/getAccData', journal.getAccData);
 app.post('/Journal/addAtt', journal.addAttachment);
 app.delete('/Journal/delAtt', journal.delAttachment);
+app.get('/Journal/getAtt', journal.getAttachment);
 
 // fileupload router
 app.use(fileUpload({ debug: true, useTempFiles: true, tempFileDir: '/tmp/' }));
