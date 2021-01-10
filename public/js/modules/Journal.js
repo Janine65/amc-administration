@@ -25,7 +25,7 @@ wxAMC.moduleClasses.Journal = class {
   getUIConfig() {
 
     return {
-      winWidth: 1200, winHeight: 800, winLabel: "Journal", winIcon: "mdi mdi-bank", winHotkey: "ctrl+j",
+      winWidth: 1200, winHeight: 1600, winLabel: "Journal", winIcon: "mdi mdi-bank", winHotkey: "ctrl+j",
       winCss: "authenticate_admin",
       id: "moduleJournal-container",
       cells: [
@@ -235,7 +235,7 @@ wxAMC.moduleClasses.Journal = class {
                       label: "Amount",
                       name: "amount",
                       view: "text",
-                      required: true,
+                      required: false,
                       format: "1'111.00",
                       labelPosition: "top",
                       placeholder: "0.00",
@@ -1496,6 +1496,7 @@ wxAMC.moduleClasses.Journal = class {
 
     const journal = $$("moduleJournal-items").getSelectedItem();
     journal.id = 0;
+    journal.receipt = null;
     // Set flag to indicate editing an existing journal and show the details.
     this.isEditingExisting = false;
     this.editingID = 0;

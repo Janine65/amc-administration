@@ -82,7 +82,7 @@ module.exports = {
 		console.info('update: ', data);
 
 		db.Journal.findByPk(data.id)
-			.then((journal) => journal.update(data)
+			.then((journal) => journal.update(data, {fields: ["from_account", "to_account", "journalNo", "date", "memo", "amount", "status"]})
 				.then((obj) => res.json(obj))
 				.catch((e) => console.error(e)))
 			.catch((e) => console.error(e));
