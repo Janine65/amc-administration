@@ -790,8 +790,8 @@ wxAMC.moduleClasses.Journal = class {
                 {},
                 {
                   view: "button", label: "Löschen", autowidth: true,
-                  type: "icon", icon: "webix_icon mdi mdi-delete",
-                  click: this.del_attachment.bind(this)
+                  type: "icon", icon: "webix_icon mdi mdi-delete", 
+                  click: this.del_attachment.bind(this), disabled: (wxAMC.UserRole == 'admin' ? false : true)
                 },
               ]
             } /* End Journal Attachment toolbar */

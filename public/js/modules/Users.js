@@ -291,7 +291,12 @@ wxAMC.moduleClasses.Users = class {
     const user = $$("register-detailsform").getValues();
 
     user.password = Math.random().toString(36).slice(-8);
-    var mailbody = `<p>Hallo ${user.name}</p><p>Du wurdest von Janine Franken auf der Auto-Moto-Club Swissair internen Applikation registriert.</br>Die Adresse ist <a href='https://automoto-sr.info:3050'>https://automoto-sr.info:3050</a></p><p>Hier sind deine Logininformationen: </br>Username: ${user.email}</br>Passwort: ${user.password} (bitte ändere dies beim ersten Zugriff im Profile)</br>Rolle: ${user.role}</p><p>Bei Fragen wende Dich bitte an Janine über <a href='mailto:janine@automoto-sr.info'>janine@automoto-sr.info</a></p><p>Mit lieben Clubgrüssen</p>`
+    var mailbody = `<p>Hallo ${user.name}</p><p>Du wurdest von Janine Franken auf der Auto-Moto-Club Swissair internen Applikation registriert.</br>` + 
+                  `Die Adresse ist <a href='https://www.automoto-sr.info:3050'>https://www.automoto-sr.info:3050</a></p>`+ 
+                  `<p>Hier sind deine Logininformationen: </br>`+ 
+                  `Username: ${user.email}</br>Passwort: ${user.password} (bitte ändere dies beim ersten Zugriff im Profile)</br>Rolle: ${user.role}</p>`+ 
+                  `<p>Bei Fragen wende Dich bitte an Janine über <a href='mailto:janine@automoto-sr.info'>janine@automoto-sr.info</a></p>`+ 
+                  `<p>Mit lieben Clubgrüssen</p>`
     var mail = {
       email_an: user.email, email_subject: "Auto-Moto-Club Swissair : Login für Internes", email_body: mailbody,
       email_signature: "JanineFranken"
@@ -360,7 +365,7 @@ wxAMC.moduleClasses.Users = class {
         webix.message("Mail konnte nicht erfolgreich gesendet werden: " + e, "error", -1);
         return null;
       });
-      
+
     Promise.resolve(promiseModuleM)
       .then((response) => {
         webix.message("Email wurde gesendet.", "info");
