@@ -721,7 +721,7 @@ wxAMC.moduleClasses.Journal = class {
               elements: [
                 { view: "text", label: "Journal", labelPosition: "top", name: "journaltext", readonly: true },
                 {
-                  view: "uploader", value: 'Attachments', link: "journalupload_list",
+                  view: "uploader", value: 'Attachments', link: "journalupload_list", apiOnly:true,
                   upload: "/uploadFiles", accept: "application/pdf",
                   multiple: false, autosend: false,
                   name: "uploadFiles", id: "journalupload"
@@ -730,8 +730,10 @@ wxAMC.moduleClasses.Journal = class {
                   view: "list",
                   id: "journalupload_list",
                   type: "uploader",
-                  autoheight: true,
-                  miniminHeight: 30,
+                  
+                  autoheight: false,
+                  height: 50,
+                  scroll: false,
                   borderless: true
                 }, /* End Journal Attachment From */
                 { /* Begin Journal Attachment Toolbar */
@@ -821,6 +823,7 @@ wxAMC.moduleClasses.Journal = class {
         // show add attachment
         data.journaltext = data.date + " " + data.memo;
         $$("journalAtt-Form").setValues(data);
+        $$("journalupload").addDropZone( $$("journalupload_list").$view, "Drop files here");
         $$("journalAtt-Detail").show();
       }
     } else {
