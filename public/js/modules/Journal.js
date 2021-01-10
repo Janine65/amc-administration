@@ -1434,6 +1434,7 @@ wxAMC.moduleClasses.Journal = class {
    */
   exportJournalData() {
     webix.toExcel($$("moduleJournal-items"), {
+      ignore: {"receipt":true},
       filename: "Journal",
       rawValues: false,
       styles: true
