@@ -8,21 +8,25 @@ const { Budget, Account } = require("../db")
 
 module.exports = {
 	getData: function (req, res) {
-		Account.findAll(
+		var qrySelect = "SELECT account.id, account.name, account.level, account.order, acc.id AS accid, acc.memo AS accmemo, acc.amount AS accamount,";
+		qrySelect += "(CASE WHEN account.`status`= 1 THEN '' ELSE 'inactive' END) as $css"
+		qrySelect += " FROM account AS account LEFT OUTER JOIN budget AS acc ON account.id = acc.account AND acc.year = " + req.query.jahr;
+		qrySelect += " WHERE account.level IN ('4','6') AND account.order > account.level";
+		qrySelect += " ORDER BY account.order ASC";
+
+		sequelize.query(qrySelect,
 			{
-				where: {'level': {[Op.in] : [4,6] }, 'order': {[Op.gt] : sequelize.col('level')} },
-				include: [
-					{ model: Budget, as: 'acc', required: false, where: {'year': req.query.jahr}, attributes: ['id', 'memo', 'amount'] }
-				],
-				order: [
-					['order', 'asc'],
-				]
+				type: Sequelize.QueryTypes.SELECT,
+				plain: false,
+				logging: console.log,
+				raw: true
 			}
 		)
-			.then(data => {
-				res.json(data);
-			})
-			.catch((e) => console.error(e));
+		.then(data => {
+
+			res.json(data);
+		})
+		.catch((e) => console.error(e));
 	},
 
 	getOneData: function (req, res) {
@@ -44,11 +48,12 @@ module.exports = {
 
 	addData: async function (req, res) {
 		var data = req.body;
-
 		console.info('insert: ', data);
+
 		Budget.create(data)
 			.then((obj) => res.json(obj))
 			.catch((e) => console.error(e));
+			
 	},
 
 	updateData: function (req, res) {

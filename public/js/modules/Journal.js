@@ -82,14 +82,14 @@ wxAMC.moduleClasses.Journal = class {
                 { id: "journalNo", header: "No", adjust: true, hidden: false },
                 {
                   id: "date", header: "Date", adjust: true,
-                  "editor": "date", hidden: false,
+                  editor: "date", hidden: false,
                   format: webix.i18n.dateFormatStr
                 },
                 { header: "From", adjust: true, hidden: false, template: "#fromAccount.order# #fromAccount.name#" },
                 { header: "To", adjust: true, hidden: false, template: "#toAccount.order# #toAccount.name#" },
                 {
                   id: "amount", header: "Amount",
-                  "editor": "text", hidden: false,
+                  editor: "text", hidden: false,
                   css: { 'text-align': 'right' }, format: webix.i18n.numberFormat
                 },
                 { id: "memo", header: "Memo", fillspace: true, hidden: false },
@@ -515,9 +515,9 @@ wxAMC.moduleClasses.Journal = class {
                   rows: [
                     {
                       cols: [
-                        { "label": "", "view": "text", "height": 48, id: "listAccountSearch" },
+                        { "label": "", view: "text", "height": 48, id: "listAccountSearch" },
                         {
-                          "icon": "mdi mdi-magnify", "view": "icon", "width": 38, "height": 0,
+                          "icon": "mdi mdi-magnify", view: "icon", "width": 38, "height": 0,
                           click: function () {
                             var value = $$("listAccountSearch").getValue().toLowerCase();
                             $$("listAccountsList").filter("#name#", value);
@@ -560,44 +560,44 @@ wxAMC.moduleClasses.Journal = class {
                 },
                 {
                   id: "listAccountsData",
-                  "view": "datatable",
+                  view: "datatable",
                   css: "webix_header_border webix_data_border",
                   select: true, autofit: true,
                   resizeColumn: { headerOnly: true },
                   scroll: true,
                   editable: false,
-                  "columns": [
-                    { "id": "journalNo", "header": "No.", "fillspace": false, "hidden": false },
+                  columns: [
+                    { id: "journalNo", header: "No.", fillspace: false, hidden: false },
                     {
-                      "id": "account",
-                      "header": "Account",
-                      "fillspace": true,
-                      "hidden": false,
+                      id: "account",
+                      header: "Account",
+                      fillspace: true,
+                      hidden: false,
                       adjust: true
                     },
                     {
-                      "id": "date",
-                      "header": "Datum",
-                      "fillspace": false,
-                      "format": webix.i18n.dateFormatStr,
-                      "hidden": false,
+                      id: "date",
+                      header: "Datum",
+                      fillspace: false,
+                      format: webix.i18n.dateFormatStr,
+                      hidden: false,
                       adjust: true
                     },
-                    { "id": "memo", "header": "Memo", "fillspace": true, "hidden": false },
+                    { id: "memo", header: "Memo", fillspace: true, hidden: false },
                     {
-                      "id": "soll",
-                      "header": "Soll",
-                      "fillspace": false,
-                      "hidden": false,
+                      id: "soll",
+                      header: "Soll",
+                      fillspace: false,
+                      hidden: false,
                       adjust: true,
                       css: { 'text-align': 'right' },
                       format: webix.i18n.numberFormat
                     },
                     {
-                      "id": "haben",
-                      "header": "Haben",
-                      "fillspace": false,
-                      "hidden": false,
+                      id: "haben",
+                      header: "Haben",
+                      fillspace: false,
+                      hidden: false,
                       adjust: true,
                       css: { 'text-align': 'right' },
                       format: webix.i18n.numberFormat
@@ -617,7 +617,7 @@ wxAMC.moduleClasses.Journal = class {
               ]
             },
             {
-              "view": "toolbar",
+              view: "toolbar",
               "height": 44,
               "cols": [
                 {
@@ -627,25 +627,25 @@ wxAMC.moduleClasses.Journal = class {
                     $$("moduleJournal-itemsCell").show();
                   }
                 },
-                { "view": "label", "label": "Anzahl", id: "count_accjournal" },
+                { view: "label", "label": "Anzahl", id: "count_accjournal" },
                 {},
                 {
-                  "label": "Add", "view": "button", "height": 0, "autowidth": true,
+                  "label": "Add", view: "button", "height": 0, "autowidth": true,
                   type: "icon", icon: "mdi mdi-plus",
                   click: this.addAccount.bind(this), disabled: (wxAMC.UserRole == 'admin' ? false : true)
                 },
                 {
-                  "label": "Edit", "view": "button", "height": 0, "autowidth": true,
+                  "label": "Edit", view: "button", "height": 0, "autowidth": true,
                   type: "icon", icon: "mdi mdi-pencil",
                   click: this.editAccount.bind(this), disabled: (wxAMC.UserRole == 'admin' ? false : true)
                 },
                 {
-                  "view": "button", "label": "Export Active", "height": 0, "autowidth": true,
+                  view: "button", "label": "Export Active", "height": 0, "autowidth": true,
                   type: "icon", icon: "mdi mdi-export",
                   click: this.exportAccount.bind(this)
                 },
                 {
-                  "view": "button", "label": "Export All", "autowidth": true,
+                  view: "button", "label": "Export All", "autowidth": true,
                   type: "icon", icon: "mdi mdi-file-excel",
                   click: this.exportAllAccounts.bind(this)
                 }
@@ -824,17 +824,26 @@ wxAMC.moduleClasses.Journal = class {
         },
         {
           id: "moduleJournal-listBudget",
-          "rows": [
-            { /* Begin Budget List */ 
-              "columns": [
-                { "id": "order", "header": "Order", "sort": "string", autowidth: true, "hidden": false },
-                { "id": "name", "header": "Account", "fillspace": true, "sort": "string", "hidden": false },
-                { "id": "acc.amount", "header": "Amount", "sort": "string", "editor": "text", autowidth: true, "hidden": false },
-                { "id": "acc.memo", "header": "Notes", "sort": "string", "editor": "text", autowidth: true, "hidden": false }
+          rows: [
+            { /* Begin Budget List */
+              columns: [
+                { id: "order", header: "Order", sort: "string", autowidth: true, hidden: false },
+                { id: "name", header: "Account", fillspace: true, sort: "string", hidden: false },
+                { id: "accamount", header: "Budget", type: "number", editor: "text", autowidth: true, hidden: false },
+                { id: "accmemo", header: "Notes", editor: "text", autowidth: true, hidden: false }
               ],
-              "view": "datatable",
+              view: "datatable",
               id: "listBudgetList",
-              "editable": true
+              select: true, autofit: true,
+              resizeColumn: { headerOnly: true },
+              scroll: true,
+              editable: true,
+              editaction: "custom",
+              on: {
+                onItemClick: function (id) {
+                  this.editColumn(id);
+                }
+              }
             }, /* End Budget List */
             { /* Begin Budget Toolbar */
               view: "toolbar",
@@ -1069,7 +1078,6 @@ wxAMC.moduleClasses.Journal = class {
   }
 
   showBudget() {
-    //TODO #38
     $$("moduleJournal-listBudget").show();
     $$("listBudgetList").clearAll();
     this.refreshBudgetList();
@@ -1082,7 +1090,43 @@ wxAMC.moduleClasses.Journal = class {
 
   saveBudget() {
     //TODO #39
-    
+    $$("listBudgetList").editStop();
+    $$("listBudgetList").data.each(function (obj) {
+
+      // add or upd record
+      var data = {id : obj.accid, account: obj.id, amount: (obj.accamount == "" ? 0 : obj.accamount), memo: obj.accmemo, year: $$("moduleJournal-dateSelect").getValue()};
+      //console.log(data);
+      const url = "/Budget/data";
+      var method = "PUT";
+      if (obj.accid == undefined)
+        method = "POST";
+
+      fetch(url, {
+        method: method, // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, *cors, same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'same-origin', // include, *same-origin, omit
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        redirect: 'follow', // manual, *follow, error
+        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+        body: JSON.stringify(data) // body data type must match "Content-Type" header
+      })
+        .then((response) => {
+          if (!response.ok) { // ***
+            webix.message({
+              type: "error",
+              text: "HTTP error " + response.status
+            }); // ***
+          }
+        })
+        .catch(e => webix.message({
+          type: "error",
+          text: e
+        }));
+    });
+    $$("moduleJournal-itemsCell").show();
   }
 
   showAccounts() {
@@ -1371,6 +1415,7 @@ wxAMC.moduleClasses.Journal = class {
 
         var arAktiv = [], arPassiv = [], arAufwand = [], arErtrag = [];
         var iGewinnVerlust = 0;
+        var iGewinnVerlustBudget = 0;
 
         for (let ind2 = 0; ind2 < itemsAsArray.length; ind2++) {
           const element = itemsAsArray[ind2];
@@ -1390,10 +1435,12 @@ wxAMC.moduleClasses.Journal = class {
 
               case 4:
                 arAufwand.push(element);
+                iGewinnVerlustBudget += parseFloat(element.budget);
                 break;
 
               case 6:
                 arErtrag.push(element);
+                iGewinnVerlustBudget -= parseFloat(element.budget);
                 break;
 
               default:
@@ -1408,10 +1455,13 @@ wxAMC.moduleClasses.Journal = class {
         record1.id = 0;
         record1.order = 9998
         record1.amount = Math.abs(iGewinnVerlust);
+
         var record2 = {};
         record2.id = 0;
         record2.order = 9998
         record2.amount = Math.abs(iGewinnVerlust);
+        record2.budget = Math.abs(iGewinnVerlustBudget);
+        record2.diff = record2.budget - record2.amount;
 
         if (iGewinnVerlust >= 0) {
           record1.name = "Verlust"

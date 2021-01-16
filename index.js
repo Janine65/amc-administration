@@ -247,8 +247,8 @@ app.get('/Journal/getAtt', journal.getAttachment);
 
 const budget = require("./public/js/controllers/budget");
 app.get('/Budget/data', budget.getData);
-app.post('/Budget/data',  budget.addData);
-app.put('/Budget/data', budget.updateData);
+app.post('/Budget/data', upload.array(),  budget.addData);
+app.put('/Budget/data', upload.array(), budget.updateData);
 app.delete('/Budget/data', budget.removeData);
 app.get('/Budget/getOne', budget.getOneData);
 

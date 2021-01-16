@@ -129,7 +129,7 @@ module.exports = {
 					const acc = data[ind2];
 					found = arBudget.findIndex(bud => bud.account == acc.id);
 					if (found >= 0) {
-						data[ind2].budget = budget.amount;
+						data[ind2].budget = eval(arBudget[found].amount * 1);
 					}
 					data[ind2].diff = data[ind2].budget - data[ind2].amount;
 				}
