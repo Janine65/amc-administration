@@ -1,5 +1,6 @@
 var db = require("../db");
 const { Op, Sequelize } = require("sequelize");
+const dbFunc = require("./budget");
 
 module.exports = {
 	getData: function (req, res) {				
@@ -74,8 +75,10 @@ module.exports = {
 		.catch((e) => console.error(e));
 	},
 
-	getAccountSummary: function (req, res) {
-		var qrySelect = "Select ac.`id`, ac.`level`, ac.`order`, ac.`name`, sum(j.`amount`) as amount, ";
+	getAccountSummary: async function (req, res) {
+		var arBudget = await db.Budget.findAll({where:{'year': req.query.jahr}});
+
+		var qrySelect = "Select ac.`id`, ac.`level`, ac.`order`, ac.`name`, sum(j.`amount`) as amount, 0 as budget, 0 as diff, ";
 		qrySelect += "(CASE WHEN ac.`status`= 1 THEN '' ELSE 'inactive' END) as $css"
 		qrySelect += " from account ac ";
 		qrySelect += " left outer join journal j ";
@@ -120,6 +123,15 @@ module.exports = {
 							data[found].amount = eval(acc2.amount - data[found].amount);
 							break;
 					}				
+				}
+
+				for (let ind2 = 0; ind2 < data.length; ind2++) {
+					const acc = data[ind2];
+					found = arBudget.findIndex(bud => bud.account == acc.id);
+					if (found >= 0) {
+						data[ind2].budget = budget.amount;
+					}
+					data[ind2].diff = data[ind2].budget - data[ind2].amount;
 				}
 				res.json(data);
 			})

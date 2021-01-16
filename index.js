@@ -245,6 +245,14 @@ app.post('/Journal/addAtt', journal.addAttachment);
 app.delete('/Journal/delAtt', journal.delAttachment);
 app.get('/Journal/getAtt', journal.getAttachment);
 
+const budget = require("./public/js/controllers/budget");
+app.get('/Budget/data', budget.getData);
+app.post('/Budget/data',  budget.addData);
+app.put('/Budget/data', budget.updateData);
+app.delete('/Budget/data', budget.removeData);
+app.get('/Budget/getOne', budget.getOneData);
+
+
 // fileupload router
 app.use(fileUpload({ debug: true, useTempFiles: true, tempFileDir: '/tmp/' }));
 

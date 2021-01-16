@@ -145,7 +145,8 @@ wxAMC.moduleClasses.Journal = class {
                   } else {
                     if (wxAMC.UserRole == 'admin')
                       wxAMC.modules['Journal'].editExisting();
-                  }                }
+                  }
+                }
               }
             },
             {
@@ -153,6 +154,10 @@ wxAMC.moduleClasses.Journal = class {
               cols: [
                 { id: "count_journal", view: "label", label: "Anzahl 0" },
                 { width: 6 },
+                {
+                  id: "moduleJournal-budgetButton", view: "button", label: "Budget", autowidth: true, type: "icon",
+                  icon: "webix_icon mdi mdi-feature-search", click: this.showBudget.bind(this), disabled: (wxAMC.UserRole == 'admin' ? false : true)
+                },
                 {
                   id: "moduleJournal-accEditButton", view: "button", label: "Accounts", autowidth: true, type: "icon",
                   icon: "webix_icon mdi mdi-bank", click: this.showAccounts.bind(this)
@@ -353,6 +358,16 @@ wxAMC.moduleClasses.Journal = class {
                               id: "amount", header: { text: "Amount", css: { "text-align": "right" } }, width: 120, css: { "text-align": "right" },
                               format: webix.i18n.numberFormat,
                               footer: { content: "summColumn", css: { "text-align": "right", "font-weight": "bold" } }
+                            },
+                            {
+                              id: "budget", header: { text: "Budget", css: { "text-align": "right" } }, width: 120, css: { "text-align": "right" },
+                              format: webix.i18n.numberFormat,
+                              footer: { content: "summColumn", css: { "text-align": "right", "font-weight": "bold" } }
+                            },
+                            {
+                              id: "diff", header: { text: "Diff", css: { "text-align": "right" } }, width: 120, css: { "text-align": "right" },
+                              format: webix.i18n.numberFormat,
+                              footer: { content: "summColumn", css: { "text-align": "right", "font-weight": "bold" } }
                             }
                           ],
                           autoheight: false,
@@ -374,6 +389,16 @@ wxAMC.moduleClasses.Journal = class {
                             },
                             {
                               id: "amount", header: { text: "Amount", css: { "text-align": "right" } }, width: 120, css: { "text-align": "right" },
+                              format: webix.i18n.numberFormat,
+                              footer: { content: "summColumn", css: { "text-align": "right", "font-weight": "bold" } }
+                            },
+                            {
+                              id: "budget", header: { text: "Budget", css: { "text-align": "right" } }, width: 120, css: { "text-align": "right" },
+                              format: webix.i18n.numberFormat,
+                              footer: { content: "summColumn", css: { "text-align": "right", "font-weight": "bold" } }
+                            },
+                            {
+                              id: "diff", header: { text: "Diff", css: { "text-align": "right" } }, width: 120, css: { "text-align": "right" },
                               format: webix.i18n.numberFormat,
                               footer: { content: "summColumn", css: { "text-align": "right", "font-weight": "bold" } }
                             }
@@ -661,15 +686,15 @@ wxAMC.moduleClasses.Journal = class {
                 {
                   view: "text",
                   label: "Order",
-                  attributes:{
-                    maxlength:4,
-                    required:"true",
-                    title:"Order"
-                  }, 
+                  attributes: {
+                    maxlength: 4,
+                    required: "true",
+                    title: "Order"
+                  },
                   name: "order",
                   type: "number",
                   labelWidth: 100,
-                  validate:"isNumber", validateEvent:"key"
+                  validate: "isNumber", validateEvent: "key"
                 },
                 {
                   label: "Name",
@@ -721,7 +746,7 @@ wxAMC.moduleClasses.Journal = class {
               elements: [
                 { view: "text", label: "Journal", labelPosition: "top", name: "journaltext", readonly: true },
                 {
-                  view: "uploader", value: 'Attachments', link: "journalupload_list", apiOnly:true,
+                  view: "uploader", value: 'Attachments', link: "journalupload_list", apiOnly: true,
                   upload: "/uploadFiles", accept: "application/pdf",
                   multiple: false, autosend: false,
                   name: "uploadFiles", id: "journalupload"
@@ -730,7 +755,7 @@ wxAMC.moduleClasses.Journal = class {
                   view: "list",
                   id: "journalupload_list",
                   type: "uploader",
-                  
+
                   autoheight: false,
                   height: 50,
                   scroll: false,
@@ -790,13 +815,48 @@ wxAMC.moduleClasses.Journal = class {
                 {},
                 {
                   view: "button", label: "Löschen", autowidth: true,
-                  type: "icon", icon: "webix_icon mdi mdi-delete", 
+                  type: "icon", icon: "webix_icon mdi mdi-delete",
                   click: this.del_attachment.bind(this), disabled: (wxAMC.UserRole == 'admin' ? false : true)
                 },
               ]
             } /* End Journal Attachment toolbar */
           ]
         },
+        {
+          id: "moduleJournal-listBudget",
+          "rows": [
+            { /* Begin Budget List */ 
+              "columns": [
+                { "id": "order", "header": "Order", "sort": "string", autowidth: true, "hidden": false },
+                { "id": "name", "header": "Account", "fillspace": true, "sort": "string", "hidden": false },
+                { "id": "acc.amount", "header": "Amount", "sort": "string", "editor": "text", autowidth: true, "hidden": false },
+                { "id": "acc.memo", "header": "Notes", "sort": "string", "editor": "text", autowidth: true, "hidden": false }
+              ],
+              "view": "datatable",
+              id: "listBudgetList",
+              "editable": true
+            }, /* End Budget List */
+            { /* Begin Budget Toolbar */
+              view: "toolbar",
+              cols: [
+                { width: 6 },
+                {
+                  view: "button", label: "Zurück", autowidth: true,
+                  type: "icon", icon: "webix_icon mdi mdi-arrow-left",
+                  click: () => {
+                    $$("moduleJournal-itemsCell").show();
+                  }
+                },
+                {},
+                {
+                  view: "button", label: "Save", autowidth: true,
+                  type: "icon", icon: "webix_icon mdi mdi-content-save",
+                  click: this.saveBudget.bind(this), disabled: (wxAMC.UserRole == 'admin' ? false : true)
+                }
+              ]
+            } /* End Budget Toolbar */
+          ]
+        }, /* End Budget list */
       ] /* End main layout cells. */
     };
 
@@ -823,26 +883,26 @@ wxAMC.moduleClasses.Journal = class {
         // show add attachment
         data.journaltext = data.date + " " + data.memo;
         $$("journalAtt-Form").setValues(data);
-        $$("journalupload").addDropZone( $$("journalupload_list").$view, "Drop files here");
+        $$("journalupload").addDropZone($$("journalupload_list").$view, "Drop files here");
         $$("journalAtt-Detail").show();
       }
     } else {
       // Anhang anzeigen oder hinzufügen, wenn null
       data.journaltext = data.date + " " + data.memo;
       const promiseObj = fetch('/Journal/getAtt?id=' + data.id)
-      .then(function (response) {
-        if (!response.ok)
-          webix.message('Fehler beim Schreiben der Kontoauszüge', 'Error');
-        return response.json();
-      })
-      .catch(function (error) {
-        webix.message({ type: "error", text: error })
-      });
+        .then(function (response) {
+          if (!response.ok)
+            webix.message('Fehler beim Schreiben der Kontoauszüge', 'Error');
+          return response.json();
+        })
+        .catch(function (error) {
+          webix.message({ type: "error", text: error })
+        });
 
       Promise.resolve(promiseObj)
         .then(function (res) {
           console.log(res.filename);
-          data.downloadFile = res.filename;                      
+          data.downloadFile = res.filename;
           $$("journalAtt-ViewForm").setValues(data);
           $$("pdfFilename").load(data.downloadFile);
           $$("journalAtt-View").show();
@@ -854,27 +914,28 @@ wxAMC.moduleClasses.Journal = class {
    * save_attachment
    */
   save_attachment() {
-    $$("journalupload").send(function() {
+    $$("journalupload").send(function () {
       fetch('/Journal/addAtt', {
-        method: "POST", 
+        method: "POST",
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify($$("journalAtt-Form").getValues())})
-      .then(resp => {
-        if (!resp.ok) {
-          webix.message(resp.statusText, "error")
-          return null
-        }
-        if (resp.type == "error") {
-          webix.message(resp.message, "error")
-          return null
-        }
-        $$("moduleJournal-itemsCell").show();
-        wxAMC.modules['Journal'].refreshData();
-        return resp.json();
+        body: JSON.stringify($$("journalAtt-Form").getValues())
       })
-      .catch(e => webix.message(e, "error", -1))
+        .then(resp => {
+          if (!resp.ok) {
+            webix.message(resp.statusText, "error")
+            return null
+          }
+          if (resp.type == "error") {
+            webix.message(resp.message, "error")
+            return null
+          }
+          $$("moduleJournal-itemsCell").show();
+          wxAMC.modules['Journal'].refreshData();
+          return resp.json();
+        })
+        .catch(e => webix.message(e, "error", -1))
     });
   }
 
@@ -884,11 +945,12 @@ wxAMC.moduleClasses.Journal = class {
   del_attachment() {
     const data = $$("journalAtt-ViewForm").getValues();
     fetch('/Journal/delAtt', {
-        method: "DELETE", 
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({id: data.id})})
+      method: "DELETE",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ id: data.id })
+    })
       .then(resp => {
         if (!resp.ok) {
           webix.message(resp.statusText, "error")
@@ -1004,6 +1066,23 @@ wxAMC.moduleClasses.Journal = class {
         text: e
       }));
 
+  }
+
+  showBudget() {
+    //TODO #38
+    $$("moduleJournal-listBudget").show();
+    $$("listBudgetList").clearAll();
+    this.refreshBudgetList();
+  }
+
+  refreshBudgetList() {
+    $$("listBudgetList").clearAll();
+    $$("listBudgetList").load("/Budget/data?jahr=" + $$("moduleJournal-dateSelect").getValue());
+  }
+
+  saveBudget() {
+    //TODO #39
+    
   }
 
   showAccounts() {
@@ -1434,7 +1513,7 @@ wxAMC.moduleClasses.Journal = class {
    */
   exportJournalData() {
     webix.toExcel($$("moduleJournal-items"), {
-      ignore: {"receipt":true},
+      ignore: { "receipt": true },
       filename: "Journal",
       rawValues: false,
       styles: true

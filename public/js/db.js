@@ -467,7 +467,36 @@ Journal.init({
   Account.hasMany(Journal, { as: 'fromAccount', constraints: true, foreignKey: 'from_account' });
   Account.hasMany(Journal, { as: 'toAccount', constraints: true, foreignKey: 'to_account' });
 
-module.exports = {
-  Adressen, Anlaesse, Parameter, Meisterschaft, Clubmeister, Kegelmeister, User, Session, Account, Journal, FiscalYear,
+  class Budget extends Model {
+  }
+  Budget.init({
+    id: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true
+    },
+    account: {
+      type: Sequelize.INTEGER,
+      references: {
+        model: Account,
+        key: 'id'
+      }
+    },
+    year: DataTypes.INTEGER,
+    memo: DataTypes.STRING,
+    amount: DataTypes.DECIMAL(7, 2)
+  },
+    {
+      sequelize,
+      tableName: 'budget',
+      modelName: 'budget'
+    });
+  
+    Budget.belongsTo(Account, { as: 'acc', constraints: true, foreignKey: 'account' });
+    Account.hasMany(Budget, { as: 'acc', constraints: true, foreignKey: 'account' });
+  
+  module.exports = {
+  Adressen, Anlaesse, Parameter, Meisterschaft, Clubmeister, Kegelmeister, User, Session, Account, Journal, FiscalYear, Budget,
 };
 
