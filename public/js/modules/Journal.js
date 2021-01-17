@@ -85,14 +85,14 @@ wxAMC.moduleClasses.Journal = class {
                   editor: "date", hidden: false,
                   format: webix.i18n.dateFormatStr
                 },
-                { header: "From", adjust: true, hidden: false, template: "#fromAccount.order# #fromAccount.name#" },
-                { header: "To", adjust: true, hidden: false, template: "#toAccount.order# #toAccount.name#" },
+                { id: "faccount", header: "From", adjust: true, hidden: false, template: "#fromAccount.order# #fromAccount.name#" },
+                { id: "taccount", header: "To", adjust: true, hidden: false, template: "#toAccount.order# #toAccount.name#" },
                 {
                   id: "amount", header: "Amount",
                   editor: "text", hidden: false,
                   css: { 'text-align': 'right' }, format: webix.i18n.numberFormat
                 },
-                { id: "memo", header: "Memo", fillspace: true, hidden: false },
+                { id: "memo", header: "Booking text", fillspace: true, hidden: false },
                 {
                   id: "receipt", header: "Receipt", adjust: true, hidden: false, template: function (obj) {
                     return (obj.receipt ? "<span class='mdi mdi-paperclip'></span>" : "");
@@ -1177,8 +1177,17 @@ wxAMC.moduleClasses.Journal = class {
     Promise.resolve(promiseAccount)
       .then(function (data) {
         if (data.type == "info") {
-          webix.message(data.message, "Info");
-          webix.send("./exports/" + data.filename, {}, "GET");
+          var xhr = new XMLHttpRequest();
+          xhr.open("GET", "./exports/" + data.filename, true);
+          xhr.responseType = "blob";
+          xhr.onload = function (e) {
+            if (this.status === 200) {
+              // blob response
+              webix.html.download(this.response, data.filename);
+              webix.message(data.message, "Info");
+            }
+          };
+          xhr.send();
         } else {
           webix.message(data.message, "Error");
         }
@@ -1205,8 +1214,17 @@ wxAMC.moduleClasses.Journal = class {
     Promise.resolve(promiseAccount)
       .then(function (data) {
         if (data.type == "info") {
-          webix.message(data.message, "Info");
-          webix.send("./exports/" + data.filename, {}, "GET");
+          var xhr = new XMLHttpRequest();
+          xhr.open("GET", "./exports/" + data.filename, true);
+          xhr.responseType = "blob";
+          xhr.onload = function (e) {
+            if (this.status === 200) {
+              // blob response
+              webix.html.download(this.response, data.filename);
+              webix.message(data.message, "Info");
+            }
+          };
+          xhr.send();
         } else {
           webix.message(data.message, "Error");
         }
@@ -1562,12 +1580,40 @@ wxAMC.moduleClasses.Journal = class {
    * Exportiert das Journal
    */
   exportJournalData() {
-    webix.toExcel($$("moduleJournal-items"), {
-      ignore: { "receipt": true },
-      filename: "Journal",
-      rawValues: false,
-      styles: true
-    });
+    const sJahr = $$("moduleJournal-dateSelect").getValue();
+
+    const promiseJournal = fetch("/Journal/export?jahr=" + sJahr)
+      .then(function (response) {
+        if (!response.ok)
+          webix.message('Fehler beim Exportieren des Journals', 'Error');
+        return response.json();
+      })
+      .catch(function (error) {
+        webix.message({ type: "error", text: error })
+      });
+
+    Promise.resolve(promiseJournal)
+      .then(function (data) {
+        if (data.type == "info") {
+          var xhr = new XMLHttpRequest();
+          xhr.open("GET", "./exports/" + data.filename, true);
+          xhr.responseType = "blob";
+          xhr.onload = function (e) {
+            if (this.status === 200) {
+              // blob response
+              webix.html.download(this.response, data.filename);
+              webix.message(data.message, "Info");
+            }
+          };
+          xhr.send();
+        } else {
+          webix.message(data.message, "Error");
+        }
+      })
+      .catch(function (error) {
+        webix.message({ type: "error", text: error })
+      });
+
 
   } /* exportJournalData */
 
@@ -1581,7 +1627,7 @@ wxAMC.moduleClasses.Journal = class {
     const promiseFiscal = fetch("/Fiscalyear/export?jahr=" + sJahr)
       .then(function (response) {
         if (!response.ok)
-          webix.message('Fehler beim Lesen des Buchhaltungsjahres', 'Error');
+          webix.message('Fehler beim schreiben der Exceldatei', 'Error');
         return response.json();
       })
       .catch(function (error) {
@@ -1590,8 +1636,21 @@ wxAMC.moduleClasses.Journal = class {
 
     Promise.resolve(promiseFiscal)
       .then(function (data) {
-        webix.message({ type: 'Info', content: 'Export finished' });
-        webix.send("./exports/Bilanz.xlsx", {}, "GET");
+        if (data.type == "info") {
+          var xhr = new XMLHttpRequest();
+          xhr.open("GET", "./exports/" + data.filename, true);
+          xhr.responseType = "blob";
+          xhr.onload = function (e) {
+            if (this.status === 200) {
+              // blob response
+              webix.html.download(this.response, data.filename);
+              webix.message(data.message, "Info");
+            }
+          };
+          xhr.send();
+        } else {
+          webix.message(data.message, "Error");
+        }
       })
       .catch(function (error) {
         webix.message({ type: "error", text: error })

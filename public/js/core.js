@@ -1,4 +1,3 @@
-
 class WXAMC {
 
   /**
@@ -572,7 +571,8 @@ class WXAMC {
     else
       objSave.year = wxAMC.parameter.get('CLUBJAHR');
 
-    fetch(url, {
+    // create excel datasheet
+    const promise = fetch(url, {
       method: "POST", // *GET, POST, PUT, DELETE, etc.
       headers: {
         'Content-Type': 'application/json'
@@ -581,26 +581,36 @@ class WXAMC {
       referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
       body: JSON.stringify(objSave) // body data type must match "Content-Type" header
     })
-      .then((response) => {
-        if (!response.ok) { // ***
-          webix.message({
-            type: "error",
-            text: "HTTP error " + response.status
-          }); // ***
-        }
-      })
-      .then(function () {
-        webix.message({
-          type: "success",
-          text: "erstellt und downloaded"
-        });
-        // download file
-        webix.send("./exports/Stammblätter.xlsx", {}, "GET");
-      })
-      .catch((e) => webix.message({
-        type: "error",
-        text: e
-      }));
+    .then(function (response) {
+      if (!response.ok)
+        webix.message('Fehler beim schreiben der Exceldatei', 'Error');
+      return response.json();
+    })
+    .catch(function (error) {
+      webix.message({ type: "error", text: error })
+    });
+
+  Promise.resolve(promise)
+    .then(function (data) {
+      if (data.type == "info") {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "./exports/" + data.filename, true);
+        xhr.responseType = "blob";
+        xhr.onload = function (e) {
+          if (this.status === 200) {
+            // blob response
+            webix.html.download(this.response, data.filename);
+            webix.message(data.message, "Info");
+          }
+        };
+        xhr.send();
+    } else {
+        webix.message(data.message, "Error");
+      }
+    })
+    .catch(function (error) {
+      webix.message({ type: "error", text: error })
+    });
 
   } /* End excelDatasheet(). */
 
@@ -616,10 +626,15 @@ class WXAMC {
     const url = "/Anlaesse/writeAuswertung";
     if ($$("moduleAuswertungendatumSelect"))
       objSave.year = $$("moduleAuswertungendatumSelect").getValue();
-    else
-      return;
+    else {
+      if ($$("moduleMeisterschaftdatumSelect"))
+        objSave.year = $$("moduleMeisterschaftdatumSelect").getValue();
+      else
+         return;
+    }
 
-    fetch(url, {
+    // create excel datasheet
+    const promise = fetch(url, {
       method: "POST", // *GET, POST, PUT, DELETE, etc.
       headers: {
         'Content-Type': 'application/json'
@@ -628,25 +643,36 @@ class WXAMC {
       referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
       body: JSON.stringify(objSave) // body data type must match "Content-Type" header
     })
-      .then((response) => {
-        if (!response.ok) { // ***
-          webix.message({
-            type: "error",
-            text: "HTTP error " + response.status
-          }); // ***
-        } else {
-          webix.message({
-            type: "success",
-            text: "erstellt und downloaded"
-          });
-          // download file
-          webix.send("./exports/Meisterschaft-" + objSave.year + ".xlsx", {}, "GET");
-        }
-      })
-      .catch((e) => webix.message({
-        type: "error",
-        text: e
-      }));
+    .then(function (response) {
+      if (!response.ok)
+        webix.message('Fehler beim schreiben der Exceldatei', 'Error');
+      return response.json();
+    })
+    .catch(function (error) {
+      webix.message({ type: "error", text: error })
+    });
+
+  Promise.resolve(promise)
+    .then(function (data) {
+      if (data.type == "info") {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "./exports/" + data.filename, true);
+        xhr.responseType = "blob";
+        xhr.onload = function (e) {
+          if (this.status === 200) {
+            // blob response
+            webix.html.download(this.response, data.filename);
+            webix.message(data.message, "Info");
+          }
+        };
+        xhr.send();
+    } else {
+        webix.message(data.message, "Error");
+      }
+    })
+    .catch(function (error) {
+      webix.message({ type: "error", text: error })
+    });
 
   } /* End writeAuswertung(). */
 

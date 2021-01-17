@@ -244,6 +244,7 @@ app.get('/Journal/getAccData', journal.getAccData);
 app.post('/Journal/addAtt', journal.addAttachment);
 app.delete('/Journal/delAtt', journal.delAttachment);
 app.get('/Journal/getAtt', journal.getAttachment);
+app.get('/Journal/export', exportData.writeJournal);
 
 const budget = require("./public/js/controllers/budget");
 app.get('/Budget/data', budget.getData);

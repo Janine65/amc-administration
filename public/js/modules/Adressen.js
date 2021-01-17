@@ -432,8 +432,8 @@ wxAMC.moduleClasses.Adressen = class {
         { id: "vorstand", header: "Vorstand", exportType: "boolean" },
         { id: "revisor", header: "Revisor", exportType: "boolean" },
         { id: "allianz", header: "Allianz", exportType: "boolean" },
-        { id: "eintritt", header: "Eintritt"},
-        { id: "austritt", header: "Austritt"}
+        { id: "eintritt", header: "Eintritt", exportType: "date" },
+        { id: "austritt", header: "Austritt", exportType: "date" }
       ] 
     });
   } /* End exportData(). */

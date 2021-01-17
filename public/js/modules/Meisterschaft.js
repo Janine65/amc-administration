@@ -125,7 +125,7 @@ wxAMC.moduleClasses.Meisterschaft = class {
               { id: "moduleMeisterschaft-refreshButton", view : "button", default : true, label : "Refresh", autowidth: true, type : "icon", disabled: false,
               icon : "webix_icon mdi mdi-refresh", click : this.refreshMeister.bind(this)},
               { id: "moduleMeisterschaft-exporthButton", view : "button", default : true, label : "Excel", autowidth: true, type : "icon", disabled: false,
-              icon : "webix_icon mdi mdi-file-excel", click : this.exportMeister.bind(this)},
+              icon : "webix_icon mdi mdi-file-excel", click : wxAMC.writeAuswertung.bind(this)},
               { width : 6 },
               { id: "moduleMeisterschaft-Kendjahr", view : "label", label: "", align: "right"},
               { id: "moduleMeisterschaft-Kcount", view : "label", label: "Anzahl 0", align: "right"},
@@ -152,15 +152,6 @@ wxAMC.moduleClasses.Meisterschaft = class {
   deactivate() {
   } /* End deactivate(). */
 
-  /**
-   * export both tables to one excel file
-   */
-  async exportMeister() {
-    await webix.toExcel([{id: "moduleMeisterschaft-Citems", options: {name: "Clubmeisterschaft"}},
-    {id: "moduleMeisterschaft-Kitems", options: {name: "Kegelmeisterschaft"}}],
-    {filename: "Meisterschaft", styles:true});
-
-  }
   /**
    * Recalculate both championships
    */
