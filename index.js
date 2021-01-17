@@ -102,6 +102,7 @@ app.delete('/Adressen/data', adresse.removeData);
 app.get('/data/getFkData', adresse.getFKData);
 app.get('/Adressen/data', adresse.getOneData);
 app.get('/Adressen/getOverviewData', adresse.getOverviewData);
+app.put('/Adressen/export', exportData.writeAdresses);
 
 app.post('/Adressen/email', sendEmail);
 

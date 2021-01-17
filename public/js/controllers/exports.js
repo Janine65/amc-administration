@@ -23,6 +23,152 @@ module.exports = {
      * @param {Request} req 
      * @param {Response} res 
      */
+    writeAdresses: async function (req, res) {
+        console.log("writeAdresses");
+        
+        // filter einbauen aus body.filter
+        
+		var arData = await db.Adressen.findAll(
+            { where: { 			
+                austritt: { [Op.gte]: new Date() }
+                 }
+            }
+		)
+        .catch((e) => {
+            console.error(e);
+            res.json({
+                type: "error",
+                message: e,
+            });
+        });
+
+        const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+        var fmtToday = new Date().toLocaleDateString("de-DE", options);
+        const workbook = new ExcelJS.Workbook();
+        workbook.creator = "Janine Franken";
+
+        // Force workbook calculation on load
+        workbook.calcProperties.fullCalcOnLoad = true;
+
+        var sheet = workbook.addWorksheet("Adressen", {
+            pageSetup: {
+                fitToPage: true,
+                fitToHeight: 1,
+                fitToWidth: 1,
+            },
+            headerFooter: {
+                oddHeader: "&18Auto-Moto-Club Swissair",
+                oddFooter: "&14Adressen Stand per " + fmtToday 
+            }
+        });
+
+
+        // Schreibe Adressdaten
+        setCellValueFormat(sheet, 'A1', "MNR", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        setCellValueFormat(sheet, 'B1', "Anrede", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        setCellValueFormat(sheet, 'C1', "Name", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        setCellValueFormat(sheet, 'D1', "Vorname", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        setCellValueFormat(sheet, 'E1', "Adresse", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        setCellValueFormat(sheet, 'F1', "PLZ", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        setCellValueFormat(sheet, 'G1', "Ort", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        setCellValueFormat(sheet, 'H1', "Land", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        setCellValueFormat(sheet, 'I1', "Telefon (P)", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        setCellValueFormat(sheet, 'J1', "Mobile", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        setCellValueFormat(sheet, 'K1', "Email", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        setCellValueFormat(sheet, 'L1', "Notizen", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        setCellValueFormat(sheet, 'M1', "SAM Nr.", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        setCellValueFormat(sheet, 'N1', "SAM Mitglied", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        setCellValueFormat(sheet, 'O1', "Ehrenmitglied", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        setCellValueFormat(sheet, 'P1', "Vorstand", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        setCellValueFormat(sheet, 'Q1', "Revisor", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        setCellValueFormat(sheet, 'R1', "Allianz", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        setCellValueFormat(sheet, 'S1', "Eintritt", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        setCellValueFormat(sheet, 'T1', "Austritt", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+
+        var row = 2;
+
+        for (let index = 0; index < arData.length; index++) {
+            const element = arData[index];
+
+            setCellValueFormat(sheet, 'A' + row, element.mnr, true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'B' + row, (element.geschlecht == '1' ? "Herr" : "Frau") , true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'C' + row, element.name, true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'D' + row, element.vorname, true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'E' + row, element.adresse, true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'F' + row, element.plz, true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'G' + row, element.ort, true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'H' + row, element.land, true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'I' + row, element.telefon_p, true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'J' + row, element.mobile, true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'K' + row, element.email, true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'L' + row, element.notes, true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'M' + row, element.mnr_sam, true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'N' + row, (element.sam_mitglied == "1" ? "Ja" : "Nein"), true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            sheet.getCell('N' + row).alignment = { horizontal: "center" };
+            setCellValueFormat(sheet, 'O' + row, (element.ehrenmitglied == "1" ? "Ja" : "Nein"), true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            sheet.getCell('O' + row).alignment = { horizontal: "center" };
+            setCellValueFormat(sheet, 'P' + row, (element.vorstand == "1" ? "Ja" : "Nein"), true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            sheet.getCell('P' + row).alignment = { horizontal: "center" };
+            setCellValueFormat(sheet, 'Q' + row, (element.revisor == "1" ? "Ja" : "Nein"), true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            sheet.getCell('Q' + row).alignment = { horizontal: "center" };
+            setCellValueFormat(sheet, 'R' + row, (element.allianz == "1" ? "Ja" : "Nein"), true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            sheet.getCell('R' + row).alignment = { horizontal: "center" };
+            var date = new Date(element.eintritt);
+            var dateFmt = date.toLocaleDateString('de-DE', options);   
+            setCellValueFormat(sheet, 'S' + row, dateFmt, true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            date = new Date(element.austritt);
+            dateFmt = date.toLocaleDateString('de-DE', options);   
+            setCellValueFormat(sheet, 'T' + row, (dateFmt == "01.01.3000" ? "" : dateFmt), true, '', {size: iFontSizeRow, name: 'Tahoma' });
+
+            row++;
+
+        }
+
+        sheet.autoFilter = "A1:T1";
+
+        sheet.getColumn('A').width = 10;
+        sheet.getColumn('B').width = 12;
+        sheet.getColumn('C').width = 15;
+        sheet.getColumn('D').width = 15;
+        sheet.getColumn('E').width = 25;
+        sheet.getColumn('F').width = 8;
+        sheet.getColumn('G').width = 25;
+        sheet.getColumn('H').width = 10;
+        sheet.getColumn('I').width = 20;
+        sheet.getColumn('J').width = 20;
+        sheet.getColumn('K').width = 35;
+        sheet.getColumn('L').width = 35;
+        sheet.getColumn('M').width = 13;
+        sheet.getColumn('N').width = 20;
+        sheet.getColumn('O').width = 20;
+        sheet.getColumn('P').width = 20;
+        sheet.getColumn('Q').width = 20;
+        sheet.getColumn('R').width = 20;
+        sheet.getColumn('S').width = 12;
+        sheet.getColumn('T').width = 12;
+
+        const filename = "Adressen-" + fmtToday + ".xlsx";
+        await workbook.xlsx.writeFile("./public/exports/" + filename)
+            .catch((e) => {
+            console.error(e);
+            res.json({
+                type: "error",
+                message: e,
+            });
+        });
+
+        return res.json({
+            type: "info",
+            message: "Excelfile erstellt",
+            filename: filename
+        });
+    },
+
+    /**
+     * Erstellt ein Excelfile mit dem Journal
+     * @param {Request} req 
+     * @param {Response} res 
+     */
     writeJournal: async function (req, res) {
         console.log("writeAuswertung");
         const sjahr = eval(req.query.jahr * 1);
@@ -73,7 +219,7 @@ module.exports = {
         });
 
 
-        // Schreibe Bilanzdaten
+        // Schreibe Journal
         setCellValueFormat(sheet, 'B1', "Journal " + sjahr, false, '', { bold: true, size: iFontSizeHeader, name: 'Tahoma' });
 
         setCellValueFormat(sheet, 'B3', "No", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
