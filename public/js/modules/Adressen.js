@@ -410,32 +410,50 @@ wxAMC.moduleClasses.Adressen = class {
    * Export selected data to Excel
    */
   exportData() {
-    webix.toExcel($$("moduleAdressen-items"), {
-      filename: "Adressen",
-      rawValues: true,
-      columns: [
-        { id: "mnr", header: "MNR" },
-        { id: "geschlecht", header: "Geschlecht" },
-        { id: "name", header: "Name" },
-        { id: "vorname", header: "Vorname" },
-        { id: "adresse", header: "Adresse" },
-        { id: "plz", header: "PLZ" },
-        { id: "ort", header: "Ort" },
-        { id: "land", header: "Land" },
-        { id: "telefon_p", header: "Telefon (P)" },
-        { id: "mobile", header: "Mobile" },
-        { id: "email", header: "Email" },
-        { id: "notes", header: "Notizen" },
-        { id: "mnr_sam", header: "SAM Nr." },
-        { id: "sam_mitglied", header: "SAM Mitglied", exportType: "boolean" },
-        { id: "ehrenmitglied", header: "Ehrenmitglied", exportType: "boolean" },
-        { id: "vorstand", header: "Vorstand", exportType: "boolean" },
-        { id: "revisor", header: "Revisor", exportType: "boolean" },
-        { id: "allianz", header: "Allianz", exportType: "boolean" },
-        { id: "eintritt", header: "Eintritt", exportType: "date" },
-        { id: "austritt", header: "Austritt", exportType: "date" }
-      ] 
-    });
+    // read the fiscalyear to handle all the rights
+    var state = $$("moduleAdressen-items").getState();
+    
+    const promiseAccount = fetch("/Adressen/export",
+    { method: "PUT",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+      body: JSON.stringify(state) // body data type must match "Content-Type" header
+
+    })
+      .then(function (response) {
+        if (!response.ok)
+          webix.message('Fehler beim Exportieren der Adressen', 'Error');
+        return response.json();
+      })
+      .catch(function (error) {
+        webix.message({ type: "error", text: error })
+      });
+
+    Promise.resolve(promiseAccount)
+      .then(function (data) {
+        if (data.type == "info") {
+          var xhr = new XMLHttpRequest();
+          xhr.open("GET", "./exports/" + data.filename, true);
+          xhr.responseType = "blob";
+          xhr.onload = function (e) {
+            if (this.status === 200) {
+              // blob response
+              webix.html.download(this.response, data.filename);
+              webix.message(data.message, "Info");
+            }
+          };
+          xhr.send();
+        } else {
+          webix.message(data.message, "Error");
+        }
+      })
+      .catch(function (error) {
+        webix.message({ type: "error", text: error })
+      });
+
+
   } /* End exportData(). */
 
   /**
@@ -609,6 +627,11 @@ wxAMC.moduleClasses.Adressen = class {
    * Refresh the adressen list from local storage.
    */
   async refreshData() {
+    var state = $$("moduleAdressen-items").getState();
+    if (!state || !state.sort)
+      state.sort = [{ by: "name", id: "name", dir: "asc" }, { by: "vorname", id: "vorname", dir: "asc" }];
+    // you can save it to the local storage 
+    webix.storage.local.put("state", state);
 
     const url = "/Adressen/data";
     // var dataItems;
@@ -632,22 +655,16 @@ wxAMC.moduleClasses.Adressen = class {
         //wxAMC.sortArray(itemsAsArray, "vorname", "A");
         //wxAMC.sortArray(itemsAsArray, "name", "A");
 
-        var state = $$("moduleAdressen-items").getState();
-        var sort = state.sort;
-        if (sort == null) {
-          sort = [{ by: "name", id: "name", dir: "asc" }, { by: "vorname", id: "vorname", dir: "asc" }];
-        }
-        console.info("reloadGrid: ", sort);
         $$("moduleAdressen-items").clearAll();
         $$("moduleAdressen-items").parse(itemsAsArray);
-        $$("moduleAdressen-items").sort(sort);
-        if (sort instanceof Array) {
+        $$("moduleAdressen-items").setState(state);
+        if (state.sort instanceof Array) {
           for (let ind2 = 0; ind2 < sort.length; ind2++) {
             const element = sort[ind2];
             $$("moduleAdressen-items").markSorting(element.id, element.dir, true);
           }
         } else {
-          $$("moduleAdressen-items").markSorting(sort.id, sort.dir);
+          $$("moduleAdressen-items").markSorting(state.sort.id, state.sort.dir);
         }
 
 
