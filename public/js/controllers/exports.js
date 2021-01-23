@@ -25,25 +25,46 @@ module.exports = {
      */
     writeAdresses: async function (req, res) {
         console.log("writeAdresses");
-        
+
         // filter einbauen aus body.filter
-        
-		var arData = await db.Adressen.findAll(
-            { where: { 			
-                austritt: { [Op.gte]: new Date() }
-                 }
-            }
-		)
-        .catch((e) => {
-            console.error(e);
-            res.json({
-                type: "error",
-                message: e,
+        const filter = req.body.filter;
+        console.log(filter);
+
+        var sWhere = { austritt: { [Op.gte]: new Date() } };
+        if (filter.adresse != '')
+            sWhere.adresse = { [Op.like]: "%" + filter.adresse + "%" };
+        if (filter.name != '')
+            sWhere.name = { [Op.like]: "%" + filter.name + "%" };
+        if (filter.vorname != '')
+            sWhere.vorname = { [Op.like]: "%" + filter.vorname + "%" };
+        if (filter.ort != '')
+            sWhere.ort = { [Op.like]: "%" + filter.ort + "%" };
+        if (filter.plz != '')
+            sWhere.plz = { [Op.like]: "%" + filter.plz + "%" };
+        if (filter.sam_mitglied != '')
+            sWhere.sam_mitglied = filter.sam_mitglied;
+        if (filter.vorstand != '')
+            sWhere.vorstand = filter.vorstand;
+        if (filter.revisor != '')
+            sWhere.revisor = filter.revisor;
+        if (filter.ehrenmitglied != '')
+            sWhere.ehrenmitglied = filter.ehrenmitglied;
+
+        var arData = await db.Adressen.findAll(
+            { where: sWhere }
+        )
+            .catch((e) => {
+                console.error(e);
+                res.json({
+                    type: "error",
+                    message: e,
+                });
+                return;
             });
-        });
 
         const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-        var fmtToday = new Date().toLocaleDateString("de-DE", options);
+        const datum = new Date();
+        var fmtToday = datum.getDate() + "." + (datum.getMonth() + 1) + "." + datum.getFullYear()
         const workbook = new ExcelJS.Workbook();
         workbook.creator = "Janine Franken";
 
@@ -58,7 +79,7 @@ module.exports = {
             },
             headerFooter: {
                 oddHeader: "&18Auto-Moto-Club Swissair",
-                oddFooter: "&14Adressen Stand per " + fmtToday 
+                oddFooter: "&14Adressen Stand per " + fmtToday
             }
         });
 
@@ -90,35 +111,35 @@ module.exports = {
         for (let index = 0; index < arData.length; index++) {
             const element = arData[index];
 
-            setCellValueFormat(sheet, 'A' + row, element.mnr, true, '', {size: iFontSizeRow, name: 'Tahoma' });
-            setCellValueFormat(sheet, 'B' + row, (element.geschlecht == '1' ? "Herr" : "Frau") , true, '', {size: iFontSizeRow, name: 'Tahoma' });
-            setCellValueFormat(sheet, 'C' + row, element.name, true, '', {size: iFontSizeRow, name: 'Tahoma' });
-            setCellValueFormat(sheet, 'D' + row, element.vorname, true, '', {size: iFontSizeRow, name: 'Tahoma' });
-            setCellValueFormat(sheet, 'E' + row, element.adresse, true, '', {size: iFontSizeRow, name: 'Tahoma' });
-            setCellValueFormat(sheet, 'F' + row, element.plz, true, '', {size: iFontSizeRow, name: 'Tahoma' });
-            setCellValueFormat(sheet, 'G' + row, element.ort, true, '', {size: iFontSizeRow, name: 'Tahoma' });
-            setCellValueFormat(sheet, 'H' + row, element.land, true, '', {size: iFontSizeRow, name: 'Tahoma' });
-            setCellValueFormat(sheet, 'I' + row, element.telefon_p, true, '', {size: iFontSizeRow, name: 'Tahoma' });
-            setCellValueFormat(sheet, 'J' + row, element.mobile, true, '', {size: iFontSizeRow, name: 'Tahoma' });
-            setCellValueFormat(sheet, 'K' + row, element.email, true, '', {size: iFontSizeRow, name: 'Tahoma' });
-            setCellValueFormat(sheet, 'L' + row, element.notes, true, '', {size: iFontSizeRow, name: 'Tahoma' });
-            setCellValueFormat(sheet, 'M' + row, element.mnr_sam, true, '', {size: iFontSizeRow, name: 'Tahoma' });
-            setCellValueFormat(sheet, 'N' + row, (element.sam_mitglied == "1" ? "Ja" : "Nein"), true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'A' + row, element.mnr, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'B' + row, (element.geschlecht == '1' ? "Herr" : "Frau"), true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'C' + row, element.name, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'D' + row, element.vorname, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'E' + row, element.adresse, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'F' + row, element.plz, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'G' + row, element.ort, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'H' + row, element.land, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'I' + row, element.telefon_p, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'J' + row, element.mobile, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'K' + row, element.email, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'L' + row, element.notes, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'M' + row, element.mnr_sam, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'N' + row, (element.sam_mitglied == "1" ? "Ja" : "Nein"), true, '', { size: iFontSizeRow, name: 'Tahoma' });
             sheet.getCell('N' + row).alignment = { horizontal: "center" };
-            setCellValueFormat(sheet, 'O' + row, (element.ehrenmitglied == "1" ? "Ja" : "Nein"), true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'O' + row, (element.ehrenmitglied == "1" ? "Ja" : "Nein"), true, '', { size: iFontSizeRow, name: 'Tahoma' });
             sheet.getCell('O' + row).alignment = { horizontal: "center" };
-            setCellValueFormat(sheet, 'P' + row, (element.vorstand == "1" ? "Ja" : "Nein"), true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'P' + row, (element.vorstand == "1" ? "Ja" : "Nein"), true, '', { size: iFontSizeRow, name: 'Tahoma' });
             sheet.getCell('P' + row).alignment = { horizontal: "center" };
-            setCellValueFormat(sheet, 'Q' + row, (element.revisor == "1" ? "Ja" : "Nein"), true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'Q' + row, (element.revisor == "1" ? "Ja" : "Nein"), true, '', { size: iFontSizeRow, name: 'Tahoma' });
             sheet.getCell('Q' + row).alignment = { horizontal: "center" };
-            setCellValueFormat(sheet, 'R' + row, (element.allianz == "1" ? "Ja" : "Nein"), true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'R' + row, (element.allianz == "1" ? "Ja" : "Nein"), true, '', { size: iFontSizeRow, name: 'Tahoma' });
             sheet.getCell('R' + row).alignment = { horizontal: "center" };
             var date = new Date(element.eintritt);
-            var dateFmt = date.toLocaleDateString('de-DE', options);   
-            setCellValueFormat(sheet, 'S' + row, dateFmt, true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            var dateFmt = date.toLocaleDateString('de-DE', options);
+            setCellValueFormat(sheet, 'S' + row, dateFmt, true, '', { size: iFontSizeRow, name: 'Tahoma' });
             date = new Date(element.austritt);
-            dateFmt = date.toLocaleDateString('de-DE', options);   
-            setCellValueFormat(sheet, 'T' + row, (dateFmt == "01.01.3000" ? "" : dateFmt), true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            dateFmt = date.toLocaleDateString('de-DE', options);
+            setCellValueFormat(sheet, 'T' + row, (dateFmt == "01.01.3000" ? "" : dateFmt), true, '', { size: iFontSizeRow, name: 'Tahoma' });
 
             row++;
 
@@ -150,12 +171,12 @@ module.exports = {
         const filename = "Adressen-" + fmtToday + ".xlsx";
         await workbook.xlsx.writeFile("./public/exports/" + filename)
             .catch((e) => {
-            console.error(e);
-            res.json({
-                type: "error",
-                message: e,
+                console.error(e);
+                res.json({
+                    type: "error",
+                    message: e,
+                });
             });
-        });
 
         return res.json({
             type: "info",
@@ -173,28 +194,28 @@ module.exports = {
         console.log("writeAuswertung");
         const sjahr = eval(req.query.jahr * 1);
 
-		var arData = await db.Journal.findAll(
-			{
-				where: sequelize.where(sequelize.fn('YEAR', sequelize.col('date')), sjahr),
-				include: [
-					{ model: db.Account, as: 'fromAccount', required: true, attributes: ['id', 'order', 'name'] },
-					{ model: db.Account, as: 'toAccount', required: true, attributes: ['id', 'order', 'name'] }
+        var arData = await db.Journal.findAll(
+            {
+                where: sequelize.where(sequelize.fn('YEAR', sequelize.col('date')), sjahr),
+                include: [
+                    { model: db.Account, as: 'fromAccount', required: true, attributes: ['id', 'order', 'name'] },
+                    { model: db.Account, as: 'toAccount', required: true, attributes: ['id', 'order', 'name'] }
                 ],
                 attributes: ['id', 'amount', 'journalNo', 'memo', 'date'],
-				order: [
-					['journalNo', 'asc'],
-					['date', 'asc'],
-					['from_account', 'asc'],
-				]
-			}
-		)
-        .catch((e) => {
-            console.error(e);
-            res.json({
-                type: "error",
-                message: e,
+                order: [
+                    ['journalNo', 'asc'],
+                    ['date', 'asc'],
+                    ['from_account', 'asc'],
+                ]
+            }
+        )
+            .catch((e) => {
+                console.error(e);
+                res.json({
+                    type: "error",
+                    message: e,
+                });
             });
-        });
 
 
         const workbook = new ExcelJS.Workbook();
@@ -237,14 +258,14 @@ module.exports = {
             const element = arData[index];
 
             const date = new Date(element.date);
-            var dateFmt = date.toLocaleDateString('de-DE', options);   
-            
-            setCellValueFormat(sheet, 'B' + row, element.journalNo, true, '', {size: iFontSizeRow, name: 'Tahoma' });
-            setCellValueFormat(sheet, 'C' + row, dateFmt, true, '', {size: iFontSizeRow, name: 'Tahoma' });
-            setCellValueFormat(sheet, 'D' + row, element.fromAccount.order + " " + element.fromAccount.name, true, '', {size: iFontSizeRow, name: 'Tahoma' });
-            setCellValueFormat(sheet, 'E' + row, element.toAccount.order + " " + element.toAccount.name, true, '', {size: iFontSizeRow, name: 'Tahoma' });
-            setCellValueFormat(sheet, 'F' + row, element.memo, true, '', {size: iFontSizeRow, name: 'Tahoma' });
-            setCellValueFormat(sheet, 'G' + row, eval(element.amount * 1), true, '', {size: iFontSizeRow, name: 'Tahoma' });
+            var dateFmt = date.toLocaleDateString('de-DE', options);
+
+            setCellValueFormat(sheet, 'B' + row, element.journalNo, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'C' + row, dateFmt, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'D' + row, element.fromAccount.order + " " + element.fromAccount.name, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'E' + row, element.toAccount.order + " " + element.toAccount.name, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'F' + row, element.memo, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'G' + row, eval(element.amount * 1), true, '', { size: iFontSizeRow, name: 'Tahoma' });
             sheet.getCell('G' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
 
             row++;
@@ -261,12 +282,12 @@ module.exports = {
         const filename = "Journal-" + sjahr + ".xlsx";
         await workbook.xlsx.writeFile("./public/exports/" + filename)
             .catch((e) => {
-            console.error(e);
-            res.json({
-                type: "error",
-                message: e,
+                console.error(e);
+                res.json({
+                    type: "error",
+                    message: e,
+                });
             });
-        });
 
         return res.json({
             type: "info",
@@ -295,22 +316,22 @@ module.exports = {
                 ['rang', 'asc']
             ]
         })
-        .catch((e) => {
-            console.error(e);
-            res.json({
-                type: "error",
-                message: e,
+            .catch((e) => {
+                console.error(e);
+                res.json({
+                    type: "error",
+                    message: e,
+                });
             });
-        });
 
         Promise.resolve(dbMeister)
-        .catch((e) => {
-            console.error(e);
-            res.json({
-                type: "error",
-                message: e,
+            .catch((e) => {
+                console.error(e);
+                res.json({
+                    type: "error",
+                    message: e,
+                });
             });
-        });
 
         var worksheet = workbook.getWorksheet('Clubmeisterschaft');
         worksheet.getCell("A1").value = "Clubmeisterschaft " + objSave.year;
@@ -331,22 +352,22 @@ module.exports = {
                 ['rang', 'asc']
             ]
         })
-        .catch((e) => {
-            console.error(e);
-            res.json({
-                type: "error",
-                message: e,
+            .catch((e) => {
+                console.error(e);
+                res.json({
+                    type: "error",
+                    message: e,
+                });
             });
-        });
 
         Promise.resolve(dbMeister)
-        .catch((e) => {
-            console.error(e);
-            res.json({
-                type: "error",
-                message: e,
+            .catch((e) => {
+                console.error(e);
+                res.json({
+                    type: "error",
+                    message: e,
+                });
             });
-        });
 
 
         worksheet = workbook.getWorksheet('Kegelmeisterschaft');
@@ -383,22 +404,22 @@ module.exports = {
                 raw: false
             }
         )
-        .catch((e) => {
-            console.error(e);
-            res.json({
-                type: "error",
-                message: e,
+            .catch((e) => {
+                console.error(e);
+                res.json({
+                    type: "error",
+                    message: e,
+                });
             });
-        });
 
         Promise.resolve(dbChartData)
-        .catch((e) => {
-            console.error(e);
-            res.json({
-                type: "error",
-                message: e,
+            .catch((e) => {
+                console.error(e);
+                res.json({
+                    type: "error",
+                    message: e,
+                });
             });
-        });
 
 
         worksheet = workbook.getWorksheet('Datenbereich für Beteiligung');
@@ -439,21 +460,21 @@ module.exports = {
                 raw: false
             }
         )
-        .catch((e) => {
-            console.error(e);
-            res.json({
-                type: "error",
-                message: e,
+            .catch((e) => {
+                console.error(e);
+                res.json({
+                    type: "error",
+                    message: e,
+                });
             });
-        });
         Promise.resolve(dbChartData)
-        .catch((e) => {
-            console.error(e);
-            res.json({
-                type: "error",
-                message: e,
+            .catch((e) => {
+                console.error(e);
+                res.json({
+                    type: "error",
+                    message: e,
+                });
             });
-        });
 
         worksheet = workbook.getWorksheet('Datenbereich Vergleich Vorjahr');
         row = 3
@@ -466,13 +487,13 @@ module.exports = {
         // Datei sichern
         var filename = "Meisterschaft-" + objSave.year + ".xlsx";
         await workbook.xlsx.writeFile("./public/exports/" + filename)
-        .catch((e) => {
-            console.error(e);
-            res.json({
-                type: "error",
-                message: e,
+            .catch((e) => {
+                console.error(e);
+                res.json({
+                    type: "error",
+                    message: e,
+                });
             });
-        });
 
         return res.json({
             type: "info",
@@ -527,22 +548,22 @@ module.exports = {
                         },
                         order: [["name", "asc"], ["vorname", "asc"]]
                     })
-                    .catch((e) => {
-                        console.error(e);
-                        res.json({
-                            type: "error",
-                            message: e,
+                        .catch((e) => {
+                            console.error(e);
+                            res.json({
+                                type: "error",
+                                message: e,
+                            });
                         });
-                    });            
                     Promise.resolve(dbAdressen)
-                    .catch((e) => {
-                        console.error(e);
-                        res.json({
-                            type: "error",
-                            message: e,
+                        .catch((e) => {
+                            console.error(e);
+                            res.json({
+                                type: "error",
+                                message: e,
+                            });
                         });
-                    });
-            
+
                     for (const adress of dbAdressen) {
                         sheet = workbook.addWorksheet(adress.vorname + " " + adress.name, {
                             pageSetup: {
@@ -559,21 +580,21 @@ module.exports = {
                 } else {
                     // für ein Mitglied
                     oneAdresse = await db.Adressen.findByPk(objSave.id)
-                    .catch((e) => {
-                        console.error(e);
-                        res.json({
-                            type: "error",
-                            message: e,
+                        .catch((e) => {
+                            console.error(e);
+                            res.json({
+                                type: "error",
+                                message: e,
+                            });
                         });
-                    });
                     Promise.resolve(oneAdresse)
-                    .catch((e) => {
-                        console.error(e);
-                        res.json({
-                            type: "error",
-                            message: e,
+                        .catch((e) => {
+                            console.error(e);
+                            res.json({
+                                type: "error",
+                                message: e,
+                            });
                         });
-                    });
                     sheet = workbook.addWorksheet(oneAdresse.vorname + " " + oneAdresse.name, {
                         pageSetup: {
                             fitToPage: true,
@@ -619,22 +640,22 @@ module.exports = {
                 } else {
                     // für ein Mitglied
                     oneAdresse = await db.Adressen.findByPk(objSave.id)
-                    .catch((e) => {
-                        console.error(e);
-                        res.json({
-                            type: "error",
-                            message: e,
+                        .catch((e) => {
+                            console.error(e);
+                            res.json({
+                                type: "error",
+                                message: e,
+                            });
                         });
-                    });
-            
+
                     Promise.resolve(oneAdresse)
-                    .catch((e) => {
-                        console.error(e);
-                        res.json({
-                            type: "error",
-                            message: e,
+                        .catch((e) => {
+                            console.error(e);
+                            res.json({
+                                type: "error",
+                                message: e,
+                            });
                         });
-                    });           
 
                     sheet = workbook.addWorksheet(oneAdresse.vorname + " " + oneAdresse.name, {
                         pageSetup: {
@@ -656,13 +677,13 @@ module.exports = {
 
         const filename = "Stammblätter-" + objSave.year + ".xlsx";
         await workbook.xlsx.writeFile("./public/exports/" + filename)
-        .catch((e) => {
-            console.error(e);
-            res.json({
-                type: "error",
-                message: e,
+            .catch((e) => {
+                console.error(e);
+                res.json({
+                    type: "error",
+                    message: e,
+                });
             });
-        });
 
         return res.json({
             type: "info",
@@ -747,13 +768,13 @@ module.exports = {
                 raw: false
             }
         )
-        .catch((e) => {
-            console.error(e);
-            res.json({
-                type: "error",
-                message: e,
+            .catch((e) => {
+                console.error(e);
+                res.json({
+                    type: "error",
+                    message: e,
+                });
             });
-        });
 
         qrySelect = "select j.from_account, sum(j.amount) as amount";
         qrySelect += " from journal j";
@@ -768,13 +789,13 @@ module.exports = {
                 raw: false
             }
         )
-        .catch((e) => {
-            console.error(e);
-            res.json({
-                type: "error",
-                message: e,
+            .catch((e) => {
+                console.error(e);
+                res.json({
+                    type: "error",
+                    message: e,
+                });
             });
-        });
         for (let ind2 = 0; ind2 < arrAmount.length; ind2++) {
             const element = arrAmount[ind2];
             var found = accData.findIndex(acc => acc.id == element.from_account);
@@ -795,13 +816,13 @@ module.exports = {
                 raw: false
             }
         )
-        .catch((e) => {
-            console.error(e);
-            res.json({
-                type: "error",
-                message: e,
+            .catch((e) => {
+                console.error(e);
+                res.json({
+                    type: "error",
+                    message: e,
+                });
             });
-        });
         for (let ind2 = 0; ind2 < arrAmount.length; ind2++) {
             const element = arrAmount[ind2];
             found = accData.findIndex(acc => acc.id == element.to_account);
@@ -998,13 +1019,13 @@ module.exports = {
 
         const filename = "Bilanz-" + sjahr + ".xlsx";
         await workbook.xlsx.writeFile("./public/exports/" + filename)
-        .catch((e) => {
-            console.error(e);
-            res.json({
-                type: "error",
-                message: e,
+            .catch((e) => {
+                console.error(e);
+                res.json({
+                    type: "error",
+                    message: e,
+                });
             });
-        });
 
         return res.json({
             type: "info",
@@ -1166,14 +1187,14 @@ module.exports = {
 
         const filename = "Kontoauszug-" + sJahr + ".xlsx";
         await workbook.xlsx.writeFile("./public/exports/" + filename)
-        .catch((e) => {
-            console.error(e);
-            res.json({
-                type: "error",
-                message: e,
+            .catch((e) => {
+                console.error(e);
+                res.json({
+                    type: "error",
+                    message: e,
+                });
+                return;
             });
-            return;
-        });
 
         return res.json({
             type: "info",
@@ -1202,24 +1223,24 @@ function writeArray(sheet, arData, firstRow, fBudget = false, fBudgetVergleich =
         if (element.level == element.order) {
             row++;
             cellLevel = row;
-            setCellValueFormat(sheet, "B" + row, element.name, true, "B" + row + ":C" + row, { name: 'Tahoma', bold: true, size: iFontSizeTitel})
+            setCellValueFormat(sheet, "B" + row, element.name, true, "B" + row + ":C" + row, { name: 'Tahoma', bold: true, size: iFontSizeTitel })
 
-            setCellValueFormat(sheet, "D" + row, '', true, '', { name: 'Tahoma', bold: true, size: iFontSizeTitel})
-            setCellValueFormat(sheet, "E" + row, '', true, '', { name: 'Tahoma', bold: true, size: iFontSizeTitel})
-            setCellValueFormat(sheet, "F" + row, '', true, '', { name: 'Tahoma', bold: true, size: iFontSizeTitel})
+            setCellValueFormat(sheet, "D" + row, '', true, '', { name: 'Tahoma', bold: true, size: iFontSizeTitel })
+            setCellValueFormat(sheet, "E" + row, '', true, '', { name: 'Tahoma', bold: true, size: iFontSizeTitel })
+            setCellValueFormat(sheet, "F" + row, '', true, '', { name: 'Tahoma', bold: true, size: iFontSizeTitel })
 
             sheet.getCell('D' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
             sheet.getCell('E' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
             sheet.getCell('F' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
             if (fBudget) {
-                setCellValueFormat(sheet, "G" + row, '', true, '', { name: 'Tahoma', bold: true, size: iFontSizeTitel})
-                setCellValueFormat(sheet, "H" + row, '', true, '', { name: 'Tahoma', bold: true, size: iFontSizeTitel})
-    
+                setCellValueFormat(sheet, "G" + row, '', true, '', { name: 'Tahoma', bold: true, size: iFontSizeTitel })
+                setCellValueFormat(sheet, "H" + row, '', true, '', { name: 'Tahoma', bold: true, size: iFontSizeTitel })
+
                 sheet.getCell('G' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
                 sheet.getCell('H' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
             }
         } else {
-            var font = { name: 'Tahoma', size: iFontSizeRow};
+            var font = { name: 'Tahoma', size: iFontSizeRow };
             setCellValueFormat(sheet, "B" + row, element.order, true, '', font);
             setCellValueFormat(sheet, "C" + row, element.name, true, '', font);
             setCellValueFormat(sheet, 'D' + row, element.amount, true, '', font);
@@ -1259,7 +1280,7 @@ function writeArray(sheet, arData, firstRow, fBudget = false, fBudgetVergleich =
                 sheet.getCell('H' + row).alignment = {
                     horizontal: "right",
                 };
-    
+
                 sheet.getCell('G' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
                 sheet.getCell('H' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
             }
@@ -1387,13 +1408,13 @@ async function createTemplate(syear, sheet, inclPoints) {
             ["name", "asc"],
         ],
     })
-    .catch((e) => {
-        console.error(e);
-        res.json({
-            type: "error",
-            message: e,
+        .catch((e) => {
+            console.error(e);
+            res.json({
+                type: "error",
+                message: e,
+            });
         });
-    });
 
     setCellValueFormat(sheet, "A2", "CLUB/KEGELMEISTERSCHAFT", false, "A2:I2", { bold: true, size: iFontSizeHeader });
     let cell = sheet.getCell("A2");
@@ -1432,16 +1453,16 @@ async function createTemplate(syear, sheet, inclPoints) {
         size: iFontSizeTitel
     };
 
-    setCellValueFormat(sheet, "C11", "Kegelmeisterschaft", true, "C11:E11", {bold: true, size: iFontSizeTitel});
+    setCellValueFormat(sheet, "C11", "Kegelmeisterschaft", true, "C11:E11", { bold: true, size: iFontSizeTitel });
 
     let row = sFirstRow - 1;
-    setCellValueFormat(sheet, "A" + row, "Club", true, "", {bold: true, size: iFontSizeRow});
-    setCellValueFormat(sheet, "B" + row, "Datum", true, "", {bold: true, size: iFontSizeRow});
-    setCellValueFormat(sheet, "C" + row, "Resultate", true, "C" + row + ":G" + row, {bold: true, size: iFontSizeRow});
-    setCellValueFormat(sheet, "H" + row, "z Pkt.", true, "", {bold: true, size: iFontSizeRow});
-    setCellValueFormat(sheet, "I" + row, "Total", true, "", {bold: true, size: iFontSizeRow});
-    setCellValueFormat(sheet, "J" + row, "Visum", true, "", {bold: true, size: iFontSizeRow});
-    setCellValueFormat(sheet, "K" + row, "eventId", false, "", {bold: true, size: iFontSizeRow});
+    setCellValueFormat(sheet, "A" + row, "Club", true, "", { bold: true, size: iFontSizeRow });
+    setCellValueFormat(sheet, "B" + row, "Datum", true, "", { bold: true, size: iFontSizeRow });
+    setCellValueFormat(sheet, "C" + row, "Resultate", true, "C" + row + ":G" + row, { bold: true, size: iFontSizeRow });
+    setCellValueFormat(sheet, "H" + row, "z Pkt.", true, "", { bold: true, size: iFontSizeRow });
+    setCellValueFormat(sheet, "I" + row, "Total", true, "", { bold: true, size: iFontSizeRow });
+    setCellValueFormat(sheet, "J" + row, "Visum", true, "", { bold: true, size: iFontSizeRow });
+    setCellValueFormat(sheet, "K" + row, "eventId", false, "", { bold: true, size: iFontSizeRow });
 
     let clubTotal = 0;
 
@@ -1452,36 +1473,36 @@ async function createTemplate(syear, sheet, inclPoints) {
             row++;
             if (event.status == 1) {
                 clubTotal += event.punkte;
-                setCellValueFormat(sheet, "A" + row, (inclPoints ? event.punkte : ""), true, "", {size: iFontSizeRow});
+                setCellValueFormat(sheet, "A" + row, (inclPoints ? event.punkte : ""), true, "", { size: iFontSizeRow });
             } else {
-                setCellValueFormat(sheet, "A" + row, "", true, "", {size: iFontSizeRow, strike: true});
+                setCellValueFormat(sheet, "A" + row, "", true, "", { size: iFontSizeRow, strike: true });
             }
 
-            setCellValueFormat(sheet, "B" + row, event.datum, true, "", {size: iFontSizeRow});
-            setCellValueFormat(sheet, "C" + row, "", true, "", {size: iFontSizeRow});
-            setCellValueFormat(sheet, "D" + row, "", true, "", {size: iFontSizeRow});
-            setCellValueFormat(sheet, "E" + row, "", true, "", {size: iFontSizeRow});
-            setCellValueFormat(sheet, "F" + row, "", true, "", {size: iFontSizeRow});
-            setCellValueFormat(sheet, "G" + row, "", true, "", {size: iFontSizeRow});
-            setCellValueFormat(sheet, "H" + row, (event.nachkegeln == 0 ? 5 : 0), true, "", {size: iFontSizeRow});
-            setCellValueFormat(sheet, "I" + row, "", true, "", {size: iFontSizeRow});
-            setCellValueFormat(sheet, "J" + row, "", true, "", {size: iFontSizeRow});
-            setCellValueFormat(sheet, "K" + row, event.id, false, "", {size: iFontSizeRow});
+            setCellValueFormat(sheet, "B" + row, event.datum, true, "", { size: iFontSizeRow });
+            setCellValueFormat(sheet, "C" + row, "", true, "", { size: iFontSizeRow });
+            setCellValueFormat(sheet, "D" + row, "", true, "", { size: iFontSizeRow });
+            setCellValueFormat(sheet, "E" + row, "", true, "", { size: iFontSizeRow });
+            setCellValueFormat(sheet, "F" + row, "", true, "", { size: iFontSizeRow });
+            setCellValueFormat(sheet, "G" + row, "", true, "", { size: iFontSizeRow });
+            setCellValueFormat(sheet, "H" + row, (event.nachkegeln == 0 ? 5 : 0), true, "", { size: iFontSizeRow });
+            setCellValueFormat(sheet, "I" + row, "", true, "", { size: iFontSizeRow });
+            setCellValueFormat(sheet, "J" + row, "", true, "", { size: iFontSizeRow });
+            setCellValueFormat(sheet, "K" + row, event.id, false, "", { size: iFontSizeRow });
         }
     }
 
     row++;
-    setCellValueFormat(sheet, "F" + row, "Total Kegeln", true, "F" + row + ":H" + row, {bold: true, size: iFontSizeRow});
-    setCellValueFormat(sheet, "I" + row, 0, true, "", {bold: true, size: iFontSizeRow});
+    setCellValueFormat(sheet, "F" + row, "Total Kegeln", true, "F" + row + ":H" + row, { bold: true, size: iFontSizeRow });
+    setCellValueFormat(sheet, "I" + row, 0, true, "", { bold: true, size: iFontSizeRow });
     row++;
     row++;
 
-    setCellValueFormat(sheet, "C" + row, "Clubmeisterschaft", true, "C" + row + ":E" + row, {bold: true, size: iFontSizeTitel});
+    setCellValueFormat(sheet, "C" + row, "Clubmeisterschaft", true, "C" + row + ":E" + row, { bold: true, size: iFontSizeTitel });
 
     row++;
-    setCellValueFormat(sheet, "A" + row, "Club", true, "", {bold: true, size: iFontSizeRow});
-    setCellValueFormat(sheet, "B" + row, "Datum", true, "", {bold: true, size: iFontSizeRow});
-    setCellValueFormat(sheet, "C" + row, "Bezeichnung", true, "C" + row + ":I" + row, {bold: true, size: iFontSizeRow});
+    setCellValueFormat(sheet, "A" + row, "Club", true, "", { bold: true, size: iFontSizeRow });
+    setCellValueFormat(sheet, "B" + row, "Datum", true, "", { bold: true, size: iFontSizeRow });
+    setCellValueFormat(sheet, "C" + row, "Bezeichnung", true, "C" + row + ":I" + row, { bold: true, size: iFontSizeRow });
 
     for (const event of dbEvents) {
 
@@ -1490,19 +1511,19 @@ async function createTemplate(syear, sheet, inclPoints) {
             // clubevent einfache Liste
             if (event.status > 0) {
                 clubTotal += event.punkte;
-                setCellValueFormat(sheet, "A" + row, (inclPoints ? event.punkte : ""), true, "", {size: iFontSizeRow});
+                setCellValueFormat(sheet, "A" + row, (inclPoints ? event.punkte : ""), true, "", { size: iFontSizeRow });
             } else {
-                setCellValueFormat(sheet, "A" + row, "", true, "", {size: iFontSizeRow, strike: true});
+                setCellValueFormat(sheet, "A" + row, "", true, "", { size: iFontSizeRow, strike: true });
             }
-            setCellValueFormat(sheet, "B" + row, event.datum, true, "", {size: iFontSizeRow});
-            setCellValueFormat(sheet, "C" + row, event.name, true, "C" + row + ":I" + row, {size: iFontSizeRow});
-            setCellValueFormat(sheet, "K" + row, event.id, false, "", {size: iFontSizeRow});
+            setCellValueFormat(sheet, "B" + row, event.datum, true, "", { size: iFontSizeRow });
+            setCellValueFormat(sheet, "C" + row, event.name, true, "C" + row + ":I" + row, { size: iFontSizeRow });
+            setCellValueFormat(sheet, "K" + row, event.id, false, "", { size: iFontSizeRow });
         }
     }
 
     row++;
-    setCellValueFormat(sheet, "B" + row, "Total Club", true, "", {bold: true, size: iFontSizeRow});
-    setCellValueFormat(sheet, "A" + row, (inclPoints ? clubTotal : 0), true, "", {bold: true, size: iFontSizeRow});
+    setCellValueFormat(sheet, "B" + row, "Total Club", true, "", { bold: true, size: iFontSizeRow });
+    setCellValueFormat(sheet, "A" + row, (inclPoints ? clubTotal : 0), true, "", { bold: true, size: iFontSizeRow });
 
 
     sheet.getColumn("K").hidden = true;

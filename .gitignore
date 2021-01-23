@@ -10,4 +10,4 @@ public/.DS_Store
 public/js/.DS_Store
 public/uploads/*.xlsx
 public/uploads/*.pdf
-npm_modules/*
+node_modules

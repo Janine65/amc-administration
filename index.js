@@ -3,7 +3,6 @@ const express = require('express');
 const helmet = require('helmet');
 const bodyParser = require('body-parser');
 const path = require("path");
-const nodemailer = require("nodemailer");
 const _ = require("./public/js/cipher");
 const multer = require('multer') // v1.0.5
 const upload = multer() // for parsing multipart/form-data
@@ -104,72 +103,9 @@ app.get('/Adressen/data', adresse.getOneData);
 app.get('/Adressen/getOverviewData', adresse.getOverviewData);
 app.put('/Adressen/export', exportData.writeAdresses);
 
-app.post('/Adressen/email', sendEmail);
-
-function sendEmail(req, res) {
-  const email = req.body;
-
-  let email_from = global.gConfig.defaultEmail;
-  if (email.email_signature != "") {
-    email_from = email.email_signature;
-    let email_signature = fs.readFileSync("./public/assets/" + email.email_signature + ".html")
-    email.email_body += "<p>" + email_signature + "</p>";
-  }
-  // console.log(email);
-  let emailConfig = global.gConfig[email_from];
-  console.log(emailConfig);
-
-  // create reusable transporter object using the default SMTP transport
-  const transporter = nodemailer.createTransport({
-    host: emailConfig.smtp,
-    port: emailConfig.smtp_port,
-    secure: true, // true for 465, false for other ports
-    auth: {
-      user: emailConfig.smtp_user, // generated ethereal user
-      pass: global.cipher.decrypt(emailConfig.smtp_pwd), // generated ethereal password
-    }
-  });
-
-  // verify connection configuration
-  transporter.verify(function(error, success) {
-  if (error) {
-    res.json({type: "error", message: "SMTP Connection can not be verified"})
-  } else {
-    console.log("Server is ready to take our messages");
-  }
-  });
-
-  let attachments = []
-
-  if (email.uploadFiles) {
-    var files = email.uploadFiles.split(',');
-    for (let ind2 = 0; ind2 < files.length; ind2++) {
-      const file = files[ind2];
-      attachments.push({ filename: file, path: path.join(__dirname, '/public/uploads/' + file) });
-    }
-  }
-
-  transporter.sendMail({
-    from: emailConfig.email_from, // sender address
-    to: email.email_an, // list of receivers
-    cc: email.email_cc,
-    bcc: email.email_bcc,
-    attachments: attachments,
-    subject: email.email_subject, // Subject line
-    text: decodeURI(email.email_body), // plain text body
-    html: email.email_body, // html body
-    dsn: {
-      id: 'AMC',
-      return: 'headers',
-      notify: ['failure', 'delay'],
-      recipient: emailConfig.email_from
-    }
-  }, (err, info) => {
-    console.log(info.envelope);
-    console.log(info.messageId);
-    res.json(info);
-  });
-}
+const qrbill = require('./public/js/controllers/createbill');
+app.post('/Adressen/email', qrbill.sendEmail);
+app.post('/Adressen/qrbill', qrbill.createQRBill);
 
 const anlaesse = require("./public/js/controllers/anlaesse");
 app.get('/Anlaesse/data', anlaesse.getData);

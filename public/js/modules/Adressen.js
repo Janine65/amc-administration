@@ -143,6 +143,10 @@ wxAMC.moduleClasses.Adressen = class {
                 },
                 { width: 6 },
                 {
+                  id: "moduleAdressen-createBillButton", view: "button", label: "Billing", width: "80", type: "icon",
+                  icon: "webix_icon mdi mdi-export", click: this.createBill.bind(this)
+                },
+                {
                   id: "moduleAdressen-exportButton", view: "button", label: "Export", width: "80", type: "icon",
                   icon: "webix_icon mdi mdi-export", click: this.exportData.bind(this)
                 },
@@ -155,7 +159,7 @@ wxAMC.moduleClasses.Adressen = class {
         /* ---------- Memeber details cell. ---------- */
         {
           id: "moduleAdressen-details",
-          view: "tabview", multiview:true, 
+          view: "tabview", multiview: true,
           cells: [
             {
               header: "<span class='webix_icon mdi mdi-account-box'></span>Adresse",
@@ -274,33 +278,35 @@ wxAMC.moduleClasses.Adressen = class {
                     resizeColumn: { headerOnly: true },
                     scroll: true,
                     editable: false,
-                    autowidth:true, 
+                    autowidth: true,
                     columns: [
-                      {view: "text", header: "Datum", id: "datum", fillspace:true, 
-                      template:function(obj, common){
-                        if (obj.$group) return common.treetable(obj, common) + obj.jahr;
-                        return webix.i18n.dateFormatStr(obj.datum);
-                      }},
-                      {view: "text", header: "Bezeichnung", id: "name", width: 250},
-                      {view: "text", header: "Punkte", id: "punkte", adjust:true},
-                      {view: "text", header: "Total Kegeln", id: "total_kegeln", adjust:true},
-                      {view: "text", header: "Streichresulutat", id: "streichresultat", adjust:true, hidden:true}
-                    ],
-                    on:{
-                      "data->onGroupCreated":function(id, value, data){
-                        this.getItem(id).value = "Jahr "+value;
-                      }
-                    },
-                    scheme:{
-                      $group:{
-                        by:"jahr",
-                        map:{
-                          punkte:["punkte", "sum"],
-                          total_kegeln:["total_kegeln", "sum"]
+                      {
+                        view: "text", header: "Datum", id: "datum", fillspace: true,
+                        template: function (obj, common) {
+                          if (obj.$group) return common.treetable(obj, common) + obj.jahr;
+                          return webix.i18n.dateFormatStr(obj.datum);
                         }
                       },
-                      $sort:{ by:"jahr", as:"int", dir:"desc" }
-                    }                                    
+                      { view: "text", header: "Bezeichnung", id: "name", width: 250 },
+                      { view: "text", header: "Punkte", id: "punkte", adjust: true },
+                      { view: "text", header: "Total Kegeln", id: "total_kegeln", adjust: true },
+                      { view: "text", header: "Streichresulutat", id: "streichresultat", adjust: true, hidden: true }
+                    ],
+                    on: {
+                      "data->onGroupCreated": function (id, value, data) {
+                        this.getItem(id).value = "Jahr " + value;
+                      }
+                    },
+                    scheme: {
+                      $group: {
+                        by: "jahr",
+                        map: {
+                          punkte: ["punkte", "sum"],
+                          total_kegeln: ["total_kegeln", "sum"]
+                        }
+                      },
+                      $sort: { by: "jahr", as: "int", dir: "desc" }
+                    }
                   },
                   {
                     view: "toolbar",
@@ -407,21 +413,68 @@ wxAMC.moduleClasses.Adressen = class {
   } /* End deactivate(). */
 
   /**
+   * createBill
+   */
+  createBill() {
+    // read the fiscalyear to handle all the rights
+
+    var listId = $$("moduleAdressen-items").getFirstId();
+    while (listId > 0) {
+      var adresse = $$("moduleAdressen-items").getItem(listId);
+
+      const promiseAccount = fetch("/Adressen/qrbill",
+        {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+          body: JSON.stringify(adresse) // body data type must match "Content-Type" header
+
+        })
+        .then(function (response) {
+          if (!response.ok)
+            webix.message('Fehler beim Erstellen der Rechnungen', 'Error');
+          return response.json();
+        })
+        .catch(function (error) {
+          webix.message({ type: "error", text: error })
+        });
+
+      Promise.resolve(promiseAccount)
+        .then( data =>  {
+          if (data.type == "info") {
+                webix.message(data.message, "Info");
+          } else {
+            webix.message(data.message, "Error");
+          }
+        })
+        .catch(function (error) {
+          webix.message({ type: "error", text: error })
+        });
+
+      listId = $$("moduleAdressen-items").getNextId(listId);
+    }
+
+  }
+
+  /**
    * Export selected data to Excel
    */
   exportData() {
     // read the fiscalyear to handle all the rights
     var state = $$("moduleAdressen-items").getState();
-    
-    const promiseAccount = fetch("/Adressen/export",
-    { method: "PUT",
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-      body: JSON.stringify(state) // body data type must match "Content-Type" header
 
-    })
+    const promiseAccount = fetch("/Adressen/export",
+      {
+        method: "PUT",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+        body: JSON.stringify(state) // body data type must match "Content-Type" header
+
+      })
       .then(function (response) {
         if (!response.ok)
           webix.message('Fehler beim Exportieren der Adressen', 'Error');
@@ -513,14 +566,14 @@ wxAMC.moduleClasses.Adressen = class {
         })
         .catch((e) => webix.message("Daten konnten nicht geladen werden: " + e, "error", -1));
       await Promise.resolve(promiseModule)
-        .then(function(data) {
+        .then(function (data) {
           const itemsAsArray = wxAMC.objectAsArray(data);
           $$("moduleAdressen-Anlaesseitems").parse(itemsAsArray);
           $$("moduleAdressen-Anlaesseitems").open($$("moduleAdressen-Anlaesseitems").getFirstId());
         })
         .catch((e) => webix.message("Daten konnten nicht geladen werden:" + e, "error", -1));
     }
-      
+
 
   } /* End editExisting(). */
 
@@ -566,7 +619,7 @@ wxAMC.moduleClasses.Adressen = class {
       .catch((e) => webix.message("Mail konnte nicht erfolgreich gesendet werden: " + e, "error", -1));
     Promise.resolve(promiseModule)
       .then((response) => {
-          webix.message("Email wurde gesendet.", "info", -1);
+        webix.message("Email wurde gesendet.", "info", -1);
       })
       .catch((e) => webix.message(`Fehler beim Senden der Nachricht: ${e}`, "error", -1));
 
@@ -659,8 +712,8 @@ wxAMC.moduleClasses.Adressen = class {
         $$("moduleAdressen-items").parse(itemsAsArray);
         $$("moduleAdressen-items").setState(state);
         if (state.sort instanceof Array) {
-          for (let ind2 = 0; ind2 < sort.length; ind2++) {
-            const element = sort[ind2];
+          for (let ind2 = 0; ind2 < state.sort.length; ind2++) {
+            const element = state.sort[ind2];
             $$("moduleAdressen-items").markSorting(element.id, element.dir, true);
           }
         } else {
