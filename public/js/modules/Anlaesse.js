@@ -637,10 +637,11 @@ custom_checkbox(obj, common, value){
     datum.setUTCFullYear(new Date(anlassOrig.datum).getUTCFullYear()+1);
     anlass.datum = datum;
     anlass.name = anlassOrig.name;
+    anlass.status = 1;
     anlass.beschreibung = anlassOrig.beschreibung;
     anlass.istkegeln = anlassOrig.istkegeln;
     anlass.nachkegeln = anlassOrig.nachkegeln;
-    anlass.istsammanlass = anlassOrig.istsammanlass;
+    anlass.istsamanlass = anlassOrig.istsamanlass;
     anlass.punkte = anlassOrig.punkte;
     anlass.anlaesseId = anlassOrig.id;
 
