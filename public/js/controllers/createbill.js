@@ -128,8 +128,8 @@ module.exports = {
         journal.memo = "Mitgliederbeitrag " + sJahr + " von " + data.debtor.name;
         journal.date = new Date();
         journal.amount = 30;
-        journal.from_account = 21;
-        journal.to_account = 31;
+        journal.from_account = 31;
+        journal.to_account = 21;
         journal.receipt = undefined;
 
         await Journal.create(journal)
