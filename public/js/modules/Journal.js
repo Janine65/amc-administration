@@ -1094,7 +1094,7 @@ wxAMC.moduleClasses.Journal = class {
     $$("listBudgetList").data.each(function (obj) {
 
       // add or upd record
-      var data = {id : obj.accid, account: obj.id, amount: (obj.accamount == "" ? 0 : obj.accamount), memo: obj.accmemo, year: $$("moduleJournal-dateSelect").getValue()};
+      var data = { id: obj.accid, account: obj.id, amount: (obj.accamount == "" ? 0 : obj.accamount), memo: obj.accmemo, year: $$("moduleJournal-dateSelect").getValue() };
       //console.log(data);
       const url = "/Budget/data";
       var method = "PUT";
@@ -1263,73 +1263,79 @@ wxAMC.moduleClasses.Journal = class {
 
     var fValid = true;
 
-    const promiseModule = fetch("/Account/getOneDataByOrder?order=" + itemData.order)
-      .then(function (response) {
-        if (!response.ok)
-          webix.message('Fehler beim Lesen der Konten', 'Error');
-        return response.json();
-      }).catch(function (error) {
-        webix.message({ type: "error", text: error })
-        console.log(error);
-      });
-    Promise.resolve(promiseModule)
-      .then(function (counts) {
-        console.log('count', counts);
-        if (counts > 0) {
+    if (itemData.id == undefined || itemData.id == 0) {
+      const promiseModule = fetch("/Account/getOneDataByOrder?order=" + itemData.order)
+        .then(function (response) {
+          if (!response.ok)
+            webix.message('Fehler beim Lesen der Konten', 'Error');
           fValid = false;
-          webix.message({
-            type: "error",
-            text: "Kontonummer ist nicht eindeutig"
-          })
-          return;
-        }
-        if (fValid) {
-          const url = "/Account/data";
-          var smethond = (itemData.id > 0 ? "PUT" : "POST");
-
-          fetch(url, {
-            method: smethond, // *GET, POST, PUT, DELETE, etc.
-            mode: 'cors', // no-cors, *cors, same-origin
-            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: 'same-origin', // include, *same-origin, omit
-            headers: {
-              'Content-Type': 'application/json'
-              // 'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            redirect: 'follow', // manual, *follow, error
-            referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-            body: JSON.stringify(itemData) // body data type must match "Content-Type" header
-          })
-            .then((response) => {
-              if (!response.ok) { // ***
-                webix.message({
-                  type: "error",
-                  text: "Error " + response.status + " - " + response.statusText
-                });
-              }
-            }).then(function () {
-              // Refresh the module's summary list and return to that list.
-
-              wxAMC.modules['Journal'].refreshAccountList($$("listAccountAll").getValue());
-              wxAMC.modules['Journal'].refreshData();
-              $$("moduleJournal-listAccounts").show();
-
-              // Finally, show a completion message.
-              webix.message({
-                type: "success",
-                text: "gesichert"
-              });
-            })
-            .catch((e) => webix.message({
+          return response.json();
+        }).catch(function (error) {
+          fValid = false;
+          webix.message({ type: "error", text: error })
+          console.log(error);
+        });
+      await Promise.resolve(promiseModule)
+        .then(function (counts) {
+          console.log('count', counts);
+          if (counts > 0) {
+            fValid = false;
+            webix.message({
               type: "error",
-              text: e
-            }));
-        }
+              text: "Kontonummer ist nicht eindeutig"
+            })
+            return;
+          }
+        })
+        .catch(function (error) {
+          fValid = false;
+          webix.message({ type: "error", text: error });
+          console.log(error);
+        });
+    }
+
+    if (fValid) {
+      const url = "/Account/data";
+      var smethond = (itemData.id > 0 ? "PUT" : "POST");
+
+      fetch(url, {
+        method: smethond, // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, *cors, same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'same-origin', // include, *same-origin, omit
+        headers: {
+          'Content-Type': 'application/json'
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        redirect: 'follow', // manual, *follow, error
+        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+        body: JSON.stringify(itemData) // body data type must match "Content-Type" header
       })
-      .catch(function (error) {
-        webix.message({ type: "error", text: error });
-        console.log(error);
-      });
+        .then((response) => {
+          if (!response.ok) { // ***
+            webix.message({
+              type: "error",
+              text: "Error " + response.status + " - " + response.statusText
+            });
+          }
+        }).then(function () {
+          // Refresh the module's summary list and return to that list.
+
+          wxAMC.modules['Journal'].refreshAccountList($$("listAccountAll").getValue());
+          wxAMC.modules['Journal'].refreshData();
+          $$("moduleJournal-listAccounts").show();
+
+          // Finally, show a completion message.
+          webix.message({
+            type: "success",
+            text: "gesichert"
+          });
+        })
+        .catch((e) => webix.message({
+          type: "error",
+          text: e
+        }));
+    }
   }
 
   /**
