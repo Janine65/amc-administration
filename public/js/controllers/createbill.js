@@ -21,11 +21,11 @@ module.exports = {
 
         const adresse = req.body;
         const sJahr = global.Parameter.get("CLUBJAHR");
-
+    
         const data = {
             currency: "CHF",
             amount: 30.0,
-            additionalInformation: sJahr + "0000" + adresse.mnr,
+            additionalInformation: "Rechnungsnummer " + sJahr + "0000" + adresse.mnr,
             creditor: {
                 name: "Auto-Moto-Club Swissair",
                 address: "Breitenrain 4",
@@ -37,9 +37,9 @@ module.exports = {
             debtor: {
                 name: adresse.vorname + " " + adresse.name,
                 address: adresse.adresse,
-                zip: adresse.plz,
+                zip: eval(adresse.plz * 1),
                 city: adresse.ort,
-                country: "CH"
+                country: adresse.land
             }
         };
 
@@ -86,8 +86,8 @@ module.exports = {
         pdf.moveDown();
         pdf.fontSize(14);
         pdf.font("Helvetica-Bold");
-        pdf.text("Rechnung Nr. " + data.additionalInformation, SwissQRBill.utils.mmToPoints(20), SwissQRBill.utils.mmToPoints(100), {
-            width: SwissQRBill.utils.mmToPoints(70),
+        pdf.text(data.additionalInformation, SwissQRBill.utils.mmToPoints(20), SwissQRBill.utils.mmToPoints(100), {
+            width: SwissQRBill.utils.mmToPoints(140),
             align: "left"
         });
 
@@ -98,8 +98,7 @@ module.exports = {
 
         var text = [(adresse.geschlecht == 1 ? "Lieber " : "Liebe ") + adresse.vorname];
         text.push("");
-        text.push("Hiermit sende ich Dir die Mitglieder-Beitragsrechnung für das Verbandsjahr " + sJahr + 
-                    " zu. Ich bitte Dich, die Rechnung bis Ende Februar zu begleichen");
+        text.push(global.Parameter.get("RECHNUNG"));
         text.push("");
         text.push("Mit liebem Clubgruss");
         text.push("Janine Franken");

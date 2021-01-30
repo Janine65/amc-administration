@@ -144,7 +144,7 @@ wxAMC.moduleClasses.Adressen = class {
                 { width: 6 },
                 {
                   id: "moduleAdressen-createBillButton", view: "button", label: "Billing", width: "80", type: "icon",
-                  icon: "webix_icon mdi mdi-export", click: this.createBill.bind(this)
+                  icon: "webix_icon mdi mdi-export", click: () => { this.createBill(true) }
                 },
                 {
                   id: "moduleAdressen-exportButton", view: "button", label: "Export", width: "80", type: "icon",
@@ -245,6 +245,10 @@ wxAMC.moduleClasses.Adressen = class {
                       {
                         id: "moduleAdressen-printButton4", view: "button", default: true, label: "voll", width: "80", type: "icon", disabled: false,
                         icon: "webix_icon mdi mdi-file-excel", click: () => { wxAMC.excelDatasheet({ id: this.editingID, type: 2 }); }
+                      },
+                      {
+                        id: "moduleAdressen-createBillButtonOne", view: "button", label: "Billing", width: "80", type: "icon",
+                        icon: "webix_icon mdi mdi-export", click: () => { this.createBill(false) }
                       },
                       {
                         id: "moduleAdressen-emailButton", view: "button", label: "Email",
@@ -414,14 +418,23 @@ wxAMC.moduleClasses.Adressen = class {
 
   /**
    * createBill
-   */
-  createBill() {
+   * @param (boolean) fSelection alle selektierten Adresse oder 1 aus dem Formular
+   **/
+  createBill(fSelection) {
     // read the fiscalyear to handle all the rights
 
-    var listId = $$("moduleAdressen-items").getFirstId();
-    while (listId > 0) {
-      var adresse = $$("moduleAdressen-items").getItem(listId);
+    var arAdr = [];
 
+    if (fSelection) {
+      var listId = $$("moduleAdressen-items").getFirstId();
+      while (listId > 0) {
+        arAdr.push($$("moduleAdressen-items").getItem(listId));
+        listId = $$("moduleAdressen-items").getNextId(listId);
+      }
+    } else {
+      arAdr.push($$("moduleAdressen-detailsForm").getValues());
+    }
+    for (const adresse of arAdr) {
       const promiseAccount = fetch("/Adressen/qrbill",
         {
           method: "POST",
@@ -442,9 +455,9 @@ wxAMC.moduleClasses.Adressen = class {
         });
 
       Promise.resolve(promiseAccount)
-        .then( data =>  {
+        .then(data => {
           if (data.type == "info") {
-                webix.message(data.message, "Info");
+            webix.message(data.message, "Info");
           } else {
             webix.message(data.message, "Error");
           }
@@ -452,8 +465,6 @@ wxAMC.moduleClasses.Adressen = class {
         .catch(function (error) {
           webix.message({ type: "error", text: error })
         });
-
-      listId = $$("moduleAdressen-items").getNextId(listId);
     }
 
   }

@@ -32,10 +32,9 @@ wxAMC.moduleClasses.Parameters = class {
     wxAMC.parameter.forEach((value, key) => {
       elements.push({id:key , label: key , type: "text", value: value},);
     });
-    elements.push({ id: "USER", label: "Andere", type: "label"});
 
     return {
-      winWidth : 300, winHeight : 300, winLabel : "Parameters", winIcon : "mdi mdi-key", winHotkey: "ctrl+p",
+      winWidth : 800, winHeight : 300, winLabel : "Parameters", winIcon : "mdi mdi-key", winHotkey: "ctrl+p",
       id : "moduleParameters-container",
       cells : [
         /* ---------- Param list cell. ---------- */
@@ -44,7 +43,7 @@ wxAMC.moduleClasses.Parameters = class {
             { view : "property", id : "moduleParameters-items",
             css:"webix_header_border webix_data_border", 
             select:true, autofit:true,
-            resizeColumn: { headerOnly:true},
+            resizeColumn: { headerOnly:false},
             scroll:true, 
             editable:true,
             elements: elements,
