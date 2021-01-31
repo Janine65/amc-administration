@@ -627,15 +627,16 @@ wxAMC.moduleClasses.Adressen = class {
         }
         return response.json();
       })
-      .catch((e) => webix.message("Mail konnte nicht erfolgreich gesendet werden: " + e, "error", -1));
+      .catch((e) => {
+        console.log("Mail konnte nicht erfolgreich gesendet werden: " + e)
+        //webix.message("Mail konnte nicht erfolgreich gesendet werden: " + e, "error", -1)
+      });
     Promise.resolve(promiseModule)
       .then((response) => {
         webix.message("Email wurde gesendet.", "info", -1);
+        $$("moduleAdressen-itemsCell").show();
       })
       .catch((e) => webix.message(`Fehler beim Senden der Nachricht: ${e}`, "error", -1));
-
-    $$("moduleAdressen-itemsCell").show();
-
 
   } /* sendMail */
 
