@@ -25,7 +25,6 @@
   "homepage": "https://github.com/Janine65/amc-administration",
   "dependencies": {
     "@mdi/font": "^5.8.55",
-    "argon2": "^0.26.2",
     "blob-stream": "^0.1.3",
     "body-parser": "^1.19.0",
     "connect-session-sequelize": "^7.0.4",
