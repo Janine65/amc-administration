@@ -1,5 +1,5 @@
 var db = require("../db");
-const { Op, Sequelize } = require("Sequelize");
+const { Op, Sequelize } = require("sequelize");
 const dbFunc = require("./budget");
 const Account = db.Account;
 const Journal = db.Journal;
