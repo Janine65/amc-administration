@@ -1,7 +1,6 @@
 
 const express = require('express');
 const helmet = require('helmet');
-const bodyParser = require('body-parser');
 const path = require("path");
 const _ = require("./public/js/cipher");
 const multer = require('multer') // v1.0.5
@@ -43,7 +42,7 @@ var store = new SequelizeStore({
 
 const app = express();
 // 
-app.use(bodyParser.json());
+app.use(express.json());
 app.use("/", express.static(path.join(__dirname, '/public')));
 
 var expireDate = new Date();

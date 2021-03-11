@@ -1,0 +1,3 @@
+FROM node
+ENV NODE_ENV=production
+EXPOSE 3050

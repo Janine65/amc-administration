@@ -18,24 +18,14 @@ module.exports = {
 	},
 
 	getFKData: function(req, res) {
-		var qrySelect = "SELECT `year` as id, ";
-		qrySelect += " CONCAT(`name`,' - ', (CASE WHEN `state`= 1 THEN 'offen' WHEN `state`= 2 THEN 'prov. abgeschlossen' ELSE 'abgeschlossen' END)) as value,"; 
-		qrySelect += "(CASE WHEN `state`= 1 THEN 'open' WHEN `state`= 2 THEN 'prov-closed' ELSE 'closed' END) as $css"
-		qrySelect += " FROM `fiscalyear` " ;
-		if (req.query.filter != null) {
-			var qfield = '%' + req.query.filter.value + '%';
-			qrySelect = qrySelect + " WHERE lower(`name`) like '" + qfield + "'";
-		}
-		qrySelect = qrySelect + " ORDER BY 2";
-		
-		sequelize.query(qrySelect, 
-			{ 
-				type: Sequelize.QueryTypes.SELECT,
-				plain: false,
-				logging: console.log,
-				raw: false
-			}
-		).then(data => res.json(data))
+		FiscalYear.findAll({
+			attributes: [["year", "id"],
+			[Sequelize.fn("CONCAT", Sequelize.col("name"), " - ", Sequelize.literal("(CASE \"state\" WHEN 1 THEN 'offen' WHEN 2 THEN 'prov. abgeschlossen' ELSE 'abgeschlossen' END)")), 'value'],
+			[Sequelize.literal("(CASE \"state\" WHEN 1 THEN 'offen' WHEN 2 THEN 'prov-closed' ELSE 'closed' END)"), '$css']],
+			where : Sequelize.where(Sequelize.fn('LOWER', Sequelize.col("name")), {[Op.substring]: (req.query.filter != null ? req.query.filter.value : '')}),
+			order: ["year"]
+		})
+		.then(data => res.json(data))
 		.catch((e) => console.error(e));					
 	},
 

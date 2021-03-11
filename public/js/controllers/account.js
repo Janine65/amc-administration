@@ -1,27 +1,73 @@
 var db = require("../db");
-const { Op, Sequelize } = require("sequelize");
+const { Op, Sequelize } = require("Sequelize");
 const dbFunc = require("./budget");
+const Account = db.Account;
+const Journal = db.Journal;
 
 module.exports = {
-	getData: function (req, res) {				
-		var qrySelect = "SELECT * FROM account";
-		qrySelect += " WHERE `order` > 10";
-		if (req.query.all == 0) {
-			qrySelect += " AND status = 1";
-			qrySelect += " AND (id in (select from_account from journal where year(date) = " + req.query.jahr + ")";
-			qrySelect += " OR id in (select to_account from journal where year(date) = " + req.query.jahr + "))";
-		}
-		qrySelect += " ORDER BY level ASC , `order` ASC";
-		sequelize.query(qrySelect, 
+	getData: async function (req, res) {
+		var arJournalIds = [];
+		// var arJournalFrom = await Journal.findAll({
+		// 	attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('from_account')), "fromId"]],
+		// 	where: Sequelize.where(Sequelize.fn('YEAR', Sequelize.col('date')), req.query.jahr)
+		// 	}
+		// ).catch((e) => console.error(e));
+
+		var arfromAcc = await global.sequelize.query("SELECT DISTINCT from_account FROM journal WHERE year(date) = ?" , 
 			{ 
+				replacements: [req.query.jahr],
 				type: Sequelize.QueryTypes.SELECT,
 				plain: false,
 				logging: console.log,
-				model: db.Account,
 				raw: false
 			}
-		).then(data => res.json(data))
-		.catch((e) => console.error(e));					
+		)		
+		.catch((e) => console.error(e));
+		
+		for (let index = 0; index < arfromAcc.length; index++) {
+			const element = arfromAcc[index];
+			arJournalIds.push(element.from_account);
+		}
+
+
+		// var arJournalTo = await Journal.findAll({
+		// 	attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('to_account')), "toId"]] ,
+		// 	where: Sequelize.where(Sequelize.fn('YEAR', Sequelize.col('date')), req.query.jahr)
+		// 	}
+		// ).catch((e) => console.error(e));;
+		arfromAcc = await global.sequelize.query("SELECT DISTINCT to_account FROM journal WHERE year(date) = ?", 
+			{ 
+				replacements: [req.query.jahr],
+				type: Sequelize.QueryTypes.SELECT,
+				plain: false,
+				logging: console.log,
+				raw: false
+			}
+		).catch((e) => console.error(e));
+		for (let index = 0; index < arfromAcc.length; index++) {
+			const element = arfromAcc[index];
+			arJournalIds.push(element.to_account);
+		}
+
+		var arAccount = [];
+
+		if (req.query.all == 0) {
+			arAccount = await Account.findAll(
+				{where: {
+					[Op.and]: [
+						{"order": { [Op.gt]: 10 }},
+						{"status" : 1},
+						{"id": {[Op.in]: arJournalIds}}						
+					]},
+				order: [["level", "ASC"], ["order", "ASC"]]
+				}).catch((e) => console.error(e));;
+		} else {
+			arAccount = await Account.findAll(
+				{where: {"order": { [Op.gt]: 10 }} ,
+				order: [["level", "ASC"], ["order", "ASC"]]
+				}).catch((e) => console.error(e));;
+		}
+		res.json(arAccount);
 	},
 
 	getOneData: function (req, res) {
@@ -31,35 +77,36 @@ module.exports = {
 	},
 
 	getOneDataByOrder: function (req, res) {
-		db.Account.count({where: {"order": req.query.order}})
+		Account.count({where: {"order": req.query.order}})
 			.then(data => res.json(data))
 			.catch((e) => console.error(e));
 	},
 
 	getFKData: function(req, res) {
-		var qrySelect = "SELECT `id`, CONCAT('<span class=\"small\">', `order`,' ',`name`, '</span>') as value";
-		qrySelect += " FROM `account` WHERE `status` = 1 and `level` != `order` " ;
-		if (req.query.filter != null) {
-			var qfield = '%' + req.query.filter.value + '%';
-			qrySelect = qrySelect + " AND lower(`name`) like '" + qfield + "'";
-		}
-		qrySelect = qrySelect + " ORDER BY 2";
-		
-		sequelize.query(qrySelect, 
-			{ 
-				type: Sequelize.QueryTypes.SELECT,
-				plain: false,
-				logging: console.log,
-				raw: false
-			}
-		).then(data => res.json(data))
-		.catch((e) => console.error(e));					
+		Account.findAll({
+			attributes: ["id", [Sequelize.fn('CONCAT',Sequelize.col("name"), ' ', Sequelize.col("order")), "value"]],
+			where: [
+					Sequelize.where(Sequelize.fn('LOWER', Sequelize.col("name")), {[Op.substring]: (req.query.filter != null ? req.query.filter.value : '')}),
+					{"order": { [Op.ne]: "level" }},
+					{"status" : 1}					
+			],
+			order: [["level", "ASC"], ["order", "ASC"]]
+			})
+			.then(function(data){
+				var arReturn = [];
+				for (let index = 0; index < data.length; index++) {
+					const element = data[index];					
+					arReturn.push({id : element.id, value: '<span class=\"small\">' + element.value + '</span>'});					
+				}
+				req.json(arReturn);
+			})
+			.catch((e) => console.error(e));;
 	},
 
 	addData: function (req, res) {
 		var data = req.body;
 		console.info('insert: ',data);
-		db.Account.create(data)
+		Account.create(data)
 			.then((obj) => res.json(obj))
 			.catch((e) => res.json({type: "error", message: e}));
 	},
@@ -68,7 +115,7 @@ module.exports = {
 		var data = req.body;
 		console.info('update: ',data);
 	
-		db.Account.findByPk(data.id)
+		Account.findByPk(data.id)
 		.then((account) => account.update(data)
 			.then((obj) => res.json(obj))
 			.catch((e) => console.error(e)))
@@ -87,7 +134,7 @@ module.exports = {
 		qrySelect += " group by ac.`id`,  ac.`level`, ac.`order`, ac.`name` ";
 		qrySelect += " order by ac.`level`, ac.`order`";
 
-		sequelize.query(qrySelect, 
+		Sequelize.query(qrySelect, 
 			{ 
 				type: Sequelize.QueryTypes.SELECT,
 				plain: false,
@@ -102,7 +149,7 @@ module.exports = {
 			qrySelect += " and year(j.date) = " + req.query.jahr;
 			qrySelect += " group by ac.`id`,  ac.`level`, ac.`order`, ac.`name` ";
 			qrySelect += " order by ac.`level`, ac.`order`";
-			sequelize.query(qrySelect, 
+			Sequelize.query(qrySelect, 
 				{ 
 					type: Sequelize.QueryTypes.SELECT,
 					plain: false,

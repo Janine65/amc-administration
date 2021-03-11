@@ -1,5 +1,6 @@
 var db = require("../db");
 const { Op, Sequelize } = require("sequelize");
+const Adressen = db.Adressen;
 
 module.exports = {
 	getData: function (req, res) {		
@@ -10,25 +11,32 @@ module.exports = {
 		.catch((e) => console.error(e));		
 	},
 
-	getOverviewData: function (req, res) {
+	getOverviewData: async function (req, res) {
 		// get a json file with the following information to display on first page:
 		// count of active adressen
 		// count of SAM_Mitglieder
 		// count of not SAM_Mitglieder
 		
-		var qrySelect = "SELECT 'Aktive Mitglieder' as label, count(id) as anzahl FROM adressen  WHERE `austritt` > NOW()";
-		qrySelect += " UNION SELECT 'SAM Mitglieder', count(id) FROM adressen WHERE  `austritt` > NOW() and sam_mitglied = 1";
-		qrySelect += " UNION SELECT 'Freimitglieder', count(id) FROM adressen WHERE  `austritt` > NOW() and sam_mitglied = 0";
+		var arResult = [{label: 'Aktive Mitglieder', anzahl: 0},{label: 'SAM Mitglieder', anzahl: 0},{label: 'Freimitglieder', anzahl: 0}];
 
-		sequelize.query(qrySelect, 
-			{ 
-				type: Sequelize.QueryTypes.SELECT,
-				plain: false,
-				logging: console.log,
-				raw: false
-			})
-		.then(data => res.json(data))
-		.catch((e) => console.error(e));					
+		var anzahl = await Adressen.count({
+			where: {"austritt": { [Op.gt]: Sequelize.fn('NOW') } }
+		});
+		arResult[0].anzahl = anzahl;
+
+		anzahl = await Adressen.count({
+			where: [{"austritt": { [Op.gt]: Sequelize.fn('NOW') } }, 
+				{"sam_mitglied": true}]
+		});
+		arResult[1].anzahl = anzahl;
+
+		anzahl = await Adressen.count({
+			where: [{"austritt": {[Op.gt]: Sequelize.fn('NOW')}}, 
+			{"sam_mitglied": false}]
+		});
+		arResult[2].anzahl = anzahl;
+
+		res.json(arResult);
 	},
 
 	getOneData: function (req, res) {
@@ -38,22 +46,15 @@ module.exports = {
 	},
 
 	getFKData: function(req, res) {
-		var qrySelect = "SELECT `id`, `fullname` as value FROM `adressen` WHERE `austritt` > NOW()" ;
-		if (req.query.filter != null) {
-			var qfield = '%' + req.query.filter.value + '%';
-			qrySelect = qrySelect + " AND lower(`fullname`) like '" + qfield + "'";
-		}
-		qrySelect = qrySelect + " ORDER BY 2";
-		
-		sequelize.query(qrySelect, 
-			{ 
-				type: Sequelize.QueryTypes.SELECT,
-				plain: false,
-				logging: console.log,
-				raw: false
-			}
-		).then(data => res.json(data))
-		.catch((e) => console.error(e));					
+		Adressen.findAll({ 
+			attributes: ["id", ["fullname", "value"]],
+			where: [
+				{"austritt": { [Op.gte]: new Date() } },
+				Sequelize.where(Sequelize.fn('LOWER', Sequelize.col("fullname")), {[Op.substring]: (req.query.filter != null ? req.query.filter.value : '')})],
+			order: ["fullname"]
+			 })
+		.then(data => res.json(data))
+		.catch((e) => console.error(e));		
 	},
 
 	removeData: function (req, res) {

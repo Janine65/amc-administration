@@ -1,53 +1,45 @@
 var db = require("../db");
-const {
+const { Op,
   Sequelize
 } = require("sequelize");
 
+const Anlaesse = db.Anlaesse;
+
 module.exports = {
   getData: function (req, res) {
-    var qrySelect =
-      "SELECT `anlaesse`.`id`, `anlaesse`.`datum`, `anlaesse`.`name`, `anlaesse`.`beschreibung`, `anlaesse`.`punkte`, `anlaesse`.`istkegeln`, `anlaesse`.`nachkegeln`, `anlaesse`.`istsamanlass`, `anlaesse`.`gaeste`, `anlaesse`.`anlaesseId`, `anlaesse`.`status`, `anlaesse`.`createdAt`, `anlaesse`.`updatedAt`, `linkedEvent`.`longname` as 'vorjahr'";
-    qrySelect +=
-      " FROM `anlaesse` AS `anlaesse` LEFT OUTER JOIN `anlaesse` AS `linkedEvent` ON `anlaesse`.`anlaesseId` = `linkedEvent`.`id`";
-    qrySelect += " WHERE YEAR(`anlaesse`.`datum`) >= ";
-    qrySelect += global.Parameter.get("CLUBJAHR") - 1;
-    qrySelect += " ORDER BY `anlaesse`.`datum` ASC;";
-
-    sequelize
-      .query(qrySelect, {
-        type: Sequelize.QueryTypes.SELECT,
-        plain: false,
-        logging: console.log,
-        raw: false,
-      })
+    Anlaesse.findAll({
+      where: Sequelize.where(Sequelize.fn('YEAR', Sequelize.col('datum')), { [Op.gte]: global.Parameter.get("CLUBJAHR") - 1 }),
+      include: [
+        { model: Anlaesse, as: 'linkedEvent', required: false, attributes: [["longname", "vorjahr"]] }],
+      order: ["datum"]
+    })
       .then((data) => res.json(data));
   },
 
-  getOverviewData: function (req, res) {
+  getOverviewData: async function (req, res) {
     // get a json file with the following information to display on first page:
     // count of anlaesse im system_param jahr
     // count of SAM_Mitglieder
     // count of not SAM_Mitglieder
 
-    var qrySelect =
-      "SELECT 'Total Anlässe' as label, count(id) as value from anlaesse where status = 1 and YEAR(`datum`) = ";
-    qrySelect +=
-      global.Parameter.get("CLUBJAHR") +
-      " AND istsamanlass = 0 AND nachkegeln = 0";
-    qrySelect +=
-      " UNION SELECT 'Zukünftige Anlässe', count(id) from anlaesse where status = 1 and datum > NOW() and YEAR(`datum`) = ";
-    qrySelect +=
-      global.Parameter.get("CLUBJAHR") +
-      " AND istsamanlass = 0 AND nachkegeln = 0";
+    var arResult = [{ label: 'Total Anlässe', value: 0 }, { label: 'Zukünftige Anlässe', value: 0 }]
+    var total = await Anlaesse.count({
+      where: [Sequelize.where(Sequelize.fn('YEAR', Sequelize.col('datum')), global.Parameter.get("CLUBJAHR")),
+      { "status": 1 },
+      { "istsamanlass": false },
+      { "nachkegeln": false }]
+    });
+    arResult[0].anzahl = total;
+    total = await Anlaesse.count({
+      where: [Sequelize.where(Sequelize.fn('YEAR', Sequelize.col('datum')), global.Parameter.get("CLUBJAHR")),
+      { "datum": { [Op.gte]: Sequelize.fn("NOW") } },
+      { "status": 1 },
+      { "istsamanlass": false },
+      { "nachkegeln": false }]
+    });
+    arResult[1].anzahl = total;
 
-    sequelize
-      .query(qrySelect, {
-        type: Sequelize.QueryTypes.SELECT,
-        plain: false,
-        logging: console.log,
-        raw: false,
-      })
-      .then((data) => res.json(data));
+    res.json(arResult);
   },
 
   getOneData: function (req, res) {
@@ -82,13 +74,13 @@ module.exports = {
     db.Anlaesse.findByPk(data.id)
       .then((anlass) =>
         anlass
-        .destroy()
-        .then((obj) =>
-          res.json({
-            id: obj.id,
-          })
-        )
-        .catch((e) => console.error(e))
+          .destroy()
+          .then((obj) =>
+            res.json({
+              id: obj.id,
+            })
+          )
+          .catch((e) => console.error(e))
       )
       .catch((e) => console.log(e));
   },
@@ -124,13 +116,13 @@ module.exports = {
       db.Anlaesse.findByPk(data.id)
         .then((anlass) =>
           anlass
-          .update(data)
-          .then((obj) =>
-            res.json({
-              id: obj.id,
-            })
-          )
-          .catch((e) => console.error(e))
+            .update(data)
+            .then((obj) =>
+              res.json({
+                id: obj.id,
+              })
+            )
+            .catch((e) => console.error(e))
         )
         .catch((e) => console.error(e));
     }

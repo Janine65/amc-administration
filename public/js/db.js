@@ -6,7 +6,8 @@ const UUIDV4 = require('uuid').v4;
 const sequelize = new Sequelize(global.gConfig.database, global.gConfig.db_user, global.cipher.decrypt(global.gConfig.db_pwd), {
   host: "localhost", 
   port: global.gConfig.port,
-  dialect: global.gConfig.dbtype
+  dialect: global.gConfig.dbtype,
+  logging: (...msg) => console.log(msg)
 });
 
 global.sequelize = sequelize;
@@ -69,7 +70,7 @@ Adressen.init({
     defaultValue: Sequelize.NOW
   },
   sam_mitglied: {
-    type: Sequelize.TINYINT,
+    type: Sequelize.BOOLEAN,
     allowNull: false,
     defaultValue: 1
   },
@@ -86,15 +87,15 @@ Adressen.init({
     }
   },
   vorstand: {
-    type: Sequelize.TINYINT,
+    type: Sequelize.BOOLEAN,
     defaultValue: 0
   },
   ehrenmitglied: {
-    type: Sequelize.TINYINT,
+    type: Sequelize.BOOLEAN,
     defaultValue: 0
   },
   revisor: {
-    type: Sequelize.TINYINT,
+    type: Sequelize.BOOLEAN,
     defaultValue: 0
   },
   austritt: {
@@ -102,7 +103,7 @@ Adressen.init({
     defaultValue: new Date("01.01.3000")
   },
   austritt_mail: {
-    type: Sequelize.TINYINT
+    type: Sequelize.BOOLEAN
   },
   adressenId: {
     type: Sequelize.INTEGER,
@@ -120,10 +121,10 @@ Adressen.init({
     }
   },
   allianz: {
-    type: Sequelize.TINYINT,
+    type: Sequelize.BOOLEAN,
     defaultValue: 0
   },
-  notes: Sequelize.BLOB
+  notes: Sequelize.STRING
   // fullname: {
   //   type: Sequelize.VIRTUAL,
   //   get() {
@@ -154,9 +155,9 @@ Anlaesse.init({
   name: { type: Sequelize.STRING, allowNull: false },
   beschreibung: { type: Sequelize.STRING, allowNull: false },
   punkte: { type: Sequelize.INTEGER, allowNull: false, defaultValue: 50 },
-  istkegeln: { type: Sequelize.TINYINT, allowNull: false, defaultValue: 0 },
-  nachkegeln: { type: Sequelize.TINYINT, allowNull: false, defaultValue: 0 },
-  istsamanlass: { type: Sequelize.TINYINT, allowNull: false, defaultValue: 0 },
+  istkegeln: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: 0 },
+  nachkegeln: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: 0 },
+  istsamanlass: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: 0 },
   gaeste: {
     type: Sequelize.INTEGER, allowNull: true, defaultValue: null,
     set(value) {
@@ -365,7 +366,7 @@ User.init({
   email: DataTypes.STRING,
   salt: DataTypes.STRING,
   password: DataTypes.STRING,
-  role: { type: DataTypes.ENUM('user', 'admin'), default: 'user' },
+  role: { type: DataTypes.ENUM('user', 'admin', 'revisor'), default: 'user' },
   last_login: DataTypes.DATE
 },
   {

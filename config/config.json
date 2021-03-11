@@ -7,9 +7,9 @@
         "json_indentation": 4,
         "database": "amcadmin",
         "db_user": "webuser",
-        "db_pwd": "U2FsdGVkX1+91tP1h+l1dhQgbJOZ1PZllUtwQPzcdnk=",
-        "port": "3306",
-        "dbtype": "mysql",
+        "db_pwd": "U2FsdGVkX19p5FVhdaFpuJmMXpgKFmqXGYmwKB5Po+A=",
+        "port": "5432",
+        "dbtype": "postgres",
         "defaultEmail" : "JanineFranken",
         "JanineFranken" : {
             "smtp": "smtp.zoho.com",
@@ -33,8 +33,8 @@
         "db_user": "webuser",
         "db_pwd": "U2FsdGVkX1+ynQVZJtDt5Lic6a9Ju/J0IZd5mEuhmJSgWaKZ7l6Vum2EYkvxzfD9",
         "db_pwd_alt": "MGKlMb-MShwOeSN7u",
-        "port": "3307",
-        "dbtype": "mariadb",
+        "port": "5499",
+        "dbtype": "postgres",
         "defaultEmail" : "HansjoergDutler"
     }
 }

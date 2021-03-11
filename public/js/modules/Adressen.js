@@ -92,6 +92,20 @@ wxAMC.moduleClasses.Adressen = class {
                 // this.markSorting("vorname", "asc", true);
               },
               on: {
+                onCollectValues:function(id, req){
+                  if (id == "sam_mitglied" || id == "ehrenmitglied" || id == "vorstand" || id == "revisor" || id == "allianz") {
+                    for(var i = 0; i<req.values.length; i++){
+                      //console.info(req.values[i]);
+                      if (req.values[i].value == false) {
+                        req.values[i].value = "Nein";
+                        req.values[i].id = 0;
+                      } else {
+                        req.values[i].value = "Ja";
+                        req.values[i].id = 1;
+                      }
+                    }
+                  }
+                },
                 onBeforeLoad: function () {
                   this.showOverlay("Loading...");
                 },

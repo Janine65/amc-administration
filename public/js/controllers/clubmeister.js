@@ -1,5 +1,6 @@
 var db = require("../db");
 const { Op, Sequelize } = require("sequelize");
+const Clubmeister = db.Clubmeister
 
 module.exports = {
 	getData: async function (req, res) {	
@@ -13,16 +14,13 @@ module.exports = {
 	},
 
 	getOverviewData: async function (req, res) {
-		var qrySelect = "SELECT 'Clubmeisterschaft' as label, count(id) as value FROM clubmeister"
-		qrySelect += " WHERE jahr = " + global.Parameter.get('CLUBJAHR') + " and status = 1"
-		await sequelize.query(qrySelect, 
-			{ 
-				type: Sequelize.QueryTypes.SELECT,
-				plain: false,
-				logging: console.log,
-				raw: false
-			}
-		).then(data => res.json(data));					
+		var arResult = [{label: 'Clubmeisterschaft', value: 0}]
+		var anzahl = await Clubmeister.count({
+			where: [{"jahr" : global.Parameter.get('CLUBJAHR')},
+			{"status" : true}]
+		});
+		arResult[0].value = anzahl;
+		res.json(arResult);
 	},
 
 	calcMeister: async function (req, res) {
