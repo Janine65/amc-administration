@@ -1,11 +1,10 @@
-var db = require("../db");
+const { Clubmeister } = require("../db");
 const { Op, Sequelize } = require("sequelize");
-const Clubmeister = db.Clubmeister
 
 module.exports = {
 	getData: async function (req, res) {	
 		console.log("clubmeister.js/getData");	
-		await db.Clubmeister.findAll({
+		await Clubmeister.findAll({
 			where: {jahr: req.query.jahr},
 			  order: [
 			 	 ['rang', 'asc']
@@ -30,7 +29,7 @@ module.exports = {
 		var allMitgliedId = []
 
 		// alle punkte aus den Anlässen einlesen
-		var qrySelect = "SELECT mitgliedid, sum(punkte) as punkte, count(eventid) as anzahl FROM meisterschaft where eventid in ("
+		var qrySelect = "SELECT mitgliedid, sum(punkte) as punkte, count(eventId) as anzahl FROM meisterschaft where eventId in ("
 		qrySelect += "SELECT id FROM anlaesse where year(datum) = " + req.query.jahr
 		qrySelect += ") and punkte > 0 group by mitgliedid"
 

@@ -1,12 +1,12 @@
-var db = require("../db");
+const { Parameter } = require("../db");
 const { Op, Sequelize } = require("sequelize");
 
 module.exports = {
 	getData: function (req, res) {		
-		db.Parameter.findAll()
+		Parameter.findAll()
 		.then(data => {
 			console.log(data);
-			var param = new db.Parameter({key: "Version", value: global.system.version});
+			var param = new Parameter({key: "Version", value: global.system.version});
 			data.push(param);			
 			return res.json(data);
 		})
@@ -14,7 +14,7 @@ module.exports = {
 	},
 
 	getGlobal: function () {		
-		db.Parameter.findAll()
+		Parameter.findAll()
 		.then(data => {
 			global.Parameter.set("Version", global.system.version);
 			for (let ind2 = 0; ind2 < data.length; ind2++) {
@@ -29,7 +29,7 @@ module.exports = {
 
 	getOneDataByKey: function(req, res) {
 		const data = req.body;
-		db.Parameter.findOne({where: 
+		Parameter.findOne({where: 
 				{ key: {[Op.eq]: data.key } }
 		})
 		.then(data2 => res.json(data2))
@@ -39,7 +39,7 @@ module.exports = {
 	removeData: function (req, res) {
 		const data = req.body;
 		console.info('delete: ',data);
-		db.Parameter.findByPk(data.id)
+		Parameter.findByPk(data.id)
 		.then((param) =>
 			param.destroy()
 			.then((obj) => res.json({ id: obj.id }))
@@ -50,7 +50,7 @@ module.exports = {
 	addData: function (req, res) {
 		var data = req.body;
 		console.info('insert: ',data);
-		db.Parameter.create(data)
+		Parameter.create(data)
 			.then((obj) => res.json({ id: obj.id }))
 			.catch((e) => console.error(e));
 	},
@@ -63,7 +63,7 @@ module.exports = {
 				// update
 				console.info('update: ',k, lparam[k]);
 			
-				db.Parameter.findOne({where: 
+				Parameter.findOne({where: 
 					{ key: {[Op.eq]: k } }
 				})	
 				.then((param) => param.update({value: lparam[k]})

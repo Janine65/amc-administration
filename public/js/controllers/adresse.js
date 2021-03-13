@@ -1,10 +1,9 @@
-var db = require("../db");
+const { Adressen } = require("../db");
 const { Op, Sequelize } = require("sequelize");
-const Adressen = db.Adressen;
 
 module.exports = {
 	getData: function (req, res) {		
-		db.Adressen.findAll({ where: { 			
+		Adressen.findAll({ where: { 			
 			austritt: { [Op.gte]: new Date() }
 			 }})
 		.then(data => res.json(data))
@@ -40,7 +39,7 @@ module.exports = {
 	},
 
 	getOneData: function (req, res) {
-		db.Adressen.findByPk(req.param.id)
+		Adressen.findByPk(req.param.id)
 			.then(data => res.json(data))
 			.catch((e) => console.error(e));
 	},
@@ -63,7 +62,7 @@ module.exports = {
 		let endDate = new Date();
 		endDate.setMonth(11);
 		endDate.setDate(31);
-		db.Adressen.findByPk(data.id)
+		Adressen.findByPk(data.id)
 		.then((adresse) =>
 			//adresse.destroy()
 			adresse.update({austritt: endDate})
@@ -81,7 +80,7 @@ module.exports = {
 			data.eintritt = new Date().toISOString();
 		}
 		console.info('insert: ',data);
-		db.Adressen.create(data)
+		Adressen.create(data)
 			.then((obj) => res.json({ id: obj.id }))
 			.catch((e) => console.error(e));
 	},
@@ -97,14 +96,14 @@ module.exports = {
 		if (data.mnr == "") {
 			// insert
 			console.info('insert: ',data);
-			db.Adressen.create(data)
+			Adressen.create(data)
 			.then((obj) => res.json({ id: obj.id }))
 			.catch((e) => console.error(e))
 		} else {
 			// update
 			console.info('update: ',data);
 		
-			db.Adressen.findByPk(data.id)
+			Adressen.findByPk(data.id)
 			.then((adresse) => adresse.update(data)
 				.then((obj) => res.json({id: obj.id}))
 				.catch((e) => console.error(e)))

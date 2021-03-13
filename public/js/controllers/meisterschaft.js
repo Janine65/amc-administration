@@ -28,7 +28,7 @@ module.exports = {
 		var qrySelect = "SELECT year(a.datum) as jahr, a.datum, a.name, m.punkte,";
 		qrySelect += " (case when a.istkegeln = 1 and m.streichresultat = 0 and (m.wurf1 + m.wurf2 + m.wurf3 + m.wurf4 + m.wurf5 > 0) then (m.wurf1 + m.wurf2 + m.wurf3 + m.wurf4 + m.wurf5 + m.zusatz) WHEN a.istkegeln = 0 then NULL else 0 end) as total_kegeln,";
 		qrySelect += " (case when a.istkegeln = 1 then m.streichresultat else null end) as streichresultat";
-		qrySelect += " FROM meisterschaft m join anlaesse a on (m.eventid = a.id)";
+		qrySelect += " FROM meisterschaft m join anlaesse a on (m.eventId = a.id)";
 		qrySelect += " WHERE m.mitgliedid = " + req.query.id;
 		qrySelect += " AND year(a.datum) <= " + global.Parameter.get("CLUBJAHR");
 		qrySelect += " ORDER BY datum asc"
@@ -54,7 +54,7 @@ module.exports = {
 			qrySelect += " select a.datum, a.name, count(m.mitgliedid) as Teilnehmer, a.gaeste";
 			qrySelect += " from anlaesse a";
 			qrySelect += " LEFT JOIN meisterschaft m";
-			qrySelect += " on (a.id = m.eventid)";
+			qrySelect += " on (a.id = m.eventId)";
 			qrySelect += " where year(a.datum) = " + req.query.jahr;
 			qrySelect += " and a.nachkegeln = 0";
 			qrySelect += " group by a.datum, a.name, a.gaeste";
@@ -65,18 +65,18 @@ module.exports = {
 			qrySelect += " (mv.anzahl + av.gaeste) as vorjahr";
 			qrySelect += " FROM anlaesse a";
 			qrySelect += " LEFT JOIN (";
-			qrySelect += " SELECT mc.eventid,";
+			qrySelect += " SELECT mc.eventId,";
 			qrySelect += " count(mc.mitgliedid) as anzahl";
 			qrySelect += " from meisterschaft mc";
-			qrySelect += " group by mc.eventid";
-			qrySelect += " ) ma on (a.id = ma.eventid)";
+			qrySelect += " group by mc.eventId";
+			qrySelect += " ) ma on (a.id = ma.eventId)";
 			qrySelect += " JOIN anlaesse av on (a.anlaesseid = av.id)";
 			qrySelect += " LEFT JOIN (";
-			qrySelect += " SELECT mcv.eventid,";
+			qrySelect += " SELECT mcv.eventId,";
 			qrySelect += " count(mcv.mitgliedid) as anzahl";
 			qrySelect += " from meisterschaft mcv";
-			qrySelect += " group by mcv.eventid";
-			qrySelect += " ) mv on (av.id = mv.eventid)";
+			qrySelect += " group by mcv.eventId";
+			qrySelect += " ) mv on (av.id = mv.eventId)";
 			qrySelect += " WHERE year(a.datum) = " + req.query.jahr;
 			qrySelect += " and a.nachkegeln = 0";
 			qrySelect += " ORDER BY a.datum";
@@ -114,7 +114,7 @@ module.exports = {
 
 	checkJahr: function(req, res) {
 		var qrySelect = "SELECT count(*) as AnzStreich FROM meisterschaft";
-		qrySelect += " where eventid in (select id from anlaesse where year(datum) = " + req.query.jahr + ")";
+		qrySelect += " where eventId in (select id from anlaesse where year(datum) = " + req.query.jahr + ")";
 		qrySelect += "and streichresultat = 1";
 
 		sequelize.query(qrySelect, 

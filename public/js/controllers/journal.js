@@ -1,18 +1,19 @@
-var db = require("../db");
+var {Journal, Account} = require("../db");
 const { Op, Sequelize } = require("sequelize");
 const ExcelJS = require("exceljs");
 const fs = require("fs");
 const path = require("path");
 const { v4: uuid } = require('uuid');
 
+
 module.exports = {
 	getData: function (req, res) {
-		db.Journal.findAll(
+		Journal.findAll(
 			{
 				where: sequelize.where(sequelize.fn('YEAR', sequelize.col('date')), req.query.jahr),
 				include: [
-					{ model: db.Account, as: 'fromAccount', required: true, attributes: ['id', 'order', 'name'] },
-					{ model: db.Account, as: 'toAccount', required: true, attributes: ['id', 'order', 'name'] }
+					{ model: Account, as: 'fromAccount', required: true, attributes: ['id', 'order', 'name'] },
+					{ model: Account, as: 'toAccount', required: true, attributes: ['id', 'order', 'name'] }
 				],
 				order: [
 					['journalNo', 'asc'],
@@ -34,7 +35,7 @@ module.exports = {
 	},
 
 	getAttachment: function (req, res) {
-		db.Journal.findByPk(req.query.id)
+		Journal.findByPk(req.query.id)
 			.then(data => {
 				if (data.receipt != null) {
 					const filename = 'uploads/' + uuid() + '-' + data.id + '.pdf';
@@ -52,7 +53,7 @@ module.exports = {
 	},
 
 	getOneData: function (req, res) {
-		db.Journal.findByPk(req.param.id)
+		Journal.findByPk(req.param.id)
 			.then(data => res.json(data))
 			.catch((e) => console.error(e));
 	},
@@ -60,7 +61,7 @@ module.exports = {
 	removeData: function (req, res) {
 		const data = req.body;
 		console.info('delete: ', data);
-		db.Journal.findByPk(data.id)
+		Journal.findByPk(data.id)
 			.then((journal) =>
 				journal.destroy()
 					.then((obj) => res.json({ id: obj.id }))
@@ -72,7 +73,7 @@ module.exports = {
 		var data = req.body;
 
 		console.info('insert: ', data);
-		db.Journal.create(data)
+		Journal.create(data)
 			.then((obj) => res.json(obj))
 			.catch((e) => console.error(e));
 	},
@@ -81,7 +82,7 @@ module.exports = {
 		var data = req.body;
 		console.info('update: ', data);
 
-		db.Journal.findByPk(data.id)
+		Journal.findByPk(data.id)
 			.then((journal) => journal.update(data, {fields: ["from_account", "to_account", "journalNo", "date", "memo", "amount", "status"]})
 				.then((obj) => res.json(obj))
 				.catch((e) => console.error(e)))
@@ -103,7 +104,7 @@ module.exports = {
 				if (err)
 					throw err;
 
-				db.Journal.update({receipt: pdfFile}, {where: {id: data.id}})
+				Journal.update({receipt: pdfFile}, {where: {id: data.id}})
 					.then(resp => res.json(resp))
 					.catch(e => console.error(e));						
 			});
@@ -115,33 +116,50 @@ module.exports = {
 	delAttachment: function (req, res) {
 		const data = req.body;
 
-		db.Journal.update({receipt: null}, {where: {id: data.id}})
+		Journal.update({receipt: null}, {where: {id: data.id}})
 			.then(resp => res.json(resp))
 			.catch(e => console.error(e));
 			
 	},
 	
 	getAccData: function (req, res) {
-		var qrySelect = "SELECT j.id, j.journalNo, concat(acc.order, ' ', acc.name) as account, j.date, j.memo, j.amount as soll, null as haben";
-		qrySelect += " FROM journal j, account acc"
-		qrySelect += " WHERE j.to_account = acc.id and j.from_account = " + req.query.acc;
-		qrySelect += " AND year(j.date) = " + req.query.jahr;
-		qrySelect += " UNION SELECT j.id, j.journalNo, concat(acc.order, ' ', acc.name) as account, j.date, j.memo, null, j.amount";
-		qrySelect += " FROM journal j, account acc"
-		qrySelect += " WHERE j.from_account = acc.id and j.to_account = " + req.query.acc;
-		qrySelect += " AND year(j.date) = " + req.query.jahr;
-		qrySelect += " ORDER BY 2, 4"
+		Promise.all([
+			Journal.findAll({
+				attributes: [
+					"id", "journalNo", "date", "memo", "amount"],
+				where: [{"from_account" : req.query.acc},
+						Sequelize.where(Sequelize.fn('YEAR', Sequelize.col('date')), req.query.jahr)],
+				include: { model: Account, as: 'fromAccount', required: true }
+			}),
+			Journal.findAll({
+				attributes: [
+					"id", "journalNo", "date", "memo", "amount" ],
+				where: [{"to_account" : req.query.acc},
+						Sequelize.where(Sequelize.fn('YEAR', Sequelize.col('date')), req.query.jahr)],
+				include: { model: Account, as: 'toAccount', required: true }
+			})
+		])
+		.then((modelReturn) => {
+			var arPreData = modelReturn.flat();
+			var arData = [];
+			for (let index = 0; index < arPreData.length; index++) {
+				const element = arPreData[index];
+				var record = {id : element.id, journalNo : element.journalNo, date: element.date, memo: element.memo}
 
-		sequelize.query(qrySelect,
-			{
-				type: Sequelize.QueryTypes.SELECT,
-				plain: false,
-				logging: console.log,
-				raw: true
+				if (element.fromAccount == null) {
+					record.account = element.toAccount.order + " " + element.toAccount.name
+					record.haben = element.amount
+					record.soll = 0
+				} else {
+					record.account = element.fromAccount.order + " " + element.fromAccount.name
+					record.soll = element.amount
+					record.haben = 0
+				}
+				arData.push(record);
 			}
-		)
-			.then((data) => res.json(data))
-			.catch((e) => console.error(e));
+			res.json(arData);
+		})
+		.catch((err) => console.error(err));
 	},
 
 	importJournal: async function (req, res) {

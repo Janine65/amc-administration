@@ -1,11 +1,10 @@
-var db = require("../db");
+const { Kegelmeister } = require("../db");
 const { Op, Sequelize } = require("sequelize");
-const Kegelmeister = db.Kegelmeister;
 
 module.exports = {
 	getData: function (req, res) {	
 		console.log("kegelmeister.js/getData");				
-		db.Kegelmeister.findAll({
+		Kegelmeister.findAll({
 			where: {jahr: req.query.jahr},
 			  order: [
 			 	 ['rang', 'asc']
@@ -49,7 +48,7 @@ module.exports = {
 				// Anzahl Ergebnisse = global.Parameter.get('ANZAHL_KEGEL')
 
 				// alle Ergebnisse auf Streichresultat = 0
-				qrySelect = "UPDATE meisterschaft set streichresultat = 0 where eventid in ( " + qrySubSelect + ")";
+				qrySelect = "UPDATE meisterschaft set streichresultat = 0 where eventId in ( " + qrySubSelect + ")";
 				await sequelize.query(qrySelect,
 					{
 						type: Sequelize.QueryTypes.UPDATE,
@@ -60,7 +59,7 @@ module.exports = {
 				);					
 			
 				// alle Ergebnisse auf Streichresultat = 1, wenn Wurf-Total = 0
-				qrySelect = "UPDATE meisterschaft set streichresultat = 1 where eventid in ( " + qrySubSelect + ")";
+				qrySelect = "UPDATE meisterschaft set streichresultat = 1 where eventId in ( " + qrySubSelect + ")";
 				qrySelect += " AND (wurf1 + wurf2 + wurf3 + wurf4 + wurf5) = 0"
 				await sequelize.query(qrySelect,
 					{
@@ -72,7 +71,7 @@ module.exports = {
 				);					
 			
 				// alle Ergebnisse, die weniger als 'Anzahl Ergebnisse' haben, Streichresultat = 1
-				qrySelect = "SELECT mitgliedid, count(eventid) as anzahl FROM meisterschaft where eventid in ("
+				qrySelect = "SELECT mitgliedid, count(eventId) as anzahl FROM meisterschaft where eventId in ("
 				qrySelect += qrySubSelect
 				qrySelect += ") and streichresultat = 0 group by mitgliedid having anzahl < " + global.Parameter.get('ANZAHL_KEGEL')
 
@@ -90,7 +89,7 @@ module.exports = {
 						allMitgliedId.push(mitglied[1].mitgliedid)
 					}
 					if (allMitgliedId.length > 0) {
-						qrySelect = "UPDATE meisterschaft SET streichresultat = 1 WHERE eventid in (" + qrySubSelect + ")"
+						qrySelect = "UPDATE meisterschaft SET streichresultat = 1 WHERE eventId in (" + qrySubSelect + ")"
 						qrySelect += " AND mitgliedid in (" + allMitgliedId.join(',') + ")"
 
 						await sequelize.query(qrySelect,
@@ -107,7 +106,7 @@ module.exports = {
 				}
 				
 				// Update Ergebnisse, Rowid > ANZAHL_KEGELN => Streichresultat = 1
-				qrySelect = "SELECT id, mitgliedid, (wurf1 + wurf2 + wurf3 + wurf4 + wurf5 + zusatz) as total FROM meisterschaft where eventid in ("
+				qrySelect = "SELECT id, mitgliedid, (wurf1 + wurf2 + wurf3 + wurf4 + wurf5 + zusatz) as total FROM meisterschaft where eventId in ("
 				qrySelect += qrySubSelect
 				qrySelect += ") and streichresultat = 0 order by 2, 3 desc"
 
@@ -151,7 +150,7 @@ module.exports = {
 		} // nur im aktuellen Jahr
 
 		// alle punkte aus den Anlässen einlesen (ohne Nachkegeln)
-		qrySelect = "SELECT mitgliedid, sum(wurf1 + wurf2 + wurf3 + wurf4 + wurf5 + zusatz) as punkte, count(eventid) as anzahl FROM meisterschaft where eventid in ("
+		qrySelect = "SELECT mitgliedid, sum(wurf1 + wurf2 + wurf3 + wurf4 + wurf5 + zusatz) as punkte, count(eventId) as anzahl FROM meisterschaft where eventId in ("
 		qrySelect += "SELECT id FROM anlaesse where year(datum) = " + req.query.jahr + " AND istkegeln = 1 and nachkegeln = 0"
 		qrySelect += ") and streichresultat = 0 group by mitgliedid"
 
@@ -174,7 +173,7 @@ module.exports = {
 
 		
 		// alle punkte aus den Nachkegeln lesen
-		qrySelect = "SELECT mitgliedid, sum(wurf1 + wurf2 + wurf3 + wurf4 + wurf5 + zusatz) as punkte FROM meisterschaft where eventid in ("
+		qrySelect = "SELECT mitgliedid, sum(wurf1 + wurf2 + wurf3 + wurf4 + wurf5 + zusatz) as punkte FROM meisterschaft where eventId in ("
 		qrySelect += "SELECT id FROM anlaesse where year(datum) = " + req.query.jahr + " AND istkegeln = 1 and nachkegeln = 1"
 		qrySelect += ") and streichresultat = 0 group by mitgliedid"
 
@@ -208,7 +207,7 @@ module.exports = {
 		for (let index = 1; index < 6; index++) {
 			if (index > 1)
 				qrySelect += " UNION "
-			qrySelect += " SELECT " + index + " as wurf,mitgliedid, count(id) as babeli FROM meisterschaft where eventid in (" + qrySubSelect
+			qrySelect += " SELECT " + index + " as wurf,mitgliedid, count(id) as babeli FROM meisterschaft where eventId in (" + qrySubSelect
 			qrySelect += ") and wurf" + index + " = 9 group by mitgliedid"
 		}
 

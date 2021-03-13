@@ -4,10 +4,8 @@ const SwissQRBill = require('swissqrbill')
 const {
     Sequelize
 } = require("sequelize");
-const Adressen = require('../db').Adressen;
-const Journal = require('../db').Journal;
+const { Adressen, Journal}  = require('../db');
 const fs = require('fs');
-const { json } = require('express');
 
 module.exports = {
 

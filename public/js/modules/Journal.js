@@ -827,10 +827,10 @@ wxAMC.moduleClasses.Journal = class {
           rows: [
             { /* Begin Budget List */
               columns: [
-                { id: "order", header: "Order", sort: "string", autowidth: true, hidden: false },
-                { id: "name", header: "Account", fillspace: true, sort: "string", hidden: false },
-                { id: "accamount", header: "Budget", type: "number", editor: "text", autowidth: true, hidden: false },
-                { id: "accmemo", header: "Notes", editor: "text", autowidth: true, hidden: false }
+                { id: "order", header: "Order", template: "#acc.order#", sort: "string", autowidth: true, hidden: false },
+                { id: "name", header: "Account", template: "#acc.name#", fillspace: true, sort: "string", hidden: false },
+                { id: "amount", header: "Budget", type: "number", editor: "text", autowidth: true, hidden: false },
+                { id: "memo", header: "Notes", editor: "text", autowidth: true, hidden: false }
               ],
               view: "datatable",
               id: "listBudgetList",
@@ -1094,11 +1094,11 @@ wxAMC.moduleClasses.Journal = class {
     $$("listBudgetList").data.each(function (obj) {
 
       // add or upd record
-      var data = { id: obj.accid, account: obj.id, amount: (obj.accamount == "" ? 0 : obj.accamount), memo: obj.accmemo, year: $$("moduleJournal-dateSelect").getValue() };
+      var data = { id: obj.id, account: obj.acc.id, amount: (obj.amount == "" ? 0 : obj.amount), memo: obj.memo, year: $$("moduleJournal-dateSelect").getValue() };
       //console.log(data);
       const url = "/Budget/data";
       var method = "PUT";
-      if (obj.accid == undefined)
+      if (obj.id == undefined)
         method = "POST";
 
       fetch(url, {
@@ -1291,6 +1291,7 @@ wxAMC.moduleClasses.Journal = class {
           fValid = false;
           webix.message({ type: "error", text: error });
           console.log(error);
+          return;
         });
     }
 
@@ -1339,7 +1340,7 @@ wxAMC.moduleClasses.Journal = class {
   }
 
   /**
-   * refreshAccountData: Read the entries for the selected amount
+   * refreshAccountData: Read the entries for the selected account
    */
   refreshAccountData() {
     var sJahr = $$("moduleJournal-dateSelect").getValue();
@@ -1398,7 +1399,7 @@ wxAMC.moduleClasses.Journal = class {
       });
     Promise.resolve(promiseModule)
       .then(async function (response) {
-        if (response.type == "error") {
+        if (response != null && response.type == "error") {
           webix.message({ type: "error", text: response.message });
         } else {
           // Window schliessen
@@ -1408,7 +1409,7 @@ wxAMC.moduleClasses.Journal = class {
           // Window neu starten
           await wxAMC.launchModule('Journal');
           wxAMC.modules['Journal'].dayAtAGlance();
-          webix.message({ type: "info", text: response.message });
+          webix.message({ type: "info", text: "Meldung" });
         }
       })
       .catch(function (error) {

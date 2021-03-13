@@ -1,9 +1,8 @@
-var db = require("../db");
+const { Anlaesse } = require("../db");
 const { Op,
   Sequelize
 } = require("sequelize");
 
-const Anlaesse = db.Anlaesse;
 
 module.exports = {
   getData: function (req, res) {
@@ -43,7 +42,7 @@ module.exports = {
   },
 
   getOneData: function (req, res) {
-    db.Anlaesse.findByPk(req.param.id).then((data) => res.json(data));
+    Anlaesse.findByPk(req.param.id).then((data) => res.json(data));
   },
 
   getFKData: function (req, res) {
@@ -71,7 +70,7 @@ module.exports = {
       throw "Record not correct";
     }
     console.info("delete: ", data);
-    db.Anlaesse.findByPk(data.id)
+    Anlaesse.findByPk(data.id)
       .then((anlass) =>
         anlass
           .destroy()
@@ -88,7 +87,7 @@ module.exports = {
   addData: function (req, res) {
     var data = req.body;
     console.info("insert: ", data);
-    db.Anlaesse.create(data)
+    Anlaesse.create(data)
       .then((obj) =>
         res.json({
           id: obj.id,
@@ -102,7 +101,7 @@ module.exports = {
     if (data.id == 0 || data.id == null) {
       // insert
       console.info("insert: anlass", data);
-      db.Anlaesse.create(data)
+      Anlaesse.create(data)
         .then((obj) =>
           res.json({
             id: obj.id,
@@ -113,7 +112,7 @@ module.exports = {
       // update
       console.info("update: ", data);
 
-      db.Anlaesse.findByPk(data.id)
+      Anlaesse.findByPk(data.id)
         .then((anlass) =>
           anlass
             .update(data)

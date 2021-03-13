@@ -390,7 +390,7 @@ module.exports = {
         qrySelect += " select a.datum, a.name, count(m.mitgliedid) as Teilnehmer, a.gaeste";
         qrySelect += " from anlaesse a";
         qrySelect += " LEFT JOIN meisterschaft m";
-        qrySelect += " on (a.id = m.eventid)";
+        qrySelect += " on (a.id = m.eventId)";
         qrySelect += " where year(a.datum) = " + objSave.year;
         qrySelect += " and a.nachkegeln = 0";
         qrySelect += " group by a.datum, a.name, a.gaeste";
@@ -436,18 +436,18 @@ module.exports = {
         qrySelect += " (mv.anzahl + av.gaeste) as vorjahr";
         qrySelect += " FROM anlaesse a";
         qrySelect += " LEFT JOIN (";
-        qrySelect += " SELECT mc.eventid,";
+        qrySelect += " SELECT mc.eventId,";
         qrySelect += " count(mc.mitgliedid) as anzahl";
         qrySelect += " from meisterschaft mc";
-        qrySelect += " group by mc.eventid";
-        qrySelect += " ) ma on (a.id = ma.eventid)";
+        qrySelect += " group by mc.eventId";
+        qrySelect += " ) ma on (a.id = ma.eventId)";
         qrySelect += " JOIN anlaesse av on (a.anlaesseid = av.id)";
         qrySelect += " LEFT JOIN (";
-        qrySelect += " SELECT mcv.eventid,";
+        qrySelect += " SELECT mcv.eventId,";
         qrySelect += " count(mcv.mitgliedid) as anzahl";
         qrySelect += " from meisterschaft mcv";
-        qrySelect += " group by mcv.eventid";
-        qrySelect += " ) mv on (av.id = mv.eventid)";
+        qrySelect += " group by mcv.eventId";
+        qrySelect += " ) mv on (av.id = mv.eventId)";
         qrySelect += " WHERE year(a.datum) = " + objSave.year;
         qrySelect += " and a.nachkegeln = 0";
         qrySelect += " ORDER BY a.datum";
@@ -613,7 +613,7 @@ module.exports = {
                 if (objSave.id == 0) {
                     // für alle aktiven Mitglieder
                     var qrySelect = "SELECT * FROM adressen where austritt > now() and id in (";
-                    qrySelect += "SELECT m.mitgliedid FROM meisterschaft m join anlaesse a on (m.eventid = a.id and year(a.datum) = " + objSave.year;
+                    qrySelect += "SELECT m.mitgliedid FROM meisterschaft m join anlaesse a on (m.eventId = a.id and year(a.datum) = " + objSave.year;
                     qrySelect += ")) order by name, vorname";
 
                     const dbAdressen = await sequelize.query(qrySelect, {
@@ -1306,7 +1306,7 @@ function writeArray(sheet, arData, firstRow, fBudget = false, fBudgetVergleich =
  * @param {string} syear 
  */
 async function fillTemplate(sheet, id, syear) {
-    var qrySelect = "SELECT * FROM meisterschaft where eventid in (";
+    var qrySelect = "SELECT * FROM meisterschaft where eventId in (";
     qrySelect += "SELECT id FROM anlaesse where year(datum) = " + syear;
     qrySelect += ") and mitgliedid = " + id + " order by id";
 

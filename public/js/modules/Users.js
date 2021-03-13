@@ -366,19 +366,11 @@ wxAMC.moduleClasses.Users = class {
           return null;
         }
         return response.json();
-      })
-      .catch((e) => {
-        webix.message("Mail konnte nicht erfolgreich gesendet werden: " + e, "error", -1);
-        return null;
-      });
+s      });
 
     Promise.resolve(promiseModuleM)
       .then((response) => {
         webix.message("Email wurde gesendet.", "info");
-      })
-      .catch((e) => {
-        webix.message(`Fehler beim Senden der Nachricht: ${e}`, "error", -1)
-        return null;
       });
 
   }

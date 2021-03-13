@@ -1,4 +1,3 @@
-var db = require("../db");
 const { Op, Sequelize } = require("sequelize");
 const {FiscalYear, Journal} = require("../db");
 
@@ -243,7 +242,8 @@ module.exports = {
 		}
 
 		// Eröffnungsbuchungen erstellen
-		await Journal.bulkCreate(arEroeffnung)
+		await Journal.bulkCreate(arEroeffnung
+			, { fields: ["date", "from_account", "to_account", "amount", "memo"] })
 		.catch(err => {
 			console.error(err)
 			res.json({
@@ -290,14 +290,8 @@ module.exports = {
 		var rownum = 1;
         for (let ind2 = 0; ind2 < arJournal.length; ind2++) {
             const record = arJournal[ind2];
-			qrySelect = "UPDATE journal set journalNo = " + rownum++ + " WHERE id = " + record.id;
-			sequelize.query(qrySelect,
-				{
-					type: Sequelize.QueryTypes.UPDATE,
-					plain: false,
-					logging: console.log,
-					raw: false
-			})
+			await Journal.update({"journalNo": rownum++},
+					{where: {"id" : record.id}})
 			.catch(err => {
 				console.error(err);
 				res.json({
@@ -312,7 +306,7 @@ module.exports = {
 			type: "info",
 			message: "AMC-Buchhaltung " + sJahr + " wurde erfolgreich beendet mit Gewinn/Verlust " + iGewinn,
 			gewinn: iGewinn
-		})
+		});
 
 	},
 };
