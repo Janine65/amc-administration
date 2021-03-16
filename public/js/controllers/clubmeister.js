@@ -1,4 +1,4 @@
-const { Clubmeister } = require("../db");
+const { Clubmeister, Meisterschaft, Adressen, Anlaesse } = require("../db");
 const { Op, Sequelize } = require("sequelize");
 
 module.exports = {
@@ -28,92 +28,70 @@ module.exports = {
 		var arMeister = []
 		var allMitgliedId = []
 
-		// alle punkte aus den Anlässen einlesen
-		var qrySelect = "SELECT mitgliedid, sum(punkte) as punkte, count(eventId) as anzahl FROM meisterschaft where eventId in ("
-		qrySelect += "SELECT id FROM anlaesse where year(datum) = " + req.query.jahr
-		qrySelect += ") and punkte > 0 group by mitgliedid"
-
-		var data = await sequelize.query(qrySelect, 
-			{ 
-				type: Sequelize.QueryTypes.SELECT,
-				plain: false,
-				logging: console.log,
-				raw: true
-			}
-		);
-		if (data.length > 0) {
-			var iterator = data.entries();
-			for(let mitglied of iterator) {
-				allMitgliedId.push(mitglied[1].mitgliedid)
-				var meister = {jahr: req.query.jahr, mitgliedid: mitglied[1].mitgliedid, punkte: Number(mitglied[1].punkte), anlaesse: Number(mitglied[1].anzahl), werbungen: 0, mitglieddauer: 0}
-				arMeister.push(meister);
-			}
+		var data = await Anlaesse.findAll({
+			where: Sequelize.where(Sequelize.fn('year', Sequelize.col("datum")), req.query.jahr)
+		});
+		var arAnlaesse = []
+		for (let ind = 0; ind < data.length; ind++) {
+			arAnlaesse.push(data[ind].id);
 		}
 
-		
-		// Mitgliedwerbung lesen
-		qrySelect = "SELECT a.id, count(b.id) as anzahl FROM adressen a JOIN adressen b ON a.id = b.adressenid"
-		qrySelect += " WHERE YEAR(b.eintritt) = " + req.query.jahr
-		qrySelect += " and year(b.austritt) > year(sysdate())"
-		qrySelect += " GROUP BY a.id"
+		data = await Meisterschaft.findAll({
+			attributes: ["mitgliedid", [Sequelize.fn('SUM', Sequelize.col("punkte")), "punkte"], [Sequelize.fn("COUNT", Sequelize.col("eventid")), "anzahl"]],
+			where: [{"eventid": {[Op.in]: arAnlaesse}},
+					{"punkte": {[Op.gt]: 0}}],
+			group: ["mitgliedid"],
+			raw: true
+		})
 
-		data = await sequelize.query(qrySelect, 
-			{ 
-				type: Sequelize.QueryTypes.SELECT,
-				plain: false,
-				logging: console.log,
-				raw: true
-			}
-		);
+		for (let ind = 0; ind < data.length; ind++) {
+			allMitgliedId.push(data[ind].mitgliedid)
+			var meister = {jahr: req.query.jahr, mitgliedid: data[ind].mitgliedid, punkte: Number(data[ind].punkte), anlaesse: Number(data[ind].anzahl), werbungen: 0, mitglieddauer: 0}
+			arMeister.push(meister);
+		}
+
+		data = await Adressen.findAll({
+			attributes: ["adressenid", [Sequelize.fn('COUNT', Sequelize.col("id")), "anzahl"]],
+			where: [Sequelize.where(Sequelize.fn('year', Sequelize.col("eintritt")), req.query.jahr),
+				{"austritt": "3000-01-01T00:00:00"}],
+			group: "adressenid"
+		})
 		
-		if (data.length > 0) {
-			iterator = data.entries();
-			for(let mitglied of iterator) {
-				let lPunkte = mitglied[1].anzahl * 50
-				var ifound = arMeister.findIndex((element) => element.mitgliedid == mitglied[1].mitgliedid)
+		for (let ind = 0; ind < data.length; ind++) {
+			let lPunkte = data[ind].anzahl * 50
+				var ifound = arMeister.findIndex((element) => element.mitgliedid == data[ind].adressenid)
 				if (ifound > -1) {
 					meister = arMeister[ifound]
-					meister.werbungen = Number(mitglied[1].anzahl)
-					meister.punkte = mitglied[1].punkte + lPunkte
+					meister.werbungen = Number(data[ind].anzahl)
+					meister.punkte = meister.punkte + lPunkte
 					arMeister[ifound] = meister
-				} else {
-					allMitgliedId.push(mitglied[1].mitgliedid)
-					meister = {jahr: req.query.jahr, mitgliedid: mitglied[1].mitgliedid, punkte: Number(mitglied[1].punkte), anlaesse: 0, werbungen: Number(mitglied[1].anzahl), mitglieddauer: 0}
-					arMeister.push(meister);
 				}
-			}
 		}
 
 		if (allMitgliedId.length > 0) {
 			// Informationen aus Adresse lesen
-			qrySelect = "SELECT id, mnr, vorname, name, (" + req.query.jahr + " - year(eintritt)) as mitglieddauer FROM adressen"
-			qrySelect += " WHERE id in (" + allMitgliedId.join(',') + ")" 
-				
-			data = await sequelize.query(qrySelect, 
-				{ 
-					type: Sequelize.QueryTypes.SELECT,
-					plain: false,
-					logging: console.log,
-					raw: true
+			data = await Adressen.findAll({
+				attributes: ["id", "mnr", "vorname", "name", [Sequelize.fn('YEAR', Sequelize.col("eintritt")), "mitglieddauer"]],
+				where: { "id": { [Op.in]: allMitgliedId } },
+				raw: true
+			})
+
+			for (let ind = 0; ind < data.length; ind++) {
+				ifound = arMeister.findIndex((element) => element.mitgliedid == data[ind].id)
+				if (ifound > -1) {
+					meister = arMeister[ifound]
+					meister.mnr = data[ind].mnr
+					meister.vorname = data[ind].vorname
+					meister.nachname = data[ind].name
+					meister.mitglieddauer = eval(req.query.jahr - data[ind].mitglieddauer);
+					arMeister[ifound] = meister
+				} else {
+					console.error('clubmeister.js/calcMeister: Beim Abfüllen der Mitglieddaten ist ein Fehler aufgetreten');
 				}
-			);
-			if (data.length > 0) {
-				iterator = data.entries();
-				for(let mitglied of iterator) {
-						ifound = arMeister.findIndex((element) => element.mitgliedid == mitglied[1].id)
-					if (ifound > -1) {
-						meister = arMeister[ifound]
-						meister.mnr = mitglied[1].mnr
-						meister.vorname = mitglied[1].vorname
-						meister.nachname = mitglied[1].name
-						meister.mitglieddauer = Number(mitglied[1].mitglieddauer)
-						arMeister[ifound] = meister
-					} else {
-						console.error('clubmeister.js/calcMeister: Beim Abfüllen der Mitglieddaten ist ein Fehler aufgetreten');
-					}
-				}
+
 			}
 		}
+
 		// nun wird der Array sortiert nach den entsprechenden Kriterien
 		arMeister.sort((e1, e2) => {
 			var order = 0
@@ -131,38 +109,31 @@ module.exports = {
 		});
 
 		// bestehende Daten löschen
-		qrySelect = "DELETE FROM clubmeister WHERE jahr = " + req.query.jahr;
-		await sequelize.query(qrySelect,
-			{
-				type: Sequelize.QueryTypes.DELETE,
-				plain: false,
-				logging: console.log,
-				raw: true
-			}
-		);					
+		await Clubmeister.destroy({
+			where: { "jahr": req.query.jahr }
+		})
 
 		// insert und Rang setzten
 		if (arMeister.length > 0) {
-			qrySelect = "INSERT INTO clubmeister (jahr, rang, vorname, nachname, mitgliedid, punkte, anlaesse, werbungen, mitglieddauer, status) VALUES "
 			const cMinPunkte = arMeister[0].punkte * 0.4;
-			var status = 1;
 			for (let ind = 0; ind < arMeister.length; ind++) {
-				const meister2 = arMeister[ind];
-				if (ind > 0) {
-					qrySelect += ","
-					status = meister2.punkte >= cMinPunkte;
-				}
-				qrySelect += "(" + req.query.jahr + "," + (ind + 1) + ",'" + meister2.vorname + "','" + meister2.nachname + "'," + meister2.mitgliedid
-				qrySelect += "," + meister2.punkte + "," + meister2.anlaesse + "," + meister2.werbungen + "," + meister2.mitglieddauer + "," + status + ")"			
+				arMeister[ind].rang = ind + 1
+				arMeister[ind].status = arMeister[ind].punkte >= cMinPunkte;
 			}
-			await sequelize.query(qrySelect,
+			console.log(arMeister);
+			await Clubmeister.bulkCreate(arMeister,
 				{
-					type: Sequelize.QueryTypes.INSERT,
-					plain: false,
-					logging: console.log,
-					raw: true
-				}
-			);			
+					fields: ["jahr",
+						"rang",
+						"vorname",
+						"nachname",
+						"mitgliedid",
+						"punkte",
+						"anlaesse",
+						"werbungen",
+						"mitglieddauer",
+						"status"]
+				});
 		}
 		res.json({ok: true});		
 	},

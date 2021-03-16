@@ -79,7 +79,7 @@ wxAMC.moduleClasses.Journal = class {
               scroll: true,
               editable: false,
               columns: [
-                { id: "journalNo", header: "No", adjust: true, hidden: false },
+                { id: "journalno", header: "No", adjust: true, hidden: false },
                 {
                   id: "date", header: "Date", adjust: true,
                   editor: "date", hidden: false,
@@ -567,7 +567,7 @@ wxAMC.moduleClasses.Journal = class {
                   scroll: true,
                   editable: false,
                   columns: [
-                    { id: "journalNo", header: "No.", fillspace: false, hidden: false },
+                    { id: "journalno", header: "No.", fillspace: false, hidden: false },
                     {
                       id: "account",
                       header: "Account",
@@ -1367,7 +1367,7 @@ wxAMC.moduleClasses.Journal = class {
           iSaldo -= eval(element.soll * 1);
           iSaldo += eval(element.haben * 1);
         }
-        var record = { id: 0, journalNo: "", account: "", memo: "Saldo", date: new Date(), soll: (iSaldo < 0 ? iSaldo * -1 : null), haben: (iSaldo < 0 ? null : iSaldo) };
+        var record = { id: 0, journalno: "", account: "", memo: "Saldo", date: new Date(), soll: (iSaldo < 0 ? iSaldo * -1 : null), haben: (iSaldo < 0 ? null : iSaldo) };
 
         itemsAsArray.push(record);
         $$("listAccountsData").clearAll();

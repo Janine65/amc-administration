@@ -894,7 +894,7 @@ class WXAMC {
           if (window.PasswordCredential) {
             var data = {
               id: resp.email,
-              userId: resp.userId,
+              userid: resp.userid,
               name: resp.name,
               password: resp.password
             }

@@ -290,7 +290,7 @@ module.exports = {
 		var rownum = 1;
         for (let ind2 = 0; ind2 < arJournal.length; ind2++) {
             const record = arJournal[ind2];
-			await Journal.update({"journalNo": rownum++},
+			await Journal.update({"journalno": rownum++},
 					{where: {"id" : record.id}})
 			.catch(err => {
 				console.error(err);

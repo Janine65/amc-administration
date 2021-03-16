@@ -201,9 +201,9 @@ module.exports = {
                     { model: db.Account, as: 'fromAccount', required: true, attributes: ['id', 'order', 'name'] },
                     { model: db.Account, as: 'toAccount', required: true, attributes: ['id', 'order', 'name'] }
                 ],
-                attributes: ['id', 'amount', 'journalNo', 'memo', 'date'],
+                attributes: ['id', 'amount', 'journalno', 'memo', 'date'],
                 order: [
-                    ['journalNo', 'asc'],
+                    ['journalno', 'asc'],
                     ['date', 'asc'],
                     ['from_account', 'asc'],
                 ]
@@ -260,7 +260,7 @@ module.exports = {
             const date = new Date(element.date);
             var dateFmt = date.toLocaleDateString('de-DE', options);
 
-            setCellValueFormat(sheet, 'B' + row, element.journalNo, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'B' + row, element.journalno, true, '', { size: iFontSizeRow, name: 'Tahoma' });
             setCellValueFormat(sheet, 'C' + row, dateFmt, true, '', { size: iFontSizeRow, name: 'Tahoma' });
             setCellValueFormat(sheet, 'D' + row, element.fromAccount.order + " " + element.fromAccount.name, true, '', { size: iFontSizeRow, name: 'Tahoma' });
             setCellValueFormat(sheet, 'E' + row, element.toAccount.order + " " + element.toAccount.name, true, '', { size: iFontSizeRow, name: 'Tahoma' });
@@ -390,7 +390,7 @@ module.exports = {
         qrySelect += " select a.datum, a.name, count(m.mitgliedid) as Teilnehmer, a.gaeste";
         qrySelect += " from anlaesse a";
         qrySelect += " LEFT JOIN meisterschaft m";
-        qrySelect += " on (a.id = m.eventId)";
+        qrySelect += " on (a.id = m.eventid)";
         qrySelect += " where year(a.datum) = " + objSave.year;
         qrySelect += " and a.nachkegeln = 0";
         qrySelect += " group by a.datum, a.name, a.gaeste";
@@ -436,18 +436,18 @@ module.exports = {
         qrySelect += " (mv.anzahl + av.gaeste) as vorjahr";
         qrySelect += " FROM anlaesse a";
         qrySelect += " LEFT JOIN (";
-        qrySelect += " SELECT mc.eventId,";
+        qrySelect += " SELECT mc.eventid,";
         qrySelect += " count(mc.mitgliedid) as anzahl";
         qrySelect += " from meisterschaft mc";
-        qrySelect += " group by mc.eventId";
-        qrySelect += " ) ma on (a.id = ma.eventId)";
+        qrySelect += " group by mc.eventid";
+        qrySelect += " ) ma on (a.id = ma.eventid)";
         qrySelect += " JOIN anlaesse av on (a.anlaesseid = av.id)";
         qrySelect += " LEFT JOIN (";
-        qrySelect += " SELECT mcv.eventId,";
+        qrySelect += " SELECT mcv.eventid,";
         qrySelect += " count(mcv.mitgliedid) as anzahl";
         qrySelect += " from meisterschaft mcv";
-        qrySelect += " group by mcv.eventId";
-        qrySelect += " ) mv on (av.id = mv.eventId)";
+        qrySelect += " group by mcv.eventid";
+        qrySelect += " ) mv on (av.id = mv.eventid)";
         qrySelect += " WHERE year(a.datum) = " + objSave.year;
         qrySelect += " and a.nachkegeln = 0";
         qrySelect += " ORDER BY a.datum";
@@ -613,7 +613,7 @@ module.exports = {
                 if (objSave.id == 0) {
                     // für alle aktiven Mitglieder
                     var qrySelect = "SELECT * FROM adressen where austritt > now() and id in (";
-                    qrySelect += "SELECT m.mitgliedid FROM meisterschaft m join anlaesse a on (m.eventId = a.id and year(a.datum) = " + objSave.year;
+                    qrySelect += "SELECT m.mitgliedid FROM meisterschaft m join anlaesse a on (m.eventid = a.id and year(a.datum) = " + objSave.year;
                     qrySelect += ")) order by name, vorname";
 
                     const dbAdressen = await sequelize.query(qrySelect, {
@@ -1118,11 +1118,11 @@ module.exports = {
 
             var iSaldo = 0.0;
             var iRow = 4;
-            qrySelect = "SELECT journalNo,date, date_format(date, '%d.%m.%Y') as formdate, from_account, to_account, memo, amount FROM journal";
+            qrySelect = "SELECT journalno,date, date_format(date, '%d.%m.%Y') as formdate, from_account, to_account, memo, amount FROM journal";
             qrySelect += " WHERE year(date) = " + sJahr;
             qrySelect += " AND (from_account = " + element.id;
             qrySelect += " OR to_account = " + element.id;
-            qrySelect += ") ORDER by journalNo, date";
+            qrySelect += ") ORDER by journalno, date";
 
             var arJournal = await sequelize.query(qrySelect,
                 {
@@ -1144,7 +1144,7 @@ module.exports = {
                 const entry = arJournal[ind2];
                 const iAmount = eval(entry.amount + 0);
 
-                setCellValueFormat(sheet, 'B' + iRow, entry.journalNo, true, false, { size: iFontSizeRow, name: 'Tahoma' });
+                setCellValueFormat(sheet, 'B' + iRow, entry.journalno, true, false, { size: iFontSizeRow, name: 'Tahoma' });
                 setCellValueFormat(sheet, 'C' + iRow, entry.formdate, true, false, { size: iFontSizeRow, name: 'Tahoma' });
                 setCellValueFormat(sheet, 'E' + iRow, entry.memo, true, false, { size: iFontSizeRow, name: 'Tahoma' });
                 sheet.getCell('F' + iRow).numFmt = '#,##0.00;[Red]\-#,##0.00';
@@ -1306,7 +1306,7 @@ function writeArray(sheet, arData, firstRow, fBudget = false, fBudgetVergleich =
  * @param {string} syear 
  */
 async function fillTemplate(sheet, id, syear) {
-    var qrySelect = "SELECT * FROM meisterschaft where eventId in (";
+    var qrySelect = "SELECT * FROM meisterschaft where eventid in (";
     qrySelect += "SELECT id FROM anlaesse where year(datum) = " + syear;
     qrySelect += ") and mitgliedid = " + id + " order by id";
 
@@ -1324,10 +1324,10 @@ async function fillTemplate(sheet, id, syear) {
         var kegelTotal = 0
 
         cols.eachCell(function (cell, row) {
-            if (cell.value != null && cell.value != "eventId") {
+            if (cell.value != null && cell.value != "eventid") {
                 for (let meisterschaft of data) {
 
-                    if (cell.value == meisterschaft.eventId) {
+                    if (cell.value == meisterschaft.eventid) {
                         sheet.getCell('A' + cell.row).value = meisterschaft.punkte;
                         clubTotal += meisterschaft.punkte;
 
@@ -1462,7 +1462,7 @@ async function createTemplate(syear, sheet, inclPoints) {
     setCellValueFormat(sheet, "H" + row, "z Pkt.", true, "", { bold: true, size: iFontSizeRow });
     setCellValueFormat(sheet, "I" + row, "Total", true, "", { bold: true, size: iFontSizeRow });
     setCellValueFormat(sheet, "J" + row, "Visum", true, "", { bold: true, size: iFontSizeRow });
-    setCellValueFormat(sheet, "K" + row, "eventId", false, "", { bold: true, size: iFontSizeRow });
+    setCellValueFormat(sheet, "K" + row, "eventid", false, "", { bold: true, size: iFontSizeRow });
 
     let clubTotal = 0;
 

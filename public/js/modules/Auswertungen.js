@@ -73,7 +73,7 @@ wxAMC.moduleClasses.Auswertungen = class {
               //barWidth:60,
               radius: 0,
               yAxis: {
-                template: "#anlass#",
+                template: "#datum# #name#",
                 lineColor: "#fff"
               },
               padding: {
@@ -92,10 +92,10 @@ wxAMC.moduleClasses.Auswertungen = class {
               },
               series: [
                 {
-                  value: "#teilnehmer#",
+                  value: "#meisterschafts.teilnehmer#",
                   color: "#FDBD67 ",
                   tooltip: {
-                    template: "#teilnehmer#"
+                    template: "#meisterschafts.teilnehmer#"
                   }
                 },
                 {
@@ -112,7 +112,7 @@ wxAMC.moduleClasses.Auswertungen = class {
               //barWidth:60,
               radius: 0,
               yAxis: {
-                template: "#anlass#",
+                template: "#datum# #name#",
                 lineColor: "#fff",
                 color: "#fff"
               },

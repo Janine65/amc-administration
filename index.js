@@ -28,7 +28,7 @@ function extendDefaultFields(defaults, session) {
   return {
     data: defaults.data,
     expires: defaults.expires,
-    userId: session.userId,
+    userid: session.userid,
   };
 }
 
@@ -81,10 +81,10 @@ app.post('/user/logout', function (req, res) {
 });
 
 passport.serializeUser(function (user, done) {
-  done(null, { id: user.userId });
+  done(null, { id: user.userid });
 });
 passport.deserializeUser(function (user, done) {
-  done(null, { id: user.userId });
+  done(null, { id: user.userid });
 });
 
 app.get('/System/env', function (req, res) {

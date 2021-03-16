@@ -16,7 +16,7 @@ module.exports = {
 					{ model: Account, as: 'toAccount', required: true, attributes: ['id', 'order', 'name'] }
 				],
 				order: [
-					['journalNo', 'asc'],
+					['journalno', 'asc'],
 					['date', 'asc'],
 					['from_account', 'asc'],
 				]
@@ -83,7 +83,7 @@ module.exports = {
 		console.info('update: ', data);
 
 		Journal.findByPk(data.id)
-			.then((journal) => journal.update(data, {fields: ["from_account", "to_account", "journalNo", "date", "memo", "amount", "status"]})
+			.then((journal) => journal.update(data, {fields: ["from_account", "to_account", "journalno", "date", "memo", "amount", "status"]})
 				.then((obj) => res.json(obj))
 				.catch((e) => console.error(e)))
 			.catch((e) => console.error(e));
@@ -126,14 +126,14 @@ module.exports = {
 		Promise.all([
 			Journal.findAll({
 				attributes: [
-					"id", "journalNo", "date", "memo", "amount"],
+					"id", "journalno", "date", "memo", "amount"],
 				where: [{"from_account" : req.query.acc},
 						Sequelize.where(Sequelize.fn('YEAR', Sequelize.col('date')), req.query.jahr)],
 				include: { model: Account, as: 'fromAccount', required: true }
 			}),
 			Journal.findAll({
 				attributes: [
-					"id", "journalNo", "date", "memo", "amount" ],
+					"id", "journalno", "date", "memo", "amount" ],
 				where: [{"to_account" : req.query.acc},
 						Sequelize.where(Sequelize.fn('YEAR', Sequelize.col('date')), req.query.jahr)],
 				include: { model: Account, as: 'toAccount', required: true }
@@ -144,7 +144,7 @@ module.exports = {
 			var arData = [];
 			for (let index = 0; index < arPreData.length; index++) {
 				const element = arPreData[index];
-				var record = {id : element.id, journalNo : element.journalNo, date: element.date, memo: element.memo}
+				var record = {id : element.id, journalno : element.journalno, date: element.date, memo: element.memo}
 
 				if (element.fromAccount == null) {
 					record.account = element.toAccount.order + " " + element.toAccount.name
@@ -249,7 +249,7 @@ module.exports = {
 					formDate = Datum.split('.')[2] + '-' + Datum.split('.')[1] + '-' + Datum.split('.')[0]
 				}
 
-				qrySelect = "INSERT INTO journal (`journalNo`, `date`, `from_account`,`to_account`,`memo`, `amount`) VALUES (";
+				qrySelect = "INSERT INTO journal (`journalno`, `date`, `from_account`,`to_account`,`memo`, `amount`) VALUES (";
 				qrySelect += Nr + ",'" + formDate + "'," + idSoll + "," + idHaben + ",'" + Buchungstext + "'," + Betrag + ")";
 				logWorksheet.addRow({ 'timestamp': new Date().toString(), 'type': 'Warnung', 'message': qrySelect });
 
