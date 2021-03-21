@@ -182,19 +182,15 @@ module.exports = {
 		];
 
 
+		var arInsData = [];
+
 		// einlesen vom Kontoplan
-		var qrySelect = "SELECT `id`, `level`, `order`, `name` from account order by `level`, `order`";
-		var arAccount = await sequelize.query(qrySelect,
-			{
-				type: Sequelize.QueryTypes.SELECT,
-				plain: false,
-				logging: console.log,
-				raw: true
-			}
-		)
-			.catch((e) => {
-				logWorksheet.addRow({ 'timestamp': new Date().toUTCString(), 'type': 'Warnung', 'message': e });
-			});
+		var arAccount = await Account.findAll({
+			order: ["level", "order"]
+		})
+		.catch((e) => {
+			logWorksheet.addRow({ 'timestamp': new Date().toUTCString(), 'type': 'Warnung', 'message': e });
+		});
 
 		const cNr = 1
 		const cDatum = 2
@@ -249,24 +245,17 @@ module.exports = {
 					formDate = Datum.split('.')[2] + '-' + Datum.split('.')[1] + '-' + Datum.split('.')[0]
 				}
 
-				qrySelect = "INSERT INTO journal (`journalno`, `date`, `from_account`,`to_account`,`memo`, `amount`) VALUES (";
-				qrySelect += Nr + ",'" + formDate + "'," + idSoll + "," + idHaben + ",'" + Buchungstext + "'," + Betrag + ")";
-				logWorksheet.addRow({ 'timestamp': new Date().toString(), 'type': 'Warnung', 'message': qrySelect });
-
-				await sequelize.query(qrySelect,
-					{
-						type: Sequelize.QueryTypes.INSERT,
-						plain: false,
-						logging: console.log,
-						raw: true
-					}
-				)
-					.catch((e) => {
-						logWorksheet.addRow({ 'timestamp': new Date().toISOString(), 'type': 'Warnung', 'message': e });
-					});
+				var record = {"journalno": Nr, "date": formDate, "from_account": idSoll, "to_account": idHaben, "memo": Buchungstext, "amount": Betrag};
+				arInsData.push(record);
+				logWorksheet.addRow({ 'timestamp': new Date().toString(), 'type': 'Warnung', 'message': record.toString() });
 			}
-
 		})
+
+		await Journal.bulkCreate(arInsData, 
+			{fields: ["journalno", "date", "from_account", "to_account", "memo", "amount"]})
+		.catch((e) => {
+			logWorksheet.addRow({ 'timestamp': new Date().toUTCString(), 'type': 'Warnung', 'message': e });
+		});
 
 		var filenamenew = filename.replace('.xlsx', 'imported.xlsx');
 		await workbook.xlsx.writeFile(filenamenew)

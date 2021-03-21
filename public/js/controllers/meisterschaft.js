@@ -37,13 +37,13 @@ module.exports = {
 			raw: true, nest: true
 		})
 			.then(data => {
-				console.log(data);
+				// console.log(data);
 				for (let ind = 0; ind < data.length; ind++) {
 					data[ind].jahr = data[ind].linkedEvent.jahr;
 					data[ind].datum = data[ind].linkedEvent.datum;
 					data[ind].name = data[ind].linkedEvent.name;
 				}
-				console.log(data);
+				// console.log(data);
 				res.json(data)
 			})
 			.catch(error => console.error(error));
@@ -62,7 +62,7 @@ module.exports = {
 		raw: true, nest: true
 		})
 		.then(data => {
-			console.log(data);   
+			// console.log(data);   
 			var arAnlaesse = [];
 			for (let index = 0; index < data.length; index++) {
 				arAnlaesse.push(data[index].anlaesseid);
@@ -100,37 +100,15 @@ module.exports = {
 
 	},
 
-	getFKData: function (req, res) {
-		var qrySelect = "SELECT `id`, `fullname` as value FROM `adressen` WHERE `austritt` > NOW()";
-		if (req.query.filter != null) {
-			var qfield = '%' + req.query.filter.value + '%';
-			qrySelect = qrySelect + " AND lower(`fullname`) like '" + qfield + "'";
-		}
-		qrySelect = qrySelect + " ORDER BY fullname asc";
-
-		sequelize.query(qrySelect,
-			{
-				type: Sequelize.QueryTypes.SELECT,
-				plain: false,
-				logging: console.log,
-				raw: false
-			}
-		).then(data => res.json(data));
-	},
-
 	checkJahr: function (req, res) {
-		var qrySelect = "SELECT count(*) as AnzStreich FROM meisterschaft";
-		qrySelect += " where eventid in (select id from anlaesse where year(datum) = " + req.query.jahr + ")";
-		qrySelect += "and streichresultat = true";
-
-		sequelize.query(qrySelect,
-			{
-				type: Sequelize.QueryTypes.SELECT,
-				plain: false,
-				logging: console.log,
-				raw: false
-			}
-		).then(data => res.json(data));
+		Meisterschaft.count({
+			where: {"streichresultat": true},
+			include: {model: Anlaesse, as: "linkedEvent", 
+				attributes: [],
+				where: Sequelize.where(Sequelize.fn('YEAR', Sequelize.col("datum")), req.query.jahr)}
+		})
+		.then(data => res.json({AnzStreich: data}))
+		.catch(err => console.error(err));
 	},
 
 	removeData: function (req, res) {
@@ -139,7 +117,7 @@ module.exports = {
 			throw "Record not correct";
 		}
 		console.info('delete: ', data);
-		db.Meisterschaft.findByPk(data.id)
+		Meisterschaft.findByPk(data.id)
 			.then((eintrag) => eintrag.destroy()
 				.then((obj) => res.json({ id: obj.id }))
 				.catch((e) => console.error(e)))
@@ -149,7 +127,7 @@ module.exports = {
 	addData: function (req, res) {
 		var data = req.body;
 		console.info('insert: ', data);
-		db.Meisterschaft.create(data)
+		Meisterschaft.create(data)
 			.then((obj) => res.json(obj.id))
 			.catch((e) => console.error(e));
 	},
@@ -159,7 +137,7 @@ module.exports = {
 		// update
 		console.info('update: ', data);
 
-		db.Meisterschaft.findByPk(data.id)
+		Meisterschaft.findByPk(data.id)
 			.then((eintrag) => eintrag.update(data)
 				.then((obj) => res.json(obj))
 				.catch((e) => console.error(e)))

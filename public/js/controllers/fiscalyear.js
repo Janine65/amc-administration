@@ -79,7 +79,7 @@ module.exports = {
 		qrySelect += " FROM journal j WHERE YEAR(j.date) = " + sJahr;
 		qrySelect += " and j.from_account in (select id from account where level = 1)";
 		qrySelect += " GROUP BY j.from_account";
-		var arAktiv = await sequelize.query(qrySelect,
+		var arAktiv = await global.sequelize.query(qrySelect,
             {
                 type: Sequelize.QueryTypes.SELECT,
                 plain: false,
@@ -100,7 +100,7 @@ module.exports = {
 		qrySelect += " FROM journal j WHERE YEAR(j.date) = " + sJahr;
 		qrySelect += " and j.to_account in (select id from account where level = 1)";
 		qrySelect += " GROUP BY j.to_account";
-		var arAktiv2 = await sequelize.query(qrySelect,
+		var arAktiv2 = await global.sequelize.query(qrySelect,
             {
                 type: Sequelize.QueryTypes.SELECT,
                 plain: false,
@@ -131,7 +131,7 @@ module.exports = {
 		qrySelect += " FROM journal j WHERE YEAR(j.date) = " + sJahr;
 		qrySelect += " and j.from_account in (select id from account where level = 2)";
 		qrySelect += " GROUP BY j.from_account";
-		var arPassiv = await sequelize.query(qrySelect,
+		var arPassiv = await global.sequelize.query(qrySelect,
             {
                 type: Sequelize.QueryTypes.SELECT,
                 plain: false,
@@ -152,7 +152,7 @@ module.exports = {
 		qrySelect += " FROM journal j WHERE YEAR(j.date) = " + sJahr;
 		qrySelect += " and j.to_account in (select id from account where level = 2)";
 		qrySelect += " GROUP BY j.to_account";
-		var arPassiv2 = await sequelize.query(qrySelect,
+		var arPassiv2 = await global.sequelize.query(qrySelect,
             {
                 type: Sequelize.QueryTypes.SELECT,
                 plain: false,
@@ -223,7 +223,7 @@ module.exports = {
 			// lösche alle Eröffnungsbuchungen
 			qrySelect = "DELETE FROM journal where year(date) = " + sNextJahr;
 			qrySelect += " and (from_account = 39 or to_account = 39)";
-			await sequelize.query(qrySelect,
+			await global.sequelize.query(qrySelect,
 				{
 					type: Sequelize.QueryTypes.DELETE,
 					plain: false,
@@ -256,7 +256,7 @@ module.exports = {
 		// Status vom Buchungsjahr ändern
 		qrySelect = "UPDATE fiscalyear set state = " + iStatus;
 		qrySelect += " WHERE year = " + sJahr;
-		await sequelize.query(qrySelect,
+		await global.sequelize.query(qrySelect,
 			{
 				type: Sequelize.QueryTypes.UPDATE,
 				plain: false,
@@ -279,7 +279,7 @@ module.exports = {
 		qrySelect += " where year(j.date) = " + sJahr;
 		qrySelect += " order by j.date, f.order, t.order";
 
-		var arJournal = await sequelize.query(qrySelect,
+		var arJournal = await global.sequelize.query(qrySelect,
             {
                 type: Sequelize.QueryTypes.SELECT,
                 plain: false,

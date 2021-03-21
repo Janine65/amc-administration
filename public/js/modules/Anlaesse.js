@@ -321,7 +321,7 @@ custom_checkbox(obj, common, value){
                       }
                     },
                     elements: [
-                      { view:"combo", suggest:"/Meisterschaft/getFkData", id: "mitgliedListe", name:"mitgliedid", label:"Teilnehmer", required: true, hidden: true },
+                      { view:"combo", suggest:"/data/getFkData", id: "mitgliedListe", name:"mitgliedid", label:"Teilnehmer", required: true, hidden: true },
                       { view:"text", id: "mitgliedid", name:"fullname", label:"Teilnehmer", disabled: true },
                       { view: "text", type:"number", id: "punkte", name: "punkte", label: "Punkte" },
                       { view: "fieldset", id: "kegelresultate", label: "Kegelresultate", hidden: true,

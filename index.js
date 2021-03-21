@@ -20,9 +20,7 @@ if (process.env.NODE_ENV == undefined)
 // config variables
 const config = require('./config/config.js');
 
-const db = require('./public/js/db')
-
-var Session = db.Session;
+const { Session } = require('./public/js/db')
 
 function extendDefaultFields(defaults, session) {
   return {
@@ -124,7 +122,6 @@ app.post('/Meisterschaft/data', meisterschaft.addData);
 app.put('/Meisterschaft/data', meisterschaft.updateData);
 app.delete('/Meisterschaft/data', meisterschaft.removeData);
 app.get('/Meisterschaft/getOneData', meisterschaft.getOneData);
-app.get('/Meisterschaft/getFkData', meisterschaft.getFKData);
 app.get('/Meisterschaft/mitglied', meisterschaft.getMitgliedData);
 app.get('/Meisterschaft/getChartData', meisterschaft.getChartData);
 app.get('/Meisterschaft/checkJahr', meisterschaft.checkJahr);

@@ -7,7 +7,7 @@ const { Op,
 module.exports = {
   getData: function (req, res) {
     Anlaesse.findAll({
-      where: Sequelize.where(Sequelize.fn('YEAR', Sequelize.col('datum')), { [Op.gte]: global.Parameter.get("CLUBJAHR") - 1 }),
+      where: Sequelize.where(Sequelize.fn('YEAR', Sequelize.col("anlaesse.datum")), { [Op.gte]: global.Parameter.get("CLUBJAHR") - 1 }),
       include: [
         { model: Anlaesse, as: 'linkedEvent', required: false, attributes: [["longname", "vorjahr"]] }],
       order: ["datum"]
@@ -46,22 +46,15 @@ module.exports = {
   },
 
   getFKData: function (req, res) {
-    var qrySelect =
-      "SELECT `id`, `longname` as value FROM `anlaesse` WHERE status = 1 ";
-    if (req.query.filter != null) {
-      var qfield = "%" + req.query.filter.value + "%";
-      qrySelect = qrySelect + " AND lower(`longname`) like '" + qfield + "'";
-    }
-    qrySelect = qrySelect + " ORDER BY datum desc";
-
-    sequelize
-      .query(qrySelect, {
-        type: Sequelize.QueryTypes.SELECT,
-        plain: false,
-        logging: console.log,
-        raw: false,
-      })
-      .then((data) => res.json(data));
+		Anlaesse.findAll({ 
+			attributes: ["id", ["longname", "value"]],
+			where: [
+				{"status": 1 },
+				Sequelize.where(Sequelize.fn('LOWER', Sequelize.col("longname")), {[Op.substring]: (req.query.filter != null ? req.query.filter.value : '')})],
+			order: [["datum","DESC"]]
+			 })
+		.then(data => res.json(data))
+		.catch((e) => console.error(e));		
   },
 
   removeData: function (req, res) {

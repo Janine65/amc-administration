@@ -324,6 +324,7 @@ Anlaesse.belongsTo(Anlaesse, { as: 'linkedEvent', foreignKey: 'anlaesseid' });
 Anlaesse.hasMany(Meisterschaft, { foreignKey: 'eventid' });
 Meisterschaft.belongsTo(Anlaesse, { as: 'linkedEvent', constraints: true, foreignKey: 'eventid' });
 Meisterschaft.belongsTo(Adressen, { as: 'teilnehmer', constraints: true, foreignKey: 'mitgliedid' });
+Adressen.hasMany(Meisterschaft, { foreignKey: 'mitgliedid' });
 
 
 class Parameter extends Model {
@@ -495,8 +496,8 @@ Journal.init({
       modelName: 'budget'
     });
   
-    Budget.belongsTo(Account, { as: 'acc', constraints: true, foreignKey: 'account' });
-    Account.hasMany(Budget, { as: 'acc', constraints: true, foreignKey: 'account' });
+    Budget.belongsTo(Account, { as: "acc", constraints: true, foreignKey: 'account' });
+    Account.hasMany(Budget, { constraints: true, foreignKey: 'account' });
   
   module.exports = {
   Adressen, Anlaesse, Parameter, Meisterschaft, Clubmeister, Kegelmeister, User, Session, Account, Journal, FiscalYear, Budget,
