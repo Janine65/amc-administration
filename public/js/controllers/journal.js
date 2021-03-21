@@ -2,7 +2,6 @@ var {Journal, Account} = require("../db");
 const { Op, Sequelize } = require("sequelize");
 const ExcelJS = require("exceljs");
 const fs = require("fs");
-const path = require("path");
 const { v4: uuid } = require('uuid');
 
 
@@ -23,12 +22,12 @@ module.exports = {
 			}
 		)
 			.then(data => {
-				let index = 0;
-				for (const journal of data) {
-					journal.receipt = (journal.receipt != null ? true : false);
-					data.slice(index, 1, journal);
-					index++;
-				}
+				// let index = 0;
+				// for (const journal of data) {
+				// 	journal.receipt = (journal.receipt != null ? true : false);
+				// 	data.slice(index, 1, journal);
+				// 	index++;
+				// }
 				res.json(data);
 			})
 			.catch((e) => console.error(e));
@@ -38,12 +37,13 @@ module.exports = {
 		Journal.findByPk(req.query.id)
 			.then(data => {
 				if (data.receipt != null) {
-					const filename = 'uploads/' + uuid() + '-' + data.id + '.pdf';
-					const pathname = path.join(__dirname, '../../');
-					console.log(pathname + filename);
-					fs.writeFileSync(pathname + filename, Buffer.concat([data.receipt]));
+					var sJahr = new Date(data.date).getFullYear();
+					const pathname = global.documents + sJahr + '/';
+					console.log(pathname + data.receipt);
+					
+					fs.copyFileSync( pathname + data.receipt, global.uploads + data.receipt);
 
-					res.json({filename: filename});
+					res.json({filename: global.public +  data.receipt});
 				} else {
 					res.json({filename: undefined})
 				}
@@ -97,17 +97,19 @@ module.exports = {
 			res.json({type: "error", message: "No file to store in database"});
 			return;
 		}
-		var filename = path.join(__dirname, '../../../public/uploads/' + data.uploadFiles)
+
+		var sJahr = new Date(data.date).getFullYear();
+		const path = global.documents + sJahr + '/';
+		const receipt =  'receipt/' + 'Journal-' + data.id + '.pdf';
+
+		var filename = global.uploads + data.uploadFiles;
 
 		if (fs.existsSync(filename)) {
-			fs.readFile(filename, (err, pdfFile) => {
-				if (err)
-					throw err;
-
-				Journal.update({receipt: pdfFile}, {where: {id: data.id}})
+			fs.copyFileSync(filename, path + receipt);
+			
+			Journal.update({receipt: receipt}, {where: {id: data.id}})
 					.then(resp => res.json(resp))
 					.catch(e => console.error(e));						
-			});
 		} else {
 			res.json({type: "error", message: "Error while reading the file"});
 		}

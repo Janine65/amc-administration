@@ -3,6 +3,8 @@ const {
     Sequelize, Op
 } = require("sequelize");
 
+const FS = require("fs");
+const Archiver = require("archiver");
 const ExcelJS = require("exceljs");
 const { Options } = require("pdfkit");
 const cName = "C6";
@@ -48,7 +50,10 @@ module.exports = {
             sWhere.ehrenmitglied = filter.ehrenmitglied;
 
         var arData = await Adressen.findAll(
-            { where: sWhere }
+            {
+                where: sWhere,
+                order: ["name", "vorname"]
+            }
         )
             .catch((e) => {
                 console.error(e);
@@ -60,7 +65,7 @@ module.exports = {
             });
 
         const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-        var fmtToday = new Date().toLocaleDateString("de-CH", {year: 'numeric', month: "2-digit", day: "2-digit"});
+        var fmtToday = new Date().toLocaleDateString("de-CH", { year: 'numeric', month: "2-digit", day: "2-digit" });
         const workbook = new ExcelJS.Workbook();
         workbook.creator = "Janine Franken";
 
@@ -130,7 +135,7 @@ module.exports = {
             sheet.getCell('Q' + row).alignment = { horizontal: "center" };
             setCellValueFormat(sheet, 'R' + row, (element.allianz == "1" ? "Ja" : "Nein"), true, '', { size: iFontSizeRow, name: 'Tahoma' });
             sheet.getCell('R' + row).alignment = { horizontal: "center" };
-            setCellValueFormat(sheet, 'S' + row, new Date(element.eintritt).toLocaleDateString("de-CH", {year: 'numeric', month: "2-digit", day: "2-digit"}), true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            setCellValueFormat(sheet, 'S' + row, new Date(element.eintritt).toLocaleDateString("de-CH", { year: 'numeric', month: "2-digit", day: "2-digit" }), true, '', { size: iFontSizeRow, name: 'Tahoma' });
             var date = new Date(element.austritt);
             var dateFmt = date.toLocaleDateString('de-DE', options);
             setCellValueFormat(sheet, 'T' + row, (dateFmt == "01.01.3000" ? "" : dateFmt), true, '', { size: iFontSizeRow, name: 'Tahoma' });
@@ -211,6 +216,7 @@ module.exports = {
                 });
             });
 
+        
 
         const workbook = new ExcelJS.Workbook();
         workbook.creator = "Janine Franken";
@@ -232,7 +238,6 @@ module.exports = {
                 oddFooter: "&14Journal " + sjahr
             }
         });
-
 
         // Schreibe Journal
         setCellValueFormat(sheet, 'B1', "Journal " + sjahr, false, '', { bold: true, size: iFontSizeHeader, name: 'Tahoma' });
@@ -262,6 +267,7 @@ module.exports = {
             setCellValueFormat(sheet, 'G' + row, eval(element.amount * 1), true, '', { size: iFontSizeRow, name: 'Tahoma' });
             sheet.getCell('G' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
 
+
             row++;
 
         }
@@ -273,8 +279,8 @@ module.exports = {
         sheet.getColumn('F').width = 50;
         sheet.getColumn('G').width = 18;
 
-        const filename = "Journal-" + sjahr + ".xlsx";
-        await workbook.xlsx.writeFile("./public/exports/" + filename)
+        const filename = "Journal-" + sjahr;
+        await workbook.xlsx.writeFile("./public/exports/" + filename + ".xlsx")
             .catch((e) => {
                 console.error(e);
                 res.json({
@@ -283,10 +289,51 @@ module.exports = {
                 });
             });
 
+        // create a file to stream archive data to.
+        const output = FS.createWriteStream(global.exports + filename + ".zip");
+        const archive = Archiver('zip', {
+            zlib: { level: 9 } // Sets the compression level.
+        });
+        
+        // listen for all archive data to be written
+        // 'close' event is fired only when a file descriptor is involved
+        output.on('close', function() {
+            console.log(archive.pointer() + ' total bytes');
+            console.log('archiver has been finalized and the output file descriptor has closed.');
+        });
+        
+        // This event is fired when the data source is drained no matter what was the data source.
+        // It is not part of this library but rather from the NodeJS Stream API.
+        // @see: https://nodejs.org/api/stream.html#stream_event_end
+        output.on('end', function() {
+            console.log('Data has been drained');
+        });
+        
+        // good practice to catch warnings (ie stat failures and other non-blocking errors)
+        archive.on('warning', function(err) {
+            if (err.code === 'ENOENT') {
+            // log warning
+            } else {
+            // throw error
+            throw err;
+            }
+        });
+        archive.on('error', function(err) {
+                    throw err;
+        });
+        archive.pipe(output);
+  
+        // append a file
+        archive.file("./public/exports/" + filename + ".xlsx", { name: filename + ".xlsx" });
+
+        // append files from a sub-directory and naming it `new-subdir` within the archive
+        archive.directory(global.documents + sjahr + '/receipt/', 'receipt');
+        archive.finalize();
+
         return res.json({
             type: "info",
             message: "Excelfile erstellt",
-            filename: filename
+            filename: filename + ".zip"
         });
     },
 
@@ -648,7 +695,7 @@ module.exports = {
         });
 
         var accData = await Account.findAll({
-            attributes: ["id", "name", "level", "order", "status", 
+            attributes: ["id", "name", "level", "order", "status",
                 [Sequelize.literal(0), "amount"], [Sequelize.literal(0), "amountVJ"],
                 [Sequelize.literal(0), "budget"], [Sequelize.literal(0), "budgetVJ"], [Sequelize.literal(0), "budgetNJ"]
             ],
@@ -664,7 +711,7 @@ module.exports = {
             });
 
         var accBudget = await Budget.findAll({
-            where: { "year": {[Op.in]: [sjahr, iVJahr, iNJahr]} },
+            where: { "year": { [Op.in]: [sjahr, iVJahr, iNJahr] } },
             order: ["year", "account"],
             raw: true
         })
@@ -693,7 +740,7 @@ module.exports = {
                         break;
                 }
             }
-            
+
         }
         var arrAmount = await Journal.findAll({
             attributes: ["from_account", [Sequelize.fn('SUM', Sequelize.col("amount")), "amount"]],
@@ -1301,11 +1348,13 @@ async function createTemplate(syear, sheet, inclPoints) {
     // read all events
     let dbEvents = await Anlaesse.findAll({
         where: [sequelize.where(sequelize.fn('YEAR', sequelize.col('datum')), syear),
-            {[Op.or]: [
-                {"istkegeln": true},
-                {"punkte": {[Op.gt]: 0}}
-            ]}
-            ],
+        {
+            [Op.or]: [
+                { "istkegeln": true },
+                { "punkte": { [Op.gt]: 0 } }
+            ]
+        }
+        ],
         order: [
             ["istkegeln", "desc"],
             ["datum", "asc"],
@@ -1382,7 +1431,7 @@ async function createTemplate(syear, sheet, inclPoints) {
                 setCellValueFormat(sheet, "A" + row, "", true, "", { size: iFontSizeRow, strike: true });
             }
 
-            setCellValueFormat(sheet, "B" + row, new Date(event.datum).toLocaleDateString("de-CH", {year: 'numeric', month: "2-digit", day: "2-digit"}), true, "", { size: iFontSizeRow });
+            setCellValueFormat(sheet, "B" + row, new Date(event.datum).toLocaleDateString("de-CH", { year: 'numeric', month: "2-digit", day: "2-digit" }), true, "", { size: iFontSizeRow });
             setCellValueFormat(sheet, "C" + row, "", true, "", { size: iFontSizeRow });
             setCellValueFormat(sheet, "D" + row, "", true, "", { size: iFontSizeRow });
             setCellValueFormat(sheet, "E" + row, "", true, "", { size: iFontSizeRow });
@@ -1419,7 +1468,7 @@ async function createTemplate(syear, sheet, inclPoints) {
             } else {
                 setCellValueFormat(sheet, "A" + row, "", true, "", { size: iFontSizeRow, strike: true });
             }
-            setCellValueFormat(sheet, "B" + row, new Date(event.datum).toLocaleDateString("de-CH", {year: 'numeric', month: "2-digit", day: "2-digit"}), true, "", { size: iFontSizeRow });
+            setCellValueFormat(sheet, "B" + row, new Date(event.datum).toLocaleDateString("de-CH", { year: 'numeric', month: "2-digit", day: "2-digit" }), true, "", { size: iFontSizeRow });
             setCellValueFormat(sheet, "C" + row, event.name, true, "C" + row + ":I" + row, { size: iFontSizeRow });
             setCellValueFormat(sheet, "K" + row, event.id, false, "", { size: iFontSizeRow });
         }

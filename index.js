@@ -22,6 +22,11 @@ const config = require('./config/config.js');
 
 const { Session } = require('./public/js/db')
 
+global.documents = __dirname + "/documents/"
+global.uploads = __dirname + "/public/uploads/"
+global.exports = __dirname + "/public/exports/"
+global.public = "/uploads/"
+
 function extendDefaultFields(defaults, session) {
   return {
     data: defaults.data,

@@ -10,4 +10,6 @@ public/.DS_Store
 public/js/.DS_Store
 public/uploads/*.xlsx
 public/uploads/*.pdf
+public/uploads/receipt/*.pdf
 node_modules
+documents/2021/receipt/*.pdf
