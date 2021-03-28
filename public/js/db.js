@@ -4,7 +4,7 @@ const DataTypes = require('sequelize').DataTypes;
 const UUIDV4 = require('uuid').v4;
 
 const sequelize = new Sequelize(global.gConfig.database, global.gConfig.db_user, global.cipher.decrypt(global.gConfig.db_pwd), {
-  host: "localhost", 
+  host: global.gConfig.dbhost, 
   port: global.gConfig.port,
   dialect: global.gConfig.dbtype,
   logging: (...msg) => console.log(msg)

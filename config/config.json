@@ -5,10 +5,11 @@
         "app_desc": "AMC Administration",
         "node_port": 3050,
         "json_indentation": 4,
+        "dbhost": "localhost",
         "database": "amcadmin",
         "db_user": "webuser",
         "db_pwd": "U2FsdGVkX19p5FVhdaFpuJmMXpgKFmqXGYmwKB5Po+A=",
-        "port": "5432",
+        "port": "5436",
         "dbtype": "postgres",
         "defaultEmail" : "JanineFranken",
         "JanineFranken" : {
@@ -33,7 +34,7 @@
         "db_user": "webuser",
         "db_pwd": "U2FsdGVkX1+ynQVZJtDt5Lic6a9Ju/J0IZd5mEuhmJSgWaKZ7l6Vum2EYkvxzfD9",
         "db_pwd_alt": "MGKlMb-MShwOeSN7u",
-        "port": "5499",
+        "port": "5435",
         "dbtype": "postgres",
         "defaultEmail" : "HansjoergDutler"
     }
