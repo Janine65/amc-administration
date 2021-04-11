@@ -23,7 +23,7 @@ wxAMC.moduleClasses.Anlaesse = class {
   
   show_vorjahr (value, config) {
     if (value.linkedEvent != null ) {
-      return value.linkedEvent.longname;
+      return value.linkedEvent.vorjahr;
     } else return "";
   }
 
@@ -92,7 +92,7 @@ custom_checkbox(obj, common, value){
               { id:"nachkegeln", css:{'text-align':'center'},header:[{text:"Nachkegeln?"}], template:this.custom_checkbox},		
               { id:"istsamanlass", css:{'text-align':'center'}, header:[{text:"SAM-Anlass?"}], template:this.custom_checkbox},
               { id:"beschreibung", header:[{text:"Beschreibung"}], adjust:"header"},
-              { id:"vorjahr", header:[{text:"Vorjahres Termin"}], adjust:true}  
+              { id:"vorjahr", header:[{text:"Vorjahres Termin"}], adjust:true, template:this.show_vorjahr}  
             ],
             hover: "hoverline",
             on : {
@@ -174,7 +174,7 @@ custom_checkbox(obj, common, value){
           rows : [
             /* Anlass details form. */
             { view : "form", id : "moduleAnlaesse-detailsForm", borderless : false, scroll: true,
-              elementsConfig : { labelWidth : 100, 
+              elementsConfig : { labelWidth : 150, 
                 on : { onChange : () => {
                   $$("moduleAnlaesse-saveButton")[$$("moduleAnlaesse-detailsForm").validate() ?
                     "enable" : "disable"]();
@@ -198,20 +198,11 @@ custom_checkbox(obj, common, value){
                 },
                 { name : "beschreibung", label : "Beschreibung", view : "textarea", height: 100
                 },
-                { view : "radio", name : "istkegeln", label : "Kegeln?", value : "0",
-                  options : [
-                    { id : 0, value : "Nein" }, { id : 1, value : "Ja" }
-                  ]
+                { view : "checkbox", name : "istkegeln", label : "Kegeln?", value : false
                 },
-                { view : "radio", name : "nachkegeln", label : "Nachkegeln?", value : "0",
-                  options : [
-                    { id : 0, value : "Nein" }, { id : 1, value : "Ja" }
-                  ]
+                { view : "checkbox", name : "nachkegeln", label : "Nachkegeln?", value : false
                 },
-                { view : "radio", name : "istsamanlass", label : "SAM-Anlass?", value : "0",
-                  options : [
-                    { id : 0, value : "Nein" }, { id : 1, value : "Ja" }
-                  ]
+                { view : "checkbox", name : "istsamanlass", label : "SAM-Anlass?", value : false
                 },
                 { view:"combo", suggest:"/Anlaesse/getFkData", name:"anlaesseid", label:"Vorjahresevent" }
               ]
