@@ -516,18 +516,11 @@ wxAMC.moduleClasses.Adressen = class {
     Promise.resolve(promiseAccount)
       .then(function (data) {
         if (data.type == "info") {
-          var xhr = new XMLHttpRequest();
-          xhr.open("GET", "./exports/" + data.filename, true);
-          xhr.responseType = "blob";
-          xhr.onload = function (e) {
-            if (this.status === 200) {
-              // blob response
-              webix.html.download(this.response, data.filename);
-              webix.message(data.message, "Info");
-            }
-          };
-          xhr.send();
-        } else {
+          webix.ajax().response("blob").get('./exports/' + data.filename, function(text, blob){
+            webix.html.download(blob, data.filename);
+            webix.message(data.message, "Info");
+          });          
+      } else {
           webix.message(data.message, "Error");
         }
       })

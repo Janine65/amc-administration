@@ -192,6 +192,7 @@ module.exports = {
     writeJournal: async function (req, res) {
         console.log("writeJournal");
         const sjahr = eval(req.query.jahr * 1);
+        var fReceipt = (req.query.receipt == '1');
 
         var arData = await Journal.findAll(
             {
@@ -200,7 +201,6 @@ module.exports = {
                     { model: Account, as: 'fromAccount', required: true, attributes: ['id', 'order', 'name'] },
                     { model: Account, as: 'toAccount', required: true, attributes: ['id', 'order', 'name'] }
                 ],
-                attributes: ['id', 'amount', 'journalno', 'memo', 'date'],
                 order: [
                     ['journalno', 'asc'],
                     ['date', 'asc'],
@@ -216,7 +216,7 @@ module.exports = {
                 });
             });
 
-        
+
 
         const workbook = new ExcelJS.Workbook();
         workbook.creator = "Janine Franken";
@@ -249,6 +249,8 @@ module.exports = {
         setCellValueFormat(sheet, 'F3', "Booking Text ", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
         setCellValueFormat(sheet, 'G3', "Amount", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
         sheet.getCell('G3').alignment = { horizontal: "right" };
+        if (fReceipt)
+            setCellValueFormat(sheet, 'H3', "Receipt", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
 
         const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
         var row = 4;
@@ -259,6 +261,7 @@ module.exports = {
             const date = new Date(element.date);
             var dateFmt = date.toLocaleDateString('de-DE', options);
 
+            sheet.getRow(row).height = 22;
             setCellValueFormat(sheet, 'B' + row, element.journalno, true, '', { size: iFontSizeRow, name: 'Tahoma' });
             setCellValueFormat(sheet, 'C' + row, dateFmt, true, '', { size: iFontSizeRow, name: 'Tahoma' });
             setCellValueFormat(sheet, 'D' + row, element.fromAccount.order + " " + element.fromAccount.name, true, '', { size: iFontSizeRow, name: 'Tahoma' });
@@ -266,8 +269,12 @@ module.exports = {
             setCellValueFormat(sheet, 'F' + row, element.memo, true, '', { size: iFontSizeRow, name: 'Tahoma' });
             setCellValueFormat(sheet, 'G' + row, eval(element.amount * 1), true, '', { size: iFontSizeRow, name: 'Tahoma' });
             sheet.getCell('G' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
-
-
+            if (fReceipt && element.receipt != null) {
+                setCellValueFormat(sheet, 'H' + row, element.receipt, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+                sheet.getCell('H' + row).value = { text: element.receipt, hyperlink: element.receipt };
+            } else if (fReceipt) {
+                setCellValueFormat(sheet, 'H' + row, '', true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            }
             row++;
 
         }
@@ -278,6 +285,8 @@ module.exports = {
         sheet.getColumn('E').width = 35;
         sheet.getColumn('F').width = 50;
         sheet.getColumn('G').width = 18;
+        if (fReceipt)
+            sheet.getColumn('H').width = 50;
 
         const filename = "Journal-" + sjahr;
         await workbook.xlsx.writeFile("./public/exports/" + filename + ".xlsx")
@@ -289,51 +298,54 @@ module.exports = {
                 });
             });
 
-        // create a file to stream archive data to.
-        const output = FS.createWriteStream(global.exports + filename + ".zip");
-        const archive = Archiver('zip', {
-            zlib: { level: 9 } // Sets the compression level.
-        });
-        
-        // listen for all archive data to be written
-        // 'close' event is fired only when a file descriptor is involved
-        output.on('close', function() {
-            console.log(archive.pointer() + ' total bytes');
-            console.log('archiver has been finalized and the output file descriptor has closed.');
-        });
-        
-        // This event is fired when the data source is drained no matter what was the data source.
-        // It is not part of this library but rather from the NodeJS Stream API.
-        // @see: https://nodejs.org/api/stream.html#stream_event_end
-        output.on('end', function() {
-            console.log('Data has been drained');
-        });
-        
-        // good practice to catch warnings (ie stat failures and other non-blocking errors)
-        archive.on('warning', function(err) {
-            if (err.code === 'ENOENT') {
-            // log warning
-            } else {
-            // throw error
-            throw err;
-            }
-        });
-        archive.on('error', function(err) {
-                    throw err;
-        });
-        archive.pipe(output);
-  
-        // append a file
-        archive.file("./public/exports/" + filename + ".xlsx", { name: filename + ".xlsx" });
+        var sExt = '.xlsx';
+        if (fReceipt) {
+            sExt = '.zip';
 
-        // append files from a sub-directory and naming it `new-subdir` within the archive
-        archive.directory(global.documents + sjahr + '/receipt/', 'receipt');
-        archive.finalize();
+            // create a file to stream archive data to.
+            const output = FS.createWriteStream(global.exports + filename + ".zip");
+            const archive = Archiver('zip');
+
+            // listen for all archive data to be written
+            // 'close' event is fired only when a file descriptor is involved
+            output.on('close', function () {
+                console.log(archive.pointer() + ' total bytes');
+                console.log('archiver has been finalized and the output file descriptor has closed.');
+            });
+
+            // This event is fired when the data source is drained no matter what was the data source.
+            // It is not part of this library but rather from the NodeJS Stream API.
+            // @see: https://nodejs.org/api/stream.html#stream_event_end
+            output.on('end', function () {
+                console.log('Data has been drained');
+            });
+
+            // good practice to catch warnings (ie stat failures and other non-blocking errors)
+            archive.on('warning', function (err) {
+                if (err.code === 'ENOENT') {
+                    // log warning
+                } else {
+                    // throw error
+                    throw err;
+                }
+            });
+            archive.on('error', function (err) {
+                throw err;
+            });
+            archive.pipe(output);
+
+            // append a file
+            archive.file("./public/exports/" + filename + ".xlsx", { name: filename + ".xlsx" });
+
+            // append files from a sub-directory and naming it `new-subdir` within the archive
+            archive.directory(global.documents + sjahr + '/receipt/', 'receipt');
+            archive.finalize();
+        }
 
         return res.json({
             type: "info",
-            message: "Excelfile erstellt",
-            filename: filename + ".zip"
+            message: "Datei erstellt",
+            filename: filename + sExt
         });
     },
 
@@ -641,6 +653,7 @@ module.exports = {
         // TODO #38
         console.log("writeExcelData");
         var sjahr = req.query.jahr;
+
         var iVJahr = eval((sjahr * 1) - 1);
         var iNJahr = eval((sjahr * 1) + 1);
 

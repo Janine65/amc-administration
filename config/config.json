@@ -6,24 +6,24 @@
         "node_port": 3050,
         "json_indentation": 4,
         "dbhost": "localhost",
-        "database": "amcadmin",
+        "database": "amcinterna",
         "db_user": "webuser",
-        "db_pwd": "U2FsdGVkX19p5FVhdaFpuJmMXpgKFmqXGYmwKB5Po+A=",
-        "port": "5436",
+        "db_pwd": "U2FsdGVkX1+uREut48vXcp9FVvrcmZcVefiR8vBlKiA=",
+        "port": "5432",
         "dbtype": "postgres",
         "defaultEmail" : "JanineFranken",
         "JanineFranken" : {
             "smtp": "smtp.zoho.com",
             "smtp_port": 465,
             "smtp_user": "janine@automoto-sr.info",
-            "smtp_pwd": "U2FsdGVkX1+Y4aoeuN0MyXS+fbREeiFmR0J+Oj7DdU8=",
+            "smtp_pwd": "U2FsdGVkX1+l9RU13J6bV5WCKYjp2ZpOShQ29RymK8Y=",
             "email_from": "Janine Franken <janine@automoto-sr.info>"
         },
         "HansjoergDutler" : {
             "smtp": "smtp.zoho.com",
             "smtp_port": 465,
             "smtp_user": "info@automoto-sr.info",
-            "smtp_pwd": "U2FsdGVkX18yIspZA/tf0UZbBWNR1H8tJ8MMRHcO6xU=",
+            "smtp_pwd": "U2FsdGVkX1+l9RU13J6bV5WCKYjp2ZpOShQ29RymK8Y=",
             "email_from": "AutoMotoClub Swissair <info@automoto-sr.info>"    
         }
     },
@@ -32,8 +32,7 @@
         "node_port": 3050,
         "database": "amcadmin",
         "db_user": "webuser",
-        "db_pwd": "U2FsdGVkX1+ynQVZJtDt5Lic6a9Ju/J0IZd5mEuhmJSgWaKZ7l6Vum2EYkvxzfD9",
-        "db_pwd_alt": "MGKlMb-MShwOeSN7u",
+        "db_pwd": "U2FsdGVkX1+uREut48vXcp9FVvrcmZcVefiR8vBlKiA=",
         "port": "5435",
         "dbtype": "postgres",
         "defaultEmail" : "HansjoergDutler"

@@ -22,12 +22,6 @@ module.exports = {
 			}
 		)
 			.then(data => {
-				// let index = 0;
-				// for (const journal of data) {
-				// 	journal.receipt = (journal.receipt != null ? true : false);
-				// 	data.slice(index, 1, journal);
-				// 	index++;
-				// }
 				res.json(data);
 			})
 			.catch((e) => console.error(e));
@@ -117,6 +111,14 @@ module.exports = {
 
 	delAttachment: function (req, res) {
 		const data = req.body;
+
+		var sJahr = new Date(data.date).getFullYear();
+		const path = global.documents + sJahr + '/';
+		const receipt =  data.receipt;
+
+		if (fs.existsSync(path + receipt)){
+			fs.rmSync(path + receipt);
+		}
 
 		Journal.update({receipt: null}, {where: {id: data.id}})
 			.then(resp => res.json(resp))

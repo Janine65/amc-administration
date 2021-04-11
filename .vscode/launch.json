@@ -20,7 +20,7 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/nodejs/index.js",
+            "program": "${workspaceFolder}/index.js",
             "args": []
         },
         {

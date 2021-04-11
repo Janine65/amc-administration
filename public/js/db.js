@@ -10,6 +10,7 @@ const sequelize = new Sequelize(global.gConfig.database, global.gConfig.db_user,
   logging: (...msg) => console.log(msg)
 });
 
+console.log(global.cipher.encrypt('testtext'));
 global.sequelize = sequelize;
 
 try {
