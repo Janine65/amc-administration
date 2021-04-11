@@ -213,7 +213,7 @@ custom_checkbox(obj, common, value){
                     { id : 0, value : "Nein" }, { id : 1, value : "Ja" }
                   ]
                 },
-                { view:"combo", suggest:"/Anlaesse/getFkData", name:"anlaesseId", label:"Vorjahresevent" }
+                { view:"combo", suggest:"/Anlaesse/getFkData", name:"anlaesseid", label:"Vorjahresevent" }
               ]
             }, /* End anlass details form. */
             //{ },
@@ -274,7 +274,7 @@ custom_checkbox(obj, common, value){
                         $$("punkte")[wxAMC.modules['Anlaesse'].anlass.nachkegeln ? "disable" : "enable"]();
                         $$("kegelresultate")[wxAMC.modules['Anlaesse'].anlass.istkegeln ? "show" : "hide"]();
                         $$("moduleAnlaesse-punkteForm").bind(this);
-                        $$("mitgliedId").show();
+                        $$("mitgliedid").show();
                         $$("mitgliedListe").hide();
                   
                       }
@@ -321,8 +321,8 @@ custom_checkbox(obj, common, value){
                       }
                     },
                     elements: [
-                      { view:"combo", suggest:"/Meisterschaft/getFkData", id: "mitgliedListe", name:"mitgliedId", label:"Teilnehmer", required: true, hidden: true },
-                      { view:"text", id: "mitgliedId", name:"fullname", label:"Teilnehmer", disabled: true },
+                      { view:"combo", suggest:"/data/getFkData", id: "mitgliedListe", name:"mitgliedid", label:"Teilnehmer", required: true, hidden: true },
+                      { view:"text", id: "mitgliedid", name:"fullname", label:"Teilnehmer", disabled: true },
                       { view: "text", type:"number", id: "punkte", name: "punkte", label: "Punkte" },
                       { view: "fieldset", id: "kegelresultate", label: "Kegelresultate", hidden: true,
                       body: 
@@ -452,7 +452,7 @@ custom_checkbox(obj, common, value){
     // Special handling for dates.
       anlass.datum = new Date(anlass.datum);
 
-      const url = "/Meisterschaft/data/?eventId=" + anlass.id;
+      const url = "/Meisterschaft/data/?eventid=" + anlass.id;
    
        const promiseModule = fetch(url)
          .then(function(response) {
@@ -469,7 +469,7 @@ custom_checkbox(obj, common, value){
         for (let ind2 = 0; ind2 < dataItems.length; ind2++) {
           const eintrag = dataItems[ind2];
             eintrag.fullname = eintrag.teilnehmer.fullname;
-            eintrag.mitgliedId = eintrag.teilnehmer.id;
+            eintrag.mitgliedid = eintrag.teilnehmer.id;
             eintrag.zusatz = zusatz;
             $$("moduleAnlaesse-punkteList").add(eintrag);
         }
@@ -530,11 +530,11 @@ custom_checkbox(obj, common, value){
     $$(`moduleAnlaesse-punkteList`).unselectAll();
     $$("moduleAnlaesse-punkteForm").clear();
     $$("moduleAnlaesse-punkteForm").enable();
-    var itemData = { id: 0, eventId: this.anlass.id, punkte: this.anlass.punkte, zusatz: [this.anlass.istkegeln ? [this.anlass.nachkegeln ? 0 : 5] : 0], wurf1: 0, wurf2: 0, wurf3: 0, wurf4: 0, wurf5: 0, streichresultat: 0 };
+    var itemData = { id: 0, eventid: this.anlass.id, punkte: this.anlass.punkte, zusatz: [this.anlass.istkegeln ? [this.anlass.nachkegeln ? 0 : 5] : 0], wurf1: 0, wurf2: 0, wurf3: 0, wurf4: 0, wurf5: 0, streichresultat: 0 };
     $$("moduleAnlaesse-punkteForm").setValues(itemData);
     $$("punkte")[this.anlass.nachkegeln ? "disable" : "enable"]();
     $$("kegelresultate")[this.anlass.istkegeln ? "show" : "hide"]();
-    $$("mitgliedId").hide();
+    $$("mitgliedid").hide();
     $$("mitgliedListe").show();
     $$("mitgliedListe").setValue("");
     $$("mitgliedListe").focus(true);
@@ -550,7 +550,7 @@ custom_checkbox(obj, common, value){
 
     console.log("savePunkteForm: itemData: ",itemData);
     const url = "/Meisterschaft/data";
-    //$$("mitgliedId").show();
+    //$$("mitgliedid").show();
     //$$("mitgliedListe").hide();
 
     var smethond = (itemData.id > 0 ? "PUT" : "POST");
@@ -559,7 +559,7 @@ custom_checkbox(obj, common, value){
       // check duplicate
       var fObj = $$(`moduleAnlaesse-punkteList`).find(function(obj)
       {
-        return (obj.mitgliedId == itemData.mitgliedId)
+        return (obj.mitgliedid == itemData.mitgliedid)
       },true);
       if (fObj != null) {
         // ERROR
@@ -604,7 +604,7 @@ custom_checkbox(obj, common, value){
         Promise.resolve(promiseModule)
           .then((dataItem) => { 
             dataItem.fullname = dataItem.teilnehmer.fullname;
-            dataItem.mitgliedId = dataItem.teilnehmer.id;
+            dataItem.mitgliedid = dataItem.teilnehmer.id;
             $$(`moduleAnlaesse-punkteList`).add(dataItem);
             $$(`moduleAnlaesse-punkteList`).sort("#fullname#", "asc");
           })
@@ -643,7 +643,7 @@ custom_checkbox(obj, common, value){
     anlass.nachkegeln = anlassOrig.nachkegeln;
     anlass.istsamanlass = anlassOrig.istsamanlass;
     anlass.punkte = anlassOrig.punkte;
-    anlass.anlaesseId = anlassOrig.id;
+    anlass.anlaesseid = anlassOrig.id;
 
     // Now show the details form and clear it, then set any defaults.  Don't
     // forget to disable the delete button since we obviously can't delete

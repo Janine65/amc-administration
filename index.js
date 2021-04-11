@@ -1,7 +1,6 @@
 
 const express = require('express');
 const helmet = require('helmet');
-const bodyParser = require('body-parser');
 const path = require("path");
 const _ = require("./public/js/cipher");
 const multer = require('multer') // v1.0.5
@@ -21,15 +20,18 @@ if (process.env.NODE_ENV == undefined)
 // config variables
 const config = require('./config/config.js');
 
-const db = require('./public/js/db')
+const { Session } = require('./public/js/db')
 
-var Session = db.Session;
+global.documents = __dirname + "/documents/"
+global.uploads = __dirname + "/public/uploads/"
+global.exports = __dirname + "/public/exports/"
+global.public = "/uploads/"
 
 function extendDefaultFields(defaults, session) {
   return {
     data: defaults.data,
     expires: defaults.expires,
-    userId: session.userId,
+    userid: session.userid,
   };
 }
 
@@ -43,7 +45,7 @@ var store = new SequelizeStore({
 
 const app = express();
 // 
-app.use(bodyParser.json());
+app.use(express.json());
 app.use("/", express.static(path.join(__dirname, '/public')));
 
 var expireDate = new Date();
@@ -82,10 +84,10 @@ app.post('/user/logout', function (req, res) {
 });
 
 passport.serializeUser(function (user, done) {
-  done(null, { id: user.userId });
+  done(null, { id: user.userid });
 });
 passport.deserializeUser(function (user, done) {
-  done(null, { id: user.userId });
+  done(null, { id: user.userid });
 });
 
 app.get('/System/env', function (req, res) {
@@ -125,7 +127,6 @@ app.post('/Meisterschaft/data', meisterschaft.addData);
 app.put('/Meisterschaft/data', meisterschaft.updateData);
 app.delete('/Meisterschaft/data', meisterschaft.removeData);
 app.get('/Meisterschaft/getOneData', meisterschaft.getOneData);
-app.get('/Meisterschaft/getFkData', meisterschaft.getFKData);
 app.get('/Meisterschaft/mitglied', meisterschaft.getMitgliedData);
 app.get('/Meisterschaft/getChartData', meisterschaft.getChartData);
 app.get('/Meisterschaft/checkJahr', meisterschaft.checkJahr);

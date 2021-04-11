@@ -214,7 +214,7 @@ wxAMC.moduleClasses.Meisterschaft = class {
         .catch(error => webix.message({type: "error", text: error}));
       Promise.resolve(promiseModuleKJ)
         .then(function(dataJahr) {
-          if (dataJahr[0].AnzStreich > 0) 
+          if (dataJahr.AnzStreich > 0) 
             $$("moduleMeisterschaft-Kendjahr").setValue('<div style="font-size:small;color:yellow;">Streichresultate berücksichtigt</div>');
           else
             $$("moduleMeisterschaft-Kendjahr").setValue("");

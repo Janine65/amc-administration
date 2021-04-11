@@ -29,8 +29,8 @@ wxAMC.moduleClasses.Adressen = class {
   }
 
   show_geworben(value, config) {
-    if (value.adressenId != "" && value.adressenId != null) {
-      return value.adressenId;
+    if (value.adressenid != "" && value.adressenid != null) {
+      return value.adressenid;
     } else return "";
   }
 
@@ -79,7 +79,7 @@ wxAMC.moduleClasses.Adressen = class {
                 { id: "allianz", css: { 'text-align': 'center' }, header: [{ text: "Allianz" }, { content: "selectFilter" }], sort: "int", template: this.custom_checkbox, hidden: false },
                 { id: "eintritt", header: [{ text: "Eintritt" }, { content: "textFilter" }], sort: "text", adjust: true, template: function (obj) { return new Date(obj.eintritt).getFullYear(); }, hidden: false },
                 { id: "austritt", header: [{ text: "Austritt" }, { content: "textFilter" }], sort: "text", adjust: true, template: function (obj) { return new Date(obj.austritt).getFullYear(); }, hidden: false },
-                { id: "adressenId", header: [{ text: "Geworben von" }, { content: "selectFilter" }], sort: "text", adjust: "header", template: this.show_geworben, hidden: false }
+                { id: "adressenid", header: [{ text: "Geworben von" }, { content: "selectFilter" }], sort: "text", adjust: "header", template: this.show_geworben, hidden: false }
               ],
               hover: "hoverline",
               sort: "multi",
@@ -92,6 +92,20 @@ wxAMC.moduleClasses.Adressen = class {
                 // this.markSorting("vorname", "asc", true);
               },
               on: {
+                onCollectValues:function(id, req){
+                  if (id == "sam_mitglied" || id == "ehrenmitglied" || id == "vorstand" || id == "revisor" || id == "allianz") {
+                    for(var i = 0; i<req.values.length; i++){
+                      //console.info(req.values[i]);
+                      if (req.values[i].value == false) {
+                        req.values[i].value = "Nein";
+                        req.values[i].id = 0;
+                      } else {
+                        req.values[i].value = "Ja";
+                        req.values[i].id = 1;
+                      }
+                    }
+                  }
+                },
                 onBeforeLoad: function () {
                   this.showOverlay("Loading...");
                 },
@@ -222,7 +236,7 @@ wxAMC.moduleClasses.Adressen = class {
                       { view: "checkbox", name: "revisor", label: "Revisor" },
                       { view: "datepicker", name: "eintritt", label: "Eintritt" },
                       { view: "datepicker", name: "austritt", label: "Austritt" },
-                      { view: "combo", suggest: "/data/getFkData", name: "adressenId", label: "Geworben von" }
+                      { view: "combo", suggest: "/data/getFkData", name: "adressenid", label: "Geworben von" }
                     ]
                   }, /* End adresse details form. */
                   /* Adresse details toolbar. */
@@ -293,7 +307,11 @@ wxAMC.moduleClasses.Adressen = class {
                       },
                       { view: "text", header: "Bezeichnung", id: "name", width: 250 },
                       { view: "text", header: "Punkte", id: "punkte", adjust: true },
-                      { view: "text", header: "Total Kegeln", id: "total_kegeln", adjust: true },
+                      { view: "text", header: "Total Kegeln", id: "total_kegeln", adjust: true,
+                        template: function (obj, common) {
+                          if (obj.total_kegeln == 5) return 0;
+                          return obj.total_kegeln;
+                        }},
                       { view: "text", header: "Streichresulutat", id: "streichresultat", adjust: true, hidden: true }
                     ],
                     on: {
@@ -498,18 +516,11 @@ wxAMC.moduleClasses.Adressen = class {
     Promise.resolve(promiseAccount)
       .then(function (data) {
         if (data.type == "info") {
-          var xhr = new XMLHttpRequest();
-          xhr.open("GET", "./exports/" + data.filename, true);
-          xhr.responseType = "blob";
-          xhr.onload = function (e) {
-            if (this.status === 200) {
-              // blob response
-              webix.html.download(this.response, data.filename);
-              webix.message(data.message, "Info");
-            }
-          };
-          xhr.send();
-        } else {
+          webix.ajax().response("blob").get('./exports/' + data.filename, function(text, blob){
+            webix.html.download(blob, data.filename);
+            webix.message(data.message, "Info");
+          });          
+      } else {
           webix.message(data.message, "Error");
         }
       })

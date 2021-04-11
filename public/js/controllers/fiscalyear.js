@@ -1,4 +1,3 @@
-var db = require("../db");
 const { Op, Sequelize } = require("sequelize");
 const {FiscalYear, Journal} = require("../db");
 
@@ -18,24 +17,14 @@ module.exports = {
 	},
 
 	getFKData: function(req, res) {
-		var qrySelect = "SELECT `year` as id, ";
-		qrySelect += " CONCAT(`name`,' - ', (CASE WHEN `state`= 1 THEN 'offen' WHEN `state`= 2 THEN 'prov. abgeschlossen' ELSE 'abgeschlossen' END)) as value,"; 
-		qrySelect += "(CASE WHEN `state`= 1 THEN 'open' WHEN `state`= 2 THEN 'prov-closed' ELSE 'closed' END) as $css"
-		qrySelect += " FROM `fiscalyear` " ;
-		if (req.query.filter != null) {
-			var qfield = '%' + req.query.filter.value + '%';
-			qrySelect = qrySelect + " WHERE lower(`name`) like '" + qfield + "'";
-		}
-		qrySelect = qrySelect + " ORDER BY 2";
-		
-		sequelize.query(qrySelect, 
-			{ 
-				type: Sequelize.QueryTypes.SELECT,
-				plain: false,
-				logging: console.log,
-				raw: false
-			}
-		).then(data => res.json(data))
+		FiscalYear.findAll({
+			attributes: [["year", "id"],
+			[Sequelize.fn("CONCAT", Sequelize.col("name"), " - ", Sequelize.literal("(CASE \"state\" WHEN 1 THEN 'offen' WHEN 2 THEN 'prov. abgeschlossen' ELSE 'abgeschlossen' END)")), 'value'],
+			[Sequelize.literal("(CASE \"state\" WHEN 1 THEN 'offen' WHEN 2 THEN 'prov-closed' ELSE 'closed' END)"), '$css']],
+			where : Sequelize.where(Sequelize.fn('LOWER', Sequelize.col("name")), {[Op.substring]: (req.query.filter != null ? req.query.filter.value : '')}),
+			order: ["year"]
+		})
+		.then(data => res.json(data))
 		.catch((e) => console.error(e));					
 	},
 
@@ -90,7 +79,7 @@ module.exports = {
 		qrySelect += " FROM journal j WHERE YEAR(j.date) = " + sJahr;
 		qrySelect += " and j.from_account in (select id from account where level = 1)";
 		qrySelect += " GROUP BY j.from_account";
-		var arAktiv = await sequelize.query(qrySelect,
+		var arAktiv = await global.sequelize.query(qrySelect,
             {
                 type: Sequelize.QueryTypes.SELECT,
                 plain: false,
@@ -111,7 +100,7 @@ module.exports = {
 		qrySelect += " FROM journal j WHERE YEAR(j.date) = " + sJahr;
 		qrySelect += " and j.to_account in (select id from account where level = 1)";
 		qrySelect += " GROUP BY j.to_account";
-		var arAktiv2 = await sequelize.query(qrySelect,
+		var arAktiv2 = await global.sequelize.query(qrySelect,
             {
                 type: Sequelize.QueryTypes.SELECT,
                 plain: false,
@@ -142,7 +131,7 @@ module.exports = {
 		qrySelect += " FROM journal j WHERE YEAR(j.date) = " + sJahr;
 		qrySelect += " and j.from_account in (select id from account where level = 2)";
 		qrySelect += " GROUP BY j.from_account";
-		var arPassiv = await sequelize.query(qrySelect,
+		var arPassiv = await global.sequelize.query(qrySelect,
             {
                 type: Sequelize.QueryTypes.SELECT,
                 plain: false,
@@ -163,7 +152,7 @@ module.exports = {
 		qrySelect += " FROM journal j WHERE YEAR(j.date) = " + sJahr;
 		qrySelect += " and j.to_account in (select id from account where level = 2)";
 		qrySelect += " GROUP BY j.to_account";
-		var arPassiv2 = await sequelize.query(qrySelect,
+		var arPassiv2 = await global.sequelize.query(qrySelect,
             {
                 type: Sequelize.QueryTypes.SELECT,
                 plain: false,
@@ -234,7 +223,7 @@ module.exports = {
 			// lösche alle Eröffnungsbuchungen
 			qrySelect = "DELETE FROM journal where year(date) = " + sNextJahr;
 			qrySelect += " and (from_account = 39 or to_account = 39)";
-			await sequelize.query(qrySelect,
+			await global.sequelize.query(qrySelect,
 				{
 					type: Sequelize.QueryTypes.DELETE,
 					plain: false,
@@ -253,7 +242,8 @@ module.exports = {
 		}
 
 		// Eröffnungsbuchungen erstellen
-		await Journal.bulkCreate(arEroeffnung)
+		await Journal.bulkCreate(arEroeffnung
+			, { fields: ["date", "from_account", "to_account", "amount", "memo"] })
 		.catch(err => {
 			console.error(err)
 			res.json({
@@ -266,7 +256,7 @@ module.exports = {
 		// Status vom Buchungsjahr ändern
 		qrySelect = "UPDATE fiscalyear set state = " + iStatus;
 		qrySelect += " WHERE year = " + sJahr;
-		await sequelize.query(qrySelect,
+		await global.sequelize.query(qrySelect,
 			{
 				type: Sequelize.QueryTypes.UPDATE,
 				plain: false,
@@ -289,7 +279,7 @@ module.exports = {
 		qrySelect += " where year(j.date) = " + sJahr;
 		qrySelect += " order by j.date, f.order, t.order";
 
-		var arJournal = await sequelize.query(qrySelect,
+		var arJournal = await global.sequelize.query(qrySelect,
             {
                 type: Sequelize.QueryTypes.SELECT,
                 plain: false,
@@ -300,14 +290,8 @@ module.exports = {
 		var rownum = 1;
         for (let ind2 = 0; ind2 < arJournal.length; ind2++) {
             const record = arJournal[ind2];
-			qrySelect = "UPDATE journal set journalNo = " + rownum++ + " WHERE id = " + record.id;
-			sequelize.query(qrySelect,
-				{
-					type: Sequelize.QueryTypes.UPDATE,
-					plain: false,
-					logging: console.log,
-					raw: false
-			})
+			await Journal.update({"journalno": rownum++},
+					{where: {"id" : record.id}})
 			.catch(err => {
 				console.error(err);
 				res.json({
@@ -322,7 +306,7 @@ module.exports = {
 			type: "info",
 			message: "AMC-Buchhaltung " + sJahr + " wurde erfolgreich beendet mit Gewinn/Verlust " + iGewinn,
 			gewinn: iGewinn
-		})
+		});
 
 	},
 };

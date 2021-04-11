@@ -1,7 +1,7 @@
 var crypto = require('crypto');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
-var User = require('../db').User;
+const { User}  = require('../db');
 const { v4: uuid } = require('uuid');
 
 passport.use(new LocalStrategy({

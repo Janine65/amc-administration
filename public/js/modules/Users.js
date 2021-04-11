@@ -292,7 +292,7 @@ wxAMC.moduleClasses.Users = class {
 
     user.password = Math.random().toString(36).slice(-8);
     var mailbody = `<p>Hallo ${user.name}</p><p>Du wurdest von Janine Franken auf der Auto-Moto-Club Swissair internen Applikation registriert.</br>` + 
-                  `Die Adresse ist <a href='https://www.automoto-sr.info:3050'>https://www.automoto-sr.info:3050</a></p>`+ 
+                  `Die Adresse ist <a href='http://interna.automoto-sr.info'>http://interna.automoto-sr.info</a></p>`+ 
                   `<p>Hier sind deine Logininformationen: </br>`+ 
                   `Username: ${user.email}</br>Passwort: ${user.password} (bitte ändere dies beim ersten Zugriff im Profile)</br>Rolle: ${user.role}</p>`+ 
                   `<p>Bei Fragen wende Dich bitte an Janine über <a href='mailto:janine@automoto-sr.info'>janine@automoto-sr.info</a></p>`+ 
@@ -325,7 +325,10 @@ wxAMC.moduleClasses.Users = class {
         }
         return resp.json();
       })
-      .catch(e => $$("message").setValue(e));  // ***
+      .catch((e) => {
+        webix.message("User konnte nicht erfolgreich angelegt werden: " + e, "error", -1);
+        return null;
+      });
 
     Promise.resolve(promiseModuleU)
       .then(function (resp) {
@@ -336,7 +339,10 @@ wxAMC.moduleClasses.Users = class {
           wxAMC.modules['Users'].refreshData();
         }
       })
-      .catch((e) => $$("message").setValue(e));  // ***;
+      .catch((e) => {
+        webix.message("User konnte nicht erfolgreich angelegt werden: " + e, "error", -1);
+        return null;
+      });
 
     // Mail senden
     url = "/Adressen/email/";
@@ -360,19 +366,11 @@ wxAMC.moduleClasses.Users = class {
           return null;
         }
         return response.json();
-      })
-      .catch((e) => {
-        webix.message("Mail konnte nicht erfolgreich gesendet werden: " + e, "error", -1);
-        return null;
-      });
+s      });
 
     Promise.resolve(promiseModuleM)
       .then((response) => {
         webix.message("Email wurde gesendet.", "info");
-      })
-      .catch((e) => {
-        webix.message(`Fehler beim Senden der Nachricht: ${e}`, "error", -1)
-        return null;
       });
 
   }

@@ -79,7 +79,7 @@ wxAMC.moduleClasses.Journal = class {
               scroll: true,
               editable: false,
               columns: [
-                { id: "journalNo", header: "No", adjust: true, hidden: false },
+                { id: "journalno", header: "No", adjust: true, hidden: false },
                 {
                   id: "date", header: "Date", adjust: true,
                   editor: "date", hidden: false,
@@ -567,7 +567,7 @@ wxAMC.moduleClasses.Journal = class {
                   scroll: true,
                   editable: false,
                   columns: [
-                    { id: "journalNo", header: "No.", fillspace: false, hidden: false },
+                    { id: "journalno", header: "No.", fillspace: false, hidden: false },
                     {
                       id: "account",
                       header: "Account",
@@ -827,10 +827,10 @@ wxAMC.moduleClasses.Journal = class {
           rows: [
             { /* Begin Budget List */
               columns: [
-                { id: "order", header: "Order", sort: "string", autowidth: true, hidden: false },
-                { id: "name", header: "Account", fillspace: true, sort: "string", hidden: false },
-                { id: "accamount", header: "Budget", type: "number", editor: "text", autowidth: true, hidden: false },
-                { id: "accmemo", header: "Notes", editor: "text", autowidth: true, hidden: false }
+                { id: "order", header: "Order", template: "#acc.order#", sort: "string", autowidth: true, hidden: false },
+                { id: "name", header: "Account", template: "#acc.name#", fillspace: true, sort: "string", hidden: false },
+                { id: "amount", header: "Budget", type: "number", editor: "text", autowidth: true, hidden: false },
+                { id: "memo", header: "Notes", editor: "text", autowidth: true, hidden: false }
               ],
               view: "datatable",
               id: "listBudgetList",
@@ -1094,11 +1094,11 @@ wxAMC.moduleClasses.Journal = class {
     $$("listBudgetList").data.each(function (obj) {
 
       // add or upd record
-      var data = { id: obj.accid, account: obj.id, amount: (obj.accamount == "" ? 0 : obj.accamount), memo: obj.accmemo, year: $$("moduleJournal-dateSelect").getValue() };
+      var data = { id: obj.id, account: obj.acc.id, amount: (obj.amount == "" ? 0 : obj.amount), memo: obj.memo, year: $$("moduleJournal-dateSelect").getValue() };
       //console.log(data);
       const url = "/Budget/data";
       var method = "PUT";
-      if (obj.accid == undefined)
+      if (obj.id == undefined)
         method = "POST";
 
       fetch(url, {
@@ -1177,17 +1177,10 @@ wxAMC.moduleClasses.Journal = class {
     Promise.resolve(promiseAccount)
       .then(function (data) {
         if (data.type == "info") {
-          var xhr = new XMLHttpRequest();
-          xhr.open("GET", "./exports/" + data.filename, true);
-          xhr.responseType = "blob";
-          xhr.onload = function (e) {
-            if (this.status === 200) {
-              // blob response
-              webix.html.download(this.response, data.filename);
-              webix.message(data.message, "Info");
-            }
-          };
-          xhr.send();
+          webix.ajax().response("blob").get('./exports/' + data.filename, function (text, blob) {
+            webix.html.download(blob, data.filename);
+            webix.message(data.message, "Info");
+          });
         } else {
           webix.message(data.message, "Error");
         }
@@ -1214,17 +1207,10 @@ wxAMC.moduleClasses.Journal = class {
     Promise.resolve(promiseAccount)
       .then(function (data) {
         if (data.type == "info") {
-          var xhr = new XMLHttpRequest();
-          xhr.open("GET", "./exports/" + data.filename, true);
-          xhr.responseType = "blob";
-          xhr.onload = function (e) {
-            if (this.status === 200) {
-              // blob response
-              webix.html.download(this.response, data.filename);
-              webix.message(data.message, "Info");
-            }
-          };
-          xhr.send();
+          webix.ajax().response("blob").get('./exports/' + data.filename, function (text, blob) {
+            webix.html.download(blob, data.filename);
+            webix.message(data.message, "Info");
+          });
         } else {
           webix.message(data.message, "Error");
         }
@@ -1291,6 +1277,7 @@ wxAMC.moduleClasses.Journal = class {
           fValid = false;
           webix.message({ type: "error", text: error });
           console.log(error);
+          return;
         });
     }
 
@@ -1339,7 +1326,7 @@ wxAMC.moduleClasses.Journal = class {
   }
 
   /**
-   * refreshAccountData: Read the entries for the selected amount
+   * refreshAccountData: Read the entries for the selected account
    */
   refreshAccountData() {
     var sJahr = $$("moduleJournal-dateSelect").getValue();
@@ -1366,7 +1353,7 @@ wxAMC.moduleClasses.Journal = class {
           iSaldo -= eval(element.soll * 1);
           iSaldo += eval(element.haben * 1);
         }
-        var record = { id: 0, journalNo: "", account: "", memo: "Saldo", date: new Date(), soll: (iSaldo < 0 ? iSaldo * -1 : null), haben: (iSaldo < 0 ? null : iSaldo) };
+        var record = { id: 0, journalno: "", account: "", memo: "Saldo", date: new Date(), soll: (iSaldo < 0 ? iSaldo * -1 : null), haben: (iSaldo < 0 ? null : iSaldo) };
 
         itemsAsArray.push(record);
         $$("listAccountsData").clearAll();
@@ -1398,7 +1385,7 @@ wxAMC.moduleClasses.Journal = class {
       });
     Promise.resolve(promiseModule)
       .then(async function (response) {
-        if (response.type == "error") {
+        if (response != null && response.type == "error") {
           webix.message({ type: "error", text: response.message });
         } else {
           // Window schliessen
@@ -1408,7 +1395,7 @@ wxAMC.moduleClasses.Journal = class {
           // Window neu starten
           await wxAMC.launchModule('Journal');
           wxAMC.modules['Journal'].dayAtAGlance();
-          webix.message({ type: "info", text: response.message });
+          webix.message({ type: "info", text: "Meldung" });
         }
       })
       .catch(function (error) {
@@ -1587,39 +1574,42 @@ wxAMC.moduleClasses.Journal = class {
    */
   exportJournalData() {
     const sJahr = $$("moduleJournal-dateSelect").getValue();
+    
+    webix.modalbox({
+      title: "Export Journal",
+      text: "Sollen auch die Belege exportiert werden?",
+      buttons:["Ja", "Nein"],
+      width: 350
+    })
+    .then(function (result) {
+        const promiseJournal = fetch("/Journal/export?jahr=" + sJahr + "&receipt=" + (result == '0' ? 1 : 0))
+          .then(function (response) {
+            if (!response.ok)
+              webix.message('Fehler beim Exportieren des Journals', 'Error');
+            return response.json();
+          })
+          .catch(function (error) {
+            webix.message({ type: "error", text: error })
+          });
 
-    const promiseJournal = fetch("/Journal/export?jahr=" + sJahr)
-      .then(function (response) {
-        if (!response.ok)
-          webix.message('Fehler beim Exportieren des Journals', 'Error');
-        return response.json();
-      })
-      .catch(function (error) {
-        webix.message({ type: "error", text: error })
-      });
-
-    Promise.resolve(promiseJournal)
-      .then(function (data) {
-        if (data.type == "info") {
-          var xhr = new XMLHttpRequest();
-          xhr.open("GET", "./exports/" + data.filename, true);
-          xhr.responseType = "blob";
-          xhr.onload = function (e) {
-            if (this.status === 200) {
-              // blob response
-              webix.html.download(this.response, data.filename);
-              webix.message(data.message, "Info");
+        Promise.resolve(promiseJournal)
+          .then(function (data) {
+            if (data.type == "info") {
+              webix.ajax().response("blob").get('./exports/' + data.filename, function (text, blob, xhr) {
+                console.log(xhr);
+                webix.html.download(blob, data.filename);
+                //            window.open(xhr.responseURL, '_blank');
+                webix.message(data.message, "Info");
+              });
+            } else {
+              webix.message(data.message, "Error");
             }
-          };
-          xhr.send();
-        } else {
-          webix.message(data.message, "Error");
-        }
-      })
-      .catch(function (error) {
-        webix.message({ type: "error", text: error })
-      });
-
+          })
+          .catch(function (error) {
+            webix.message({ type: "error", text: error })
+          });
+      }
+    );
 
   } /* exportJournalData */
 
@@ -1633,7 +1623,7 @@ wxAMC.moduleClasses.Journal = class {
     const promiseFiscal = fetch("/Fiscalyear/export?jahr=" + sJahr)
       .then(function (response) {
         if (!response.ok)
-          webix.message('Fehler beim schreiben der Exceldatei', 'Error');
+          webix.message('Fehler beim schreiben der Datei', 'Error');
         return response.json();
       })
       .catch(function (error) {
@@ -1643,17 +1633,10 @@ wxAMC.moduleClasses.Journal = class {
     Promise.resolve(promiseFiscal)
       .then(function (data) {
         if (data.type == "info") {
-          var xhr = new XMLHttpRequest();
-          xhr.open("GET", "./exports/" + data.filename, true);
-          xhr.responseType = "blob";
-          xhr.onload = function (e) {
-            if (this.status === 200) {
-              // blob response
-              webix.html.download(this.response, data.filename);
-              webix.message(data.message, "Info");
-            }
-          };
-          xhr.send();
+          webix.ajax().response("blob").get('./exports/' + data.filename, function (text, blob) {
+            webix.html.download(blob, data.filename);
+            webix.message(data.message, "Info");
+          });
         } else {
           webix.message(data.message, "Error");
         }

@@ -593,17 +593,10 @@ class WXAMC {
   Promise.resolve(promise)
     .then(function (data) {
       if (data.type == "info") {
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET", "./exports/" + data.filename, true);
-        xhr.responseType = "blob";
-        xhr.onload = function (e) {
-          if (this.status === 200) {
-            // blob response
-            webix.html.download(this.response, data.filename);
-            webix.message(data.message, "Info");
-          }
-        };
-        xhr.send();
+        webix.ajax().response("blob").get('./exports/' + data.filename, function(text, blob){
+          webix.html.download(blob, data.filename);
+          webix.message(data.message, "Info");
+        });          
     } else {
         webix.message(data.message, "Error");
       }
@@ -655,17 +648,10 @@ class WXAMC {
   Promise.resolve(promise)
     .then(function (data) {
       if (data.type == "info") {
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET", "./exports/" + data.filename, true);
-        xhr.responseType = "blob";
-        xhr.onload = function (e) {
-          if (this.status === 200) {
-            // blob response
-            webix.html.download(this.response, data.filename);
-            webix.message(data.message, "Info");
-          }
-        };
-        xhr.send();
+        webix.ajax().response("blob").get('./exports/' + data.filename, function(text, blob){
+          webix.html.download(blob, data.filename);
+          webix.message(data.message, "Info");
+        });          
     } else {
         webix.message(data.message, "Error");
       }
@@ -894,7 +880,7 @@ class WXAMC {
           if (window.PasswordCredential) {
             var data = {
               id: resp.email,
-              userId: resp.userId,
+              userid: resp.userid,
               name: resp.name,
               password: resp.password
             }

@@ -4,11 +4,13 @@ const DataTypes = require('sequelize').DataTypes;
 const UUIDV4 = require('uuid').v4;
 
 const sequelize = new Sequelize(global.gConfig.database, global.gConfig.db_user, global.cipher.decrypt(global.gConfig.db_pwd), {
-  host: "localhost", 
+  host: global.gConfig.dbhost, 
   port: global.gConfig.port,
-  dialect: global.gConfig.dbtype
+  dialect: global.gConfig.dbtype,
+  logging: (...msg) => console.log(msg)
 });
 
+console.log(global.cipher.encrypt('testtext'));
 global.sequelize = sequelize;
 
 try {
@@ -69,7 +71,7 @@ Adressen.init({
     defaultValue: Sequelize.NOW
   },
   sam_mitglied: {
-    type: Sequelize.TINYINT,
+    type: Sequelize.BOOLEAN,
     allowNull: false,
     defaultValue: 1
   },
@@ -86,15 +88,15 @@ Adressen.init({
     }
   },
   vorstand: {
-    type: Sequelize.TINYINT,
+    type: Sequelize.BOOLEAN,
     defaultValue: 0
   },
   ehrenmitglied: {
-    type: Sequelize.TINYINT,
+    type: Sequelize.BOOLEAN,
     defaultValue: 0
   },
   revisor: {
-    type: Sequelize.TINYINT,
+    type: Sequelize.BOOLEAN,
     defaultValue: 0
   },
   austritt: {
@@ -102,9 +104,9 @@ Adressen.init({
     defaultValue: new Date("01.01.3000")
   },
   austritt_mail: {
-    type: Sequelize.TINYINT
+    type: Sequelize.BOOLEAN
   },
-  adressenId: {
+  adressenid: {
     type: Sequelize.INTEGER,
     references: {
       model: Adressen,
@@ -114,16 +116,16 @@ Adressen.init({
     set(value) {
       // einen empty String zu Null konvertieren
       if (value == "")
-        this.setDataValue('adressenId', null);
+        this.setDataValue('adressenid', null);
       else
-        this.setDataValue('adressenId', value);
+        this.setDataValue('adressenid', value);
     }
   },
   allianz: {
-    type: Sequelize.TINYINT,
+    type: Sequelize.BOOLEAN,
     defaultValue: 0
   },
-  notes: Sequelize.BLOB
+  notes: Sequelize.STRING
   // fullname: {
   //   type: Sequelize.VIRTUAL,
   //   get() {
@@ -154,9 +156,9 @@ Anlaesse.init({
   name: { type: Sequelize.STRING, allowNull: false },
   beschreibung: { type: Sequelize.STRING, allowNull: false },
   punkte: { type: Sequelize.INTEGER, allowNull: false, defaultValue: 50 },
-  istkegeln: { type: Sequelize.TINYINT, allowNull: false, defaultValue: 0 },
-  nachkegeln: { type: Sequelize.TINYINT, allowNull: false, defaultValue: 0 },
-  istsamanlass: { type: Sequelize.TINYINT, allowNull: false, defaultValue: 0 },
+  istkegeln: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: 0 },
+  nachkegeln: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: 0 },
+  istsamanlass: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: 0 },
   gaeste: {
     type: Sequelize.INTEGER, allowNull: true, defaultValue: null,
     set(value) {
@@ -167,7 +169,7 @@ Anlaesse.init({
         this.setDataValue('gaeste', value);
     }
   },
-  anlaesseId: {
+  anlaesseid: {
     type: Sequelize.INTEGER, allowNull: true,
     references: {
       model: Anlaesse,
@@ -177,9 +179,9 @@ Anlaesse.init({
     set(value) {
       // einen empty String zu Null konvertieren
       if (value == "")
-        this.setDataValue('anlaesseId', null);
+        this.setDataValue('anlaesseid', null);
       else
-        this.setDataValue('anlaesseId', value);
+        this.setDataValue('anlaesseid', value);
     }
   },
   longname: Sequelize.VIRTUAL,
@@ -209,14 +211,14 @@ Meisterschaft.init({
     autoIncrement: true,
     primaryKey: true
   },
-  mitgliedId: {
+  mitgliedid: {
     type: Sequelize.INTEGER,
     references: {
       model: Adressen,
       key: 'id'
     }
   },
-  eventId: {
+  eventid: {
     type: Sequelize.INTEGER,
     references: {
       model: Anlaesse,
@@ -255,6 +257,12 @@ Meisterschaft.init({
     type: Sequelize.INTEGER,
     defaultValue: 0
   },
+  total_kegel: {
+    type: Sequelize.INTEGER,
+    set() {
+      throw new Error('Do not try to set the total_kegel value!');
+    }
+  }
 },
   {
     sequelize,
@@ -293,12 +301,6 @@ Clubmeister.init({
 class Kegelmeister extends Model {
 }
 Kegelmeister.init({
-  id: {
-    type: Sequelize.INTEGER,
-    allowNull: false,
-    autoIncrement: true,
-    primaryKey: true
-  },
   jahr: { type: Sequelize.STRING, allowNull: false },
   rang: { type: Sequelize.INTEGER, allowNull: false },
   vorname: { type: Sequelize.STRING, allowNull: false },
@@ -316,12 +318,14 @@ Kegelmeister.init({
   }
 );
 
-Adressen.belongsTo(Adressen);
-Adressen.hasMany(Adressen);
+Adressen.belongsTo(Adressen, {foreignKey: 'adressenid'});
+Adressen.hasMany(Adressen, {foreignKey: 'adressenid'});
 
-Anlaesse.belongsTo(Anlaesse, { as: 'linkedEvent', constraints: false, foreignKey: 'anlaesseId' });
-Meisterschaft.belongsTo(Anlaesse, { as: 'linkedEvent', constraints: true, foreignKey: 'eventId' });
-Meisterschaft.belongsTo(Adressen, { as: 'teilnehmer', constraints: true, foreignKey: 'mitgliedId' });
+Anlaesse.belongsTo(Anlaesse, { as: 'linkedEvent', foreignKey: 'anlaesseid' });
+Anlaesse.hasMany(Meisterschaft, { foreignKey: 'eventid' });
+Meisterschaft.belongsTo(Anlaesse, { as: 'linkedEvent', constraints: true, foreignKey: 'eventid' });
+Meisterschaft.belongsTo(Adressen, { as: 'teilnehmer', constraints: true, foreignKey: 'mitgliedid' });
+Adressen.hasMany(Meisterschaft, { foreignKey: 'mitgliedid' });
 
 
 class Parameter extends Model {
@@ -343,7 +347,7 @@ Session.init({
   sid: {
     type: Sequelize.STRING
   },
-  userId: Sequelize.STRING,
+  userid: Sequelize.STRING,
   expires: Sequelize.DATE,
   data: Sequelize.STRING(50000),
 },
@@ -365,7 +369,7 @@ User.init({
   email: DataTypes.STRING,
   salt: DataTypes.STRING,
   password: DataTypes.STRING,
-  role: { type: DataTypes.ENUM('user', 'admin'), default: 'user' },
+  role: { type: DataTypes.ENUM('user', 'admin', 'revisor'), default: 'user' },
   last_login: DataTypes.DATE
 },
   {
@@ -441,20 +445,20 @@ Journal.init({
   },
   date: DataTypes.DATEONLY,
   memo: DataTypes.STRING,
-  journalNo: {
+  journalno: {
     type: Sequelize.INTEGER,
     defaultValue: null,
     set(value) {
       // einen empty String zu Null konvertieren
       if (value == "")
-        this.setDataValue('journalNo', null);
+        this.setDataValue('journalno', null);
       else
-        this.setDataValue('journalNo', value);
+        this.setDataValue('journalno', value);
     }
   },
   amount: DataTypes.DECIMAL(7, 2),
   status: DataTypes.INTEGER,
-  receipt: DataTypes.BLOB("long")
+  receipt: DataTypes.STRING
 },
   {
     sequelize,
@@ -493,8 +497,8 @@ Journal.init({
       modelName: 'budget'
     });
   
-    Budget.belongsTo(Account, { as: 'acc', constraints: true, foreignKey: 'account' });
-    Account.hasMany(Budget, { as: 'acc', constraints: true, foreignKey: 'account' });
+    Budget.belongsTo(Account, { as: "acc", constraints: true, foreignKey: 'account' });
+    Account.hasMany(Budget, { constraints: true, foreignKey: 'account' });
   
   module.exports = {
   Adressen, Anlaesse, Parameter, Meisterschaft, Clubmeister, Kegelmeister, User, Session, Account, Journal, FiscalYear, Budget,

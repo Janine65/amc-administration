@@ -1,143 +1,252 @@
-var db = require("../db");
+var {Journal, Account, Budget} = require("../db");
 const { Op, Sequelize } = require("sequelize");
-const dbFunc = require("./budget");
 
 module.exports = {
-	getData: function (req, res) {				
-		var qrySelect = "SELECT * FROM account";
-		qrySelect += " WHERE `order` > 10";
-		if (req.query.all == 0) {
-			qrySelect += " AND status = 1";
-			qrySelect += " AND (id in (select from_account from journal where year(date) = " + req.query.jahr + ")";
-			qrySelect += " OR id in (select to_account from journal where year(date) = " + req.query.jahr + "))";
-		}
-		qrySelect += " ORDER BY level ASC , `order` ASC";
-		sequelize.query(qrySelect, 
-			{ 
+	getData: async function (req, res) {
+		var arJournalIds = [];
+
+		var arfromAcc = await global.sequelize.query("SELECT DISTINCT from_account FROM journal WHERE year(date) = ?",
+			{
+				replacements: [req.query.jahr],
 				type: Sequelize.QueryTypes.SELECT,
 				plain: false,
 				logging: console.log,
-				model: db.Account,
 				raw: false
 			}
-		).then(data => res.json(data))
-		.catch((e) => console.error(e));					
+		)
+			.catch((e) => console.error(e));
+
+		for (let index = 0; index < arfromAcc.length; index++) {
+			const element = arfromAcc[index];
+			arJournalIds.push(element.from_account);
+		}
+
+		arfromAcc = await global.sequelize.query("SELECT DISTINCT to_account FROM journal WHERE year(date) = ?",
+			{
+				replacements: [req.query.jahr],
+				type: Sequelize.QueryTypes.SELECT,
+				plain: false,
+				logging: console.log,
+				raw: false
+			}
+		).catch((e) => console.error(e));
+		for (let index = 0; index < arfromAcc.length; index++) {
+			const element = arfromAcc[index];
+			arJournalIds.push(element.to_account);
+		}
+
+		var arAccount = [];
+
+		if (req.query.all == 0) {
+			arAccount = await Account.findAll(
+				{
+					where: {
+						[Op.and]: [
+							{ "order": { [Op.gt]: 10 } },
+							{ "status": 1 },
+							{ "id": { [Op.in]: arJournalIds } }
+						]
+					},
+					order: [["level", "ASC"], ["order", "ASC"]]
+				}).catch((e) => console.error(e));
+		} else {
+			arAccount = await Account.findAll(
+				{
+					where: { "order": { [Op.gt]: 10 } },
+					order: [["level", "ASC"], ["order", "ASC"]]
+				}).catch((e) => console.error(e));
+		}
+		res.json(arAccount);
 	},
 
 	getOneData: function (req, res) {
-		db.Account.findByPk(req.param.id)
+		Account.findByPk(req.param.id)
 			.then(data => res.json(data))
 			.catch((e) => console.error(e));
 	},
 
 	getOneDataByOrder: function (req, res) {
-		db.Account.count({where: {"order": req.query.order}})
+		Account.count({ where: { "order": req.query.order } })
 			.then(data => res.json(data))
 			.catch((e) => console.error(e));
 	},
 
-	getFKData: function(req, res) {
-		var qrySelect = "SELECT `id`, CONCAT('<span class=\"small\">', `order`,' ',`name`, '</span>') as value";
-		qrySelect += " FROM `account` WHERE `status` = 1 and `level` != `order` " ;
-		if (req.query.filter != null) {
-			var qfield = '%' + req.query.filter.value + '%';
-			qrySelect = qrySelect + " AND lower(`name`) like '" + qfield + "'";
-		}
-		qrySelect = qrySelect + " ORDER BY 2";
-		
-		sequelize.query(qrySelect, 
-			{ 
-				type: Sequelize.QueryTypes.SELECT,
-				plain: false,
-				logging: console.log,
-				raw: false
-			}
-		).then(data => res.json(data))
-		.catch((e) => console.error(e));					
+	getFKData: function (req, res) {
+		Account.findAll({
+			attributes: ["id", [Sequelize.fn('CONCAT', Sequelize.col("name"), ' ', Sequelize.col("order")), "name"]],
+			where: [
+				Sequelize.where(Sequelize.fn('LOWER', Sequelize.col("name")), { [Op.substring]: (req.query.filter != null ? req.query.filter.value : '') }),
+				{ "order": { [Op.ne]: Sequelize.col("level") } },
+				{ "status": 1 }
+			],
+			order: [["level", "ASC"], ["order", "ASC"]]
+		})
+			.then(function (data) {
+				var arReturn = [];
+				for (let index = 0; index < data.length; index++) {
+					const element = data[index];
+					arReturn.push({ id: element.id, value: '<span class=\"small\">' + element.name + '</span>' });
+				}
+				res.json(arReturn);
+			})
+			.catch((e) => console.error(e));
 	},
 
 	addData: function (req, res) {
 		var data = req.body;
-		console.info('insert: ',data);
-		db.Account.create(data)
+		console.info('insert: ', data);
+		Account.create(data)
 			.then((obj) => res.json(obj))
-			.catch((e) => res.json({type: "error", message: e}));
+			.catch((e) => res.json({ type: "error", message: e }));
 	},
-	
+
 	updateData: function (req, res) {
 		var data = req.body;
-		console.info('update: ',data);
-	
-		db.Account.findByPk(data.id)
-		.then((account) => account.update(data)
-			.then((obj) => res.json(obj))
-			.catch((e) => console.error(e)))
-		.catch((e) => console.error(e));
+		console.info('update: ', data);
+
+		Account.findByPk(data.id)
+			.then((account) => account.update(data)
+				.then((obj) => res.json(obj))
+				.catch((e) => console.error(e)))
+			.catch((e) => console.error(e));
 	},
 
 	getAccountSummary: async function (req, res) {
-		var arBudget = await db.Budget.findAll({where:{'year': req.query.jahr}});
+		var arData = [];
+		var arBudget = await Budget.findAll({
+			attributes: ["amount"],
+			where: { 'year': req.query.jahr },
+			include: [
+				{ model: Account, as: 'acc', required: true, attributes: ["id", "level", "order", "name", "status"] }
+			]
+		})
+			.catch((e) => console.error(e));
 
-		var qrySelect = "Select ac.`id`, ac.`level`, ac.`order`, ac.`name`, sum(j.`amount`) as amount, 0 as budget, 0 as diff, ";
-		qrySelect += "(CASE WHEN ac.`status`= 1 THEN '' ELSE 'inactive' END) as $css"
-		qrySelect += " from account ac ";
-		qrySelect += " left outer join journal j ";
-		qrySelect += " on ac.id = j.from_account ";
-		qrySelect += " and year(j.date) = " + req.query.jahr;
-		qrySelect += " group by ac.`id`,  ac.`level`, ac.`order`, ac.`name` ";
-		qrySelect += " order by ac.`level`, ac.`order`";
+		Journal.findAll({
+			attributes: [[Sequelize.fn('sum', Sequelize.col("amount")), "amount"]],
+			where: Sequelize.where(Sequelize.fn('year', Sequelize.col("date")), req.query.jahr),
+			include: [
+				{
+					model: Account, as: 'fromAccount', required: true,
+					attributes: ["id", "level", "order", "name", "status"]
+				}],
+			group: ["fromAccount.id", "fromAccount.level", "fromAccount.order", "fromAccount.name", "fromAccount.status"],
+			order: [["fromAccount", "level", "ASC"], ["fromAccount", "order", "ASC"]]
+		})
+			.then(function (data) {
 
-		sequelize.query(qrySelect, 
-			{ 
-				type: Sequelize.QueryTypes.SELECT,
-				plain: false,
-				logging: console.log,
-				raw: false
-			}
-		).then(data => {
-			qrySelect = "Select ac.`id`, ac.`level`, ac.`order`, ac.`name`, sum(j.`amount`) as amount ";
-			qrySelect += " from account ac ";
-			qrySelect += " join journal j ";
-			qrySelect += " on ac.id = j.to_account ";
-			qrySelect += " and year(j.date) = " + req.query.jahr;
-			qrySelect += " group by ac.`id`,  ac.`level`, ac.`order`, ac.`name` ";
-			qrySelect += " order by ac.`level`, ac.`order`";
-			sequelize.query(qrySelect, 
-				{ 
-					type: Sequelize.QueryTypes.SELECT,
-					plain: false,
-					logging: console.log,
-					raw: false
-				}
-			).then(data2 => {
-				for (let ind2 = 0; ind2 < data2.length; ind2++) {
-					const acc2 = data2[ind2];
-					var found = data.findIndex(acc => acc.id == acc2.id);
-					switch (data[found].level) {
-						case 1:
-						case 4:
-							data[found].amount = eval(data[found].amount - acc2.amount);
-							break;
-						case 2:
-						case 6:
-							data[found].amount = eval(acc2.amount - data[found].amount);
-							break;
-					}				
-				}
+				Journal.findAll({
+					attributes: [[Sequelize.fn('sum', Sequelize.col("amount")), "amount"]],
+					where: Sequelize.where(Sequelize.fn('year', Sequelize.col("date")), req.query.jahr),
+					include: [
+						{ model: Account, as: 'toAccount', required: true, attributes: ["id", "level", "order", "name", "status"] }],
+					group: ["toAccount.id", "toAccount.level", "toAccount.order", "toAccount.name", "toAccount.status"],
+					order: [["toAccount", "level", "ASC"], ["toAccount", "order", "ASC"]]
+				})
+					.then(function (data2) {
+						for (let ind2 = 0; ind2 < data.length; ind2++) {
+							var record = {}
+							record.id = data[ind2].fromAccount.id
+							record.name = data[ind2].fromAccount.name
+							record.level = data[ind2].fromAccount.level
+							record.order = data[ind2].fromAccount.order
+							record.status = data[ind2].fromAccount.status
+							record.budget = 0
+							record.diff = 0
+							record.$css = (data[ind2].fromAccount.status ? "active" : "inactive")
+							var found = data2.findIndex(acc => acc.toAccount.id == data[ind2].fromAccount.id);
+							if (found >= 0) {
+								const acc2 = data2[found];
+								switch (data[ind2].fromAccount.level) {
+									case 1:
+									case 4:
+										record.amount = eval(data[ind2].amount - acc2.amount);
+										break;
+									case 2:
+									case 6:
+										record.amount = eval(acc2.amount - data[ind2].amount);
+										break;
+								}
+								data2.splice(found, 1);
+							} else {
+								switch (data[ind2].fromAccount.level) {
+									case 1:
+									case 4:
+										record.amount = eval(data[ind2].amount * 1);
+										break;
+									case 2:
+									case 6:
+										record.amount = eval(data[ind2].amount * -1);
+										break;
+								}
+							}
+							arData.push(record);
+						}
+						for (let ind2 = 0; ind2 < data2.length; ind2++) {
+							record = {}
+							record.id = data2[ind2].toAccount.id
+							record.name = data2[ind2].toAccount.name
+							record.level = data2[ind2].toAccount.level
+							record.order = data2[ind2].toAccount.order
+							record.status = data2[ind2].toAccount.status
+							record.budget = 0
+							record.diff = 0
+							record.$css = (data2[ind2].toAccount.status ? "active" : "inactive")
+							switch (data2[ind2].toAccount.level) {
+								case 1:
+								case 4:
+									record.amount = eval(data2[ind2].amount * -11);
+									break;
+								case 2:
+								case 6:
+									record.amount = eval(data2[ind2].amount * 1);
+									break;
+							}
+							arData.push(record);
+						}
 
-				for (let ind2 = 0; ind2 < data.length; ind2++) {
-					const acc = data[ind2];
-					found = arBudget.findIndex(bud => bud.account == acc.id);
-					if (found >= 0) {
-						data[ind2].budget = eval(arBudget[found].amount * 1);
-					}
-					data[ind2].diff = data[ind2].budget - data[ind2].amount;
-				}
-				res.json(data);
+						for (let ind2 = 0; ind2 < arData.length; ind2++) {
+							found = arBudget.findIndex(element => element.acc.id == arData[ind2].id);
+							record = arData[ind2];
+							if (found >= 0) {
+								const acc = arBudget[found];
+								record.budget = eval(acc.amount * 1);
+								record.diff = record.budget - record.amount;
+								arBudget.splice(found, 1);
+							} else {
+								record.diff = arData[ind2].budget - arData[ind2].amount;
+							}
+							//arData.splice(ind2, 1, record);
+						}
+
+						for (let ind2 = 0; ind2 < arBudget.length; ind2++) {
+							record = {};
+							record.id = arBudget[ind2].acc.id
+							record.name = arBudget[ind2].acc.name
+							record.level = arBudget[ind2].acc.level
+							record.order = arBudget[ind2].acc.order
+							record.status = arBudget[ind2].acc.status
+							record.$css = (record.status ? "active" : "inactive")
+
+							record.amount = 0;
+							record.budget = eval(arBudget[ind2].amount * 1)
+							record.diff = record.budget;
+							arData.push(record);
+						}
+
+						arData.sort((a, b) => {
+							if (a.level < b.level)
+								return -1
+							if (a.level == b.level && a.order <= b.order)
+								return -1
+							return 1
+						});
+						console.log(arData);
+						res.json(arData);
+					})
+					.catch((e) => console.error(e));
 			})
 			.catch((e) => console.error(e));
-		})
-		.catch((e) => console.error(e));					
 	},
 
 };

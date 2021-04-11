@@ -1,13 +1,12 @@
-var db = require("../db");
+var { Meisterschaft, Adressen, Kegelmeister, Clubmeister, Account, Budget, Journal, Anlaesse } = require("../db");
 const {
     Sequelize, Op
 } = require("sequelize");
-const Meisterschaft = require('../db').Meisterschaft;
-const Adressen = require('../db').Adressen;
-const Kegelmeister = require('../db').Kegelmeister;
-const Clubmeister = require('../db').Clubmeister;
 
+const FS = require("fs");
+const Archiver = require("archiver");
 const ExcelJS = require("exceljs");
+const { Options } = require("pdfkit");
 const cName = "C6";
 const cVorname = "C7";
 const sFirstRow = 13;
@@ -50,8 +49,11 @@ module.exports = {
         if (filter.ehrenmitglied != '')
             sWhere.ehrenmitglied = filter.ehrenmitglied;
 
-        var arData = await db.Adressen.findAll(
-            { where: sWhere }
+        var arData = await Adressen.findAll(
+            {
+                where: sWhere,
+                order: ["name", "vorname"]
+            }
         )
             .catch((e) => {
                 console.error(e);
@@ -63,8 +65,7 @@ module.exports = {
             });
 
         const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-        const datum = new Date();
-        var fmtToday = datum.getDate() + "." + (datum.getMonth() + 1) + "." + datum.getFullYear()
+        var fmtToday = new Date().toLocaleDateString("de-CH", { year: 'numeric', month: "2-digit", day: "2-digit" });
         const workbook = new ExcelJS.Workbook();
         workbook.creator = "Janine Franken";
 
@@ -134,11 +135,9 @@ module.exports = {
             sheet.getCell('Q' + row).alignment = { horizontal: "center" };
             setCellValueFormat(sheet, 'R' + row, (element.allianz == "1" ? "Ja" : "Nein"), true, '', { size: iFontSizeRow, name: 'Tahoma' });
             sheet.getCell('R' + row).alignment = { horizontal: "center" };
-            var date = new Date(element.eintritt);
+            setCellValueFormat(sheet, 'S' + row, new Date(element.eintritt).toLocaleDateString("de-CH", { year: 'numeric', month: "2-digit", day: "2-digit" }), true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            var date = new Date(element.austritt);
             var dateFmt = date.toLocaleDateString('de-DE', options);
-            setCellValueFormat(sheet, 'S' + row, dateFmt, true, '', { size: iFontSizeRow, name: 'Tahoma' });
-            date = new Date(element.austritt);
-            dateFmt = date.toLocaleDateString('de-DE', options);
             setCellValueFormat(sheet, 'T' + row, (dateFmt == "01.01.3000" ? "" : dateFmt), true, '', { size: iFontSizeRow, name: 'Tahoma' });
 
             row++;
@@ -191,19 +190,19 @@ module.exports = {
      * @param {Response} res 
      */
     writeJournal: async function (req, res) {
-        console.log("writeAuswertung");
+        console.log("writeJournal");
         const sjahr = eval(req.query.jahr * 1);
+        var fReceipt = (req.query.receipt == '1');
 
-        var arData = await db.Journal.findAll(
+        var arData = await Journal.findAll(
             {
                 where: sequelize.where(sequelize.fn('YEAR', sequelize.col('date')), sjahr),
                 include: [
-                    { model: db.Account, as: 'fromAccount', required: true, attributes: ['id', 'order', 'name'] },
-                    { model: db.Account, as: 'toAccount', required: true, attributes: ['id', 'order', 'name'] }
+                    { model: Account, as: 'fromAccount', required: true, attributes: ['id', 'order', 'name'] },
+                    { model: Account, as: 'toAccount', required: true, attributes: ['id', 'order', 'name'] }
                 ],
-                attributes: ['id', 'amount', 'journalNo', 'memo', 'date'],
                 order: [
-                    ['journalNo', 'asc'],
+                    ['journalno', 'asc'],
                     ['date', 'asc'],
                     ['from_account', 'asc'],
                 ]
@@ -216,6 +215,7 @@ module.exports = {
                     message: e,
                 });
             });
+
 
 
         const workbook = new ExcelJS.Workbook();
@@ -239,7 +239,6 @@ module.exports = {
             }
         });
 
-
         // Schreibe Journal
         setCellValueFormat(sheet, 'B1', "Journal " + sjahr, false, '', { bold: true, size: iFontSizeHeader, name: 'Tahoma' });
 
@@ -250,6 +249,8 @@ module.exports = {
         setCellValueFormat(sheet, 'F3', "Booking Text ", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
         setCellValueFormat(sheet, 'G3', "Amount", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
         sheet.getCell('G3').alignment = { horizontal: "right" };
+        if (fReceipt)
+            setCellValueFormat(sheet, 'H3', "Receipt", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
 
         const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
         var row = 4;
@@ -260,14 +261,20 @@ module.exports = {
             const date = new Date(element.date);
             var dateFmt = date.toLocaleDateString('de-DE', options);
 
-            setCellValueFormat(sheet, 'B' + row, element.journalNo, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            sheet.getRow(row).height = 22;
+            setCellValueFormat(sheet, 'B' + row, element.journalno, true, '', { size: iFontSizeRow, name: 'Tahoma' });
             setCellValueFormat(sheet, 'C' + row, dateFmt, true, '', { size: iFontSizeRow, name: 'Tahoma' });
             setCellValueFormat(sheet, 'D' + row, element.fromAccount.order + " " + element.fromAccount.name, true, '', { size: iFontSizeRow, name: 'Tahoma' });
             setCellValueFormat(sheet, 'E' + row, element.toAccount.order + " " + element.toAccount.name, true, '', { size: iFontSizeRow, name: 'Tahoma' });
             setCellValueFormat(sheet, 'F' + row, element.memo, true, '', { size: iFontSizeRow, name: 'Tahoma' });
             setCellValueFormat(sheet, 'G' + row, eval(element.amount * 1), true, '', { size: iFontSizeRow, name: 'Tahoma' });
             sheet.getCell('G' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
-
+            if (fReceipt && element.receipt != null) {
+                setCellValueFormat(sheet, 'H' + row, element.receipt, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+                sheet.getCell('H' + row).value = { text: element.receipt, hyperlink: element.receipt };
+            } else if (fReceipt) {
+                setCellValueFormat(sheet, 'H' + row, '', true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            }
             row++;
 
         }
@@ -278,9 +285,11 @@ module.exports = {
         sheet.getColumn('E').width = 35;
         sheet.getColumn('F').width = 50;
         sheet.getColumn('G').width = 18;
+        if (fReceipt)
+            sheet.getColumn('H').width = 50;
 
-        const filename = "Journal-" + sjahr + ".xlsx";
-        await workbook.xlsx.writeFile("./public/exports/" + filename)
+        const filename = "Journal-" + sjahr;
+        await workbook.xlsx.writeFile("./public/exports/" + filename + ".xlsx")
             .catch((e) => {
                 console.error(e);
                 res.json({
@@ -289,10 +298,54 @@ module.exports = {
                 });
             });
 
+        var sExt = '.xlsx';
+        if (fReceipt) {
+            sExt = '.zip';
+
+            // create a file to stream archive data to.
+            const output = FS.createWriteStream(global.exports + filename + ".zip");
+            const archive = Archiver('zip');
+
+            // listen for all archive data to be written
+            // 'close' event is fired only when a file descriptor is involved
+            output.on('close', function () {
+                console.log(archive.pointer() + ' total bytes');
+                console.log('archiver has been finalized and the output file descriptor has closed.');
+            });
+
+            // This event is fired when the data source is drained no matter what was the data source.
+            // It is not part of this library but rather from the NodeJS Stream API.
+            // @see: https://nodejs.org/api/stream.html#stream_event_end
+            output.on('end', function () {
+                console.log('Data has been drained');
+            });
+
+            // good practice to catch warnings (ie stat failures and other non-blocking errors)
+            archive.on('warning', function (err) {
+                if (err.code === 'ENOENT') {
+                    // log warning
+                } else {
+                    // throw error
+                    throw err;
+                }
+            });
+            archive.on('error', function (err) {
+                throw err;
+            });
+            archive.pipe(output);
+
+            // append a file
+            archive.file("./public/exports/" + filename + ".xlsx", { name: filename + ".xlsx" });
+
+            // append files from a sub-directory and naming it `new-subdir` within the archive
+            archive.directory(global.documents + sjahr + '/receipt/', 'receipt');
+            archive.finalize();
+        }
+
         return res.json({
             type: "info",
-            message: "Excelfile erstellt",
-            filename: filename
+            message: "Datei erstellt",
+            filename: filename + sExt
         });
     },
 
@@ -382,108 +435,6 @@ module.exports = {
         worksheet.getColumn(8).hidden = true;
         worksheet.spliceRows(4, 1);
 
-        // Auswertung ohne Vorjahr erstellen
-        let qrySelect
-        qrySelect = "SELECT CONCAT(date_format(data.datum, '%d.%m.%Y'),' ',data.name) as anlass,";
-        qrySelect += " data.teilnehmer, data.gaeste";
-        qrySelect += " FROM (";
-        qrySelect += " select a.datum, a.name, count(m.mitgliedid) as Teilnehmer, a.gaeste";
-        qrySelect += " from anlaesse a";
-        qrySelect += " LEFT JOIN meisterschaft m";
-        qrySelect += " on (a.id = m.eventid)";
-        qrySelect += " where year(a.datum) = " + objSave.year;
-        qrySelect += " and a.nachkegeln = 0";
-        qrySelect += " group by a.datum, a.name, a.gaeste";
-        qrySelect += " order by a.datum) data";
-
-        var dbChartData = await sequelize.query(qrySelect,
-            {
-                type: Sequelize.QueryTypes.SELECT,
-                plain: false,
-                logging: console.log,
-                raw: false
-            }
-        )
-            .catch((e) => {
-                console.error(e);
-                res.json({
-                    type: "error",
-                    message: e,
-                });
-            });
-
-        Promise.resolve(dbChartData)
-            .catch((e) => {
-                console.error(e);
-                res.json({
-                    type: "error",
-                    message: e,
-                });
-            });
-
-
-        worksheet = workbook.getWorksheet('Datenbereich für Beteiligung');
-        row = 3
-
-        for (const chData of dbChartData) {
-            worksheet.insertRow(row, ['', chData.anlass, chData.teilnehmer, chData.gaeste]);
-            row++;
-        }
-
-        // Auswertung mit Vorjahr erstellen
-        qrySelect = "SELECT CONCAT(date_format(a.datum, '%d.%m.%Y'),' ',a.name) as anlass,";
-        qrySelect += " (ma.anzahl + a.gaeste) as aktjahr,";
-        qrySelect += " (mv.anzahl + av.gaeste) as vorjahr";
-        qrySelect += " FROM anlaesse a";
-        qrySelect += " LEFT JOIN (";
-        qrySelect += " SELECT mc.eventid,";
-        qrySelect += " count(mc.mitgliedid) as anzahl";
-        qrySelect += " from meisterschaft mc";
-        qrySelect += " group by mc.eventid";
-        qrySelect += " ) ma on (a.id = ma.eventid)";
-        qrySelect += " JOIN anlaesse av on (a.anlaesseid = av.id)";
-        qrySelect += " LEFT JOIN (";
-        qrySelect += " SELECT mcv.eventid,";
-        qrySelect += " count(mcv.mitgliedid) as anzahl";
-        qrySelect += " from meisterschaft mcv";
-        qrySelect += " group by mcv.eventid";
-        qrySelect += " ) mv on (av.id = mv.eventid)";
-        qrySelect += " WHERE year(a.datum) = " + objSave.year;
-        qrySelect += " and a.nachkegeln = 0";
-        qrySelect += " ORDER BY a.datum";
-
-        dbChartData = await sequelize.query(qrySelect,
-            {
-                type: Sequelize.QueryTypes.SELECT,
-                plain: false,
-                logging: console.log,
-                raw: false
-            }
-        )
-            .catch((e) => {
-                console.error(e);
-                res.json({
-                    type: "error",
-                    message: e,
-                });
-            });
-        Promise.resolve(dbChartData)
-            .catch((e) => {
-                console.error(e);
-                res.json({
-                    type: "error",
-                    message: e,
-                });
-            });
-
-        worksheet = workbook.getWorksheet('Datenbereich Vergleich Vorjahr');
-        row = 3
-
-        for (const chData of dbChartData) {
-            worksheet.insertRow(row, ['', chData.anlass, chData.aktjahr, chData.vorjahr]);
-            row++;
-        }
-
         // Datei sichern
         var filename = "Meisterschaft-" + objSave.year + ".xlsx";
         await workbook.xlsx.writeFile("./public/exports/" + filename)
@@ -540,7 +491,7 @@ module.exports = {
                 // Datenblatt leer für Adressen
                 if (objSave.id == 0) {
                     // für alle aktiven Mitglieder
-                    let dbAdressen = await db.Adressen.findAll({
+                    let dbAdressen = await Adressen.findAll({
                         where: {
                             austritt: {
                                 [Op.gte]: new Date()
@@ -579,7 +530,7 @@ module.exports = {
 
                 } else {
                     // für ein Mitglied
-                    oneAdresse = await db.Adressen.findByPk(objSave.id)
+                    oneAdresse = await Adressen.findByPk(objSave.id)
                         .catch((e) => {
                             console.error(e);
                             res.json({
@@ -612,18 +563,18 @@ module.exports = {
                 // Datenblatt gefüllt für Adressen
                 if (objSave.id == 0) {
                     // für alle aktiven Mitglieder
-                    var qrySelect = "SELECT * FROM adressen where austritt > now() and id in (";
-                    qrySelect += "SELECT m.mitgliedid FROM meisterschaft m join anlaesse a on (m.eventid = a.id and year(a.datum) = " + objSave.year;
-                    qrySelect += ")) order by name, vorname";
-
-                    const dbAdressen = await sequelize.query(qrySelect, {
-                        type: Sequelize.QueryTypes.SELECT,
-                        model: Adressen,
-                        mapToModel: true,
-                        logging: console.log
+                    const dbAdressen = await Adressen.findAll({
+                        where: { "austritt": { [Op.gt]: new Date() } },
+                        include: {
+                            model: Meisterschaft, required: true,
+                            attributes: [],
+                            where: Sequelize.where(Sequelize.fn('YEAR', Sequelize.col("datum")), objSave.year)
+                        },
+                        order: ["adressen.name", "vorname"]
                     });
 
-                    for (const adress of dbAdressen) {
+                    for (let index = 0; index < dbAdressen.length; index++) {
+                        const adress = dbAdressen[index];
                         sheet = workbook.addWorksheet(adress.vorname + " " + adress.name, {
                             pageSetup: {
                                 fitToPage: true,
@@ -639,7 +590,7 @@ module.exports = {
 
                 } else {
                     // für ein Mitglied
-                    oneAdresse = await db.Adressen.findByPk(objSave.id)
+                    oneAdresse = await Adressen.findByPk(objSave.id)
                         .catch((e) => {
                             console.error(e);
                             res.json({
@@ -700,7 +651,9 @@ module.exports = {
 
     writeExcelData: async function (req, res) {
         // TODO #38
+        console.log("writeExcelData");
         var sjahr = req.query.jahr;
+
         var iVJahr = eval((sjahr * 1) - 1);
         var iNJahr = eval((sjahr * 1) + 1);
 
@@ -754,20 +707,14 @@ module.exports = {
             }
         });
 
-        var qrySelect = "Select ac.`id`, ac.`level`, ac.`order`, ac.`name`, 0 as amount, 0 as amountVJ, ac.`status`, b1.amount as budget, b2.amount as budgetVJ, b3.amount as budgetNJ ";
-        qrySelect += " from account ac ";
-        qrySelect += " LEFT OUTER JOIN `budget` AS b1 ON ac.`id` = b1.`account` AND b1.`year` = " + sjahr;
-        qrySelect += " LEFT OUTER JOIN `budget` AS b2 ON ac.`id` = b2.`account` AND b2.`year` = " + iVJahr;
-        qrySelect += " LEFT OUTER JOIN `budget` AS b3 ON ac.`id` = b3.`account` AND b3.`year` = " + iNJahr;
-        qrySelect += " order by ac.`level`, ac.`order`";
-        var accData = await sequelize.query(qrySelect,
-            {
-                type: Sequelize.QueryTypes.SELECT,
-                plain: false,
-                logging: console.log,
-                raw: false
-            }
-        )
+        var accData = await Account.findAll({
+            attributes: ["id", "name", "level", "order", "status",
+                [Sequelize.literal(0), "amount"], [Sequelize.literal(0), "amountVJ"],
+                [Sequelize.literal(0), "budget"], [Sequelize.literal(0), "budgetVJ"], [Sequelize.literal(0), "budgetNJ"]
+            ],
+            order: ["level", "order"],
+            raw: true, nest: true
+        })
             .catch((e) => {
                 console.error(e);
                 res.json({
@@ -776,19 +723,43 @@ module.exports = {
                 });
             });
 
-        qrySelect = "select j.from_account, sum(j.amount) as amount";
-        qrySelect += " from journal j";
-        qrySelect += " where year(j.date) = " + sjahr;
-        qrySelect += " group by j.from_account";
+        var accBudget = await Budget.findAll({
+            where: { "year": { [Op.in]: [sjahr, iVJahr, iNJahr] } },
+            order: ["year", "account"],
+            raw: true
+        })
+            .catch((e) => {
+                console.error(e);
+                res.json({
+                    type: "error",
+                    message: e,
+                });
+            });
 
-        var arrAmount = await sequelize.query(qrySelect,
-            {
-                type: Sequelize.QueryTypes.SELECT,
-                plain: false,
-                logging: console.log,
-                raw: false
+        for (let index = 0; index < accBudget.length; index++) {
+            found = accData.findIndex(acc => acc.id == accBudget[index].account);
+            if (found == -1) {
+                console.warn("Account: " + accBudget[index].account + " hat Budget aber keine Stammdaten!");
+            } else {
+                switch (accBudget[index].year) {
+                    case sjahr:
+                        accData[found].budget = accBudget[index].amount;
+                        break;
+                    case iVJahr:
+                        accData[found].budgetVJ = accBudget[index].amount;
+                        break;
+                    case iNJahr:
+                        accData[found].budgetNJ = accBudget[index].amount;
+                        break;
+                }
             }
-        )
+
+        }
+        var arrAmount = await Journal.findAll({
+            attributes: ["from_account", [Sequelize.fn('SUM', Sequelize.col("amount")), "amount"]],
+            where: Sequelize.where(Sequelize.fn('YEAR', Sequelize.col("date")), sjahr),
+            group: ["from_account"]
+        })
             .catch((e) => {
                 console.error(e);
                 res.json({
@@ -802,20 +773,11 @@ module.exports = {
             accData[found].amount = eval(element.amount + 0);
         }
 
-
-        qrySelect = "select j.to_account, sum(j.amount) as amount";
-        qrySelect += " from journal j";
-        qrySelect += " where year(j.date) = " + sjahr;
-        qrySelect += " group by j.to_account";
-
-        arrAmount = await sequelize.query(qrySelect,
-            {
-                type: Sequelize.QueryTypes.SELECT,
-                plain: false,
-                logging: console.log,
-                raw: false
-            }
-        )
+        arrAmount = await Journal.findAll({
+            attributes: ["to_account", [Sequelize.fn('SUM', Sequelize.col("amount")), "amount"]],
+            where: Sequelize.where(Sequelize.fn('YEAR', Sequelize.col("date")), sjahr),
+            group: ["to_account"]
+        })
             .catch((e) => {
                 console.error(e);
                 res.json({
@@ -837,52 +799,36 @@ module.exports = {
                     break;
             }
         }
-
-        qrySelect = "select j.from_account, sum(j.amount) as amount";
-        qrySelect += " from journal j";
-        qrySelect += " where year(j.date) = " + iVJahr;
-        qrySelect += " group by j.from_account";
-
-        arrAmount = await sequelize.query(qrySelect,
-            {
-                type: Sequelize.QueryTypes.SELECT,
-                plain: false,
-                logging: console.log,
-                raw: false
-            }
-        ).catch((e) => {
-            console.error(e);
-            res.json({
-                type: "error",
-                message: e,
+        arrAmount = await Journal.findAll({
+            attributes: ["from_account", [Sequelize.fn('SUM', Sequelize.col("amount")), "amount"]],
+            where: Sequelize.where(Sequelize.fn('YEAR', Sequelize.col("date")), iVJahr),
+            group: ["from_account"]
+        })
+            .catch((e) => {
+                console.error(e);
+                res.json({
+                    type: "error",
+                    message: e,
+                });
             });
-        });
         for (let ind2 = 0; ind2 < arrAmount.length; ind2++) {
             const element = arrAmount[ind2];
             found = accData.findIndex(acc => acc.id == element.from_account);
             accData[found].amountVJ = eval(element.amount + 0);
         }
 
-
-        qrySelect = "select j.to_account, sum(j.amount) as amount";
-        qrySelect += " from journal j";
-        qrySelect += " where year(j.date) = " + iVJahr;
-        qrySelect += " group by j.to_account";
-
-        arrAmount = await sequelize.query(qrySelect,
-            {
-                type: Sequelize.QueryTypes.SELECT,
-                plain: false,
-                logging: console.log,
-                raw: false
-            }
-        ).catch((e) => {
-            console.error(e);
-            res.json({
-                type: "error",
-                message: e,
+        arrAmount = await Journal.findAll({
+            attributes: ["to_account", [Sequelize.fn('SUM', Sequelize.col("amount")), "amount"]],
+            where: Sequelize.where(Sequelize.fn('YEAR', Sequelize.col("date")), iVJahr),
+            group: ["to_account"]
+        })
+            .catch((e) => {
+                console.error(e);
+                res.json({
+                    type: "error",
+                    message: e,
+                });
             });
-        });
         for (let ind2 = 0; ind2 < arrAmount.length; ind2++) {
             const element = arrAmount[ind2];
             found = accData.findIndex(acc => acc.id == element.to_account);
@@ -1042,35 +988,48 @@ module.exports = {
      * @param {Response} res 
     */
     writeAccountToExcel: async function (req, res) {
+        console.log("writeAccountToExcel");
         const sJahr = req.query.jahr;
-        const sAll = req.query.all
+        var arData = [];
 
-        // read all the data from the database
-        var qrySelect = "SELECT * FROM account";
-        qrySelect += " WHERE `order` > 9";
-        if (sAll == 0) {
-            qrySelect += " AND (id in (select from_account from journal where year(date) = " + req.query.jahr + ")";
-            qrySelect += " OR id in (select to_account from journal where year(date) = " + req.query.jahr + "))";
-        } else {
-            qrySelect += " AND status = 1";
-        }
-        qrySelect += " ORDER BY level ASC , `order` ASC";
-        var arData = await sequelize.query(qrySelect,
-            {
-                type: Sequelize.QueryTypes.SELECT,
-                plain: false,
-                logging: console.log,
-                model: db.Account,
-                raw: false
-            }
-        ).catch((e) => {
-            console.error(e);
-            res.json({
-                type: "error",
-                message: e,
+        if (req.query.all == 0) {
+            var arAccId = await Journal.findAll({
+                attributes: ["from_account", "to_account"],
+                where: Sequelize.where(Sequelize.fn('YEAR', Sequelize.col("date")), req.query.jahr)
             });
-            return;
-        });
+            var arAccounts = [];
+            for (let index = 0; index < arAccId.length; index++) {
+                arAccounts.push(arAccId[index].from_account);
+                arAccounts.push(arAccId[index].to_account);
+            }
+
+            arData = await Account.findAll({
+                where: [{ "order": { [Op.gt]: 9 } },
+                { "id": { [Op.in]: arAccounts } }]
+            })
+                .catch((e) => {
+                    console.error(e);
+                    res.json({
+                        type: "error",
+                        message: e,
+                    });
+                    return;
+                });
+        } else {
+            arData = await Account.findAll({
+                where: [{ "order": { [Op.gt]: 9 } },
+                { "status": 1 }]
+            })
+                .catch((e) => {
+                    console.error(e);
+                    res.json({
+                        type: "error",
+                        message: e,
+                    });
+                    return;
+                });
+
+        }
 
         const workbook = new ExcelJS.Workbook();
 
@@ -1118,33 +1077,30 @@ module.exports = {
 
             var iSaldo = 0.0;
             var iRow = 4;
-            qrySelect = "SELECT journalNo,date, date_format(date, '%d.%m.%Y') as formdate, from_account, to_account, memo, amount FROM journal";
-            qrySelect += " WHERE year(date) = " + sJahr;
-            qrySelect += " AND (from_account = " + element.id;
-            qrySelect += " OR to_account = " + element.id;
-            qrySelect += ") ORDER by journalNo, date";
 
-            var arJournal = await sequelize.query(qrySelect,
+            var arJournal = await Journal.findAll({
+                where: [Sequelize.where(Sequelize.fn('YEAR', Sequelize.col("date")), sJahr),
                 {
-                    type: Sequelize.QueryTypes.SELECT,
-                    plain: false,
-                    logging: console.log,
-                    raw: false
-                }
-            ).catch((e) => {
-                console.error(e);
-                res.json({
-                    type: "error",
-                    message: e,
+                    [Op.or]: [
+                        { "from_account": element.id },
+                        { "to_account": element.id }]
+                }],
+                order: ["journalno", "date"]
+            })
+                .catch((e) => {
+                    console.error(e);
+                    res.json({
+                        type: "error",
+                        message: e,
+                    });
+                    return;
                 });
-                return;
-            });
 
             for (let ind2 = 0; ind2 < arJournal.length; ind2++) {
                 const entry = arJournal[ind2];
                 const iAmount = eval(entry.amount + 0);
 
-                setCellValueFormat(sheet, 'B' + iRow, entry.journalNo, true, false, { size: iFontSizeRow, name: 'Tahoma' });
+                setCellValueFormat(sheet, 'B' + iRow, entry.journalno, true, false, { size: iFontSizeRow, name: 'Tahoma' });
                 setCellValueFormat(sheet, 'C' + iRow, entry.formdate, true, false, { size: iFontSizeRow, name: 'Tahoma' });
                 setCellValueFormat(sheet, 'E' + iRow, entry.memo, true, false, { size: iFontSizeRow, name: 'Tahoma' });
                 sheet.getCell('F' + iRow).numFmt = '#,##0.00;[Red]\-#,##0.00';
@@ -1306,16 +1262,19 @@ function writeArray(sheet, arData, firstRow, fBudget = false, fBudgetVergleich =
  * @param {string} syear 
  */
 async function fillTemplate(sheet, id, syear) {
-    var qrySelect = "SELECT * FROM meisterschaft where eventid in (";
-    qrySelect += "SELECT id FROM anlaesse where year(datum) = " + syear;
-    qrySelect += ") and mitgliedid = " + id + " order by id";
-
-    const data = await sequelize.query(qrySelect, {
-        type: Sequelize.QueryTypes.SELECT,
-        model: Meisterschaft,
-        mapToModel: true,
-        logging: console.log
-    });
+    const data = await Meisterschaft.findAll({
+        where: { "mitgliedid": id },
+        include: {
+            model: "anlaesse",
+            attributes: [],
+            where: Sequelize.where(Sequelize.fn('YEAR', datum), syear)
+        },
+        order: ["id"]
+    })
+        .catch(err => {
+            console.error(err);
+            return;
+        });
 
     if (data.length > 0) {
         var cols = sheet.getColumn('K');
@@ -1324,10 +1283,10 @@ async function fillTemplate(sheet, id, syear) {
         var kegelTotal = 0
 
         cols.eachCell(function (cell, row) {
-            if (cell.value != null && cell.value != "eventId") {
+            if (cell.value != null && cell.value != "eventid") {
                 for (let meisterschaft of data) {
 
-                    if (cell.value == meisterschaft.eventId) {
+                    if (cell.value == meisterschaft.eventid) {
                         sheet.getCell('A' + cell.row).value = meisterschaft.punkte;
                         clubTotal += meisterschaft.punkte;
 
@@ -1382,7 +1341,7 @@ async function fillTemplate(sheet, id, syear) {
 /**
  * 
  * @param {ExcelJS.Worksheet} sheet 
- * @param {db.Adressen} adress 
+ * @param {Adressen} adress 
  */
 async function fillName(sheet, adress) {
 
@@ -1400,8 +1359,15 @@ async function fillName(sheet, adress) {
  */
 async function createTemplate(syear, sheet, inclPoints) {
     // read all events
-    let dbEvents = await db.Anlaesse.findAll({
-        where: sequelize.where(sequelize.fn('YEAR', sequelize.col('datum')), syear),
+    let dbEvents = await Anlaesse.findAll({
+        where: [sequelize.where(sequelize.fn('YEAR', sequelize.col('datum')), syear),
+        {
+            [Op.or]: [
+                { "istkegeln": true },
+                { "punkte": { [Op.gt]: 0 } }
+            ]
+        }
+        ],
         order: [
             ["istkegeln", "desc"],
             ["datum", "asc"],
@@ -1462,7 +1428,7 @@ async function createTemplate(syear, sheet, inclPoints) {
     setCellValueFormat(sheet, "H" + row, "z Pkt.", true, "", { bold: true, size: iFontSizeRow });
     setCellValueFormat(sheet, "I" + row, "Total", true, "", { bold: true, size: iFontSizeRow });
     setCellValueFormat(sheet, "J" + row, "Visum", true, "", { bold: true, size: iFontSizeRow });
-    setCellValueFormat(sheet, "K" + row, "eventId", false, "", { bold: true, size: iFontSizeRow });
+    setCellValueFormat(sheet, "K" + row, "eventid", false, "", { bold: true, size: iFontSizeRow });
 
     let clubTotal = 0;
 
@@ -1478,7 +1444,7 @@ async function createTemplate(syear, sheet, inclPoints) {
                 setCellValueFormat(sheet, "A" + row, "", true, "", { size: iFontSizeRow, strike: true });
             }
 
-            setCellValueFormat(sheet, "B" + row, event.datum, true, "", { size: iFontSizeRow });
+            setCellValueFormat(sheet, "B" + row, new Date(event.datum).toLocaleDateString("de-CH", { year: 'numeric', month: "2-digit", day: "2-digit" }), true, "", { size: iFontSizeRow });
             setCellValueFormat(sheet, "C" + row, "", true, "", { size: iFontSizeRow });
             setCellValueFormat(sheet, "D" + row, "", true, "", { size: iFontSizeRow });
             setCellValueFormat(sheet, "E" + row, "", true, "", { size: iFontSizeRow });
@@ -1515,7 +1481,7 @@ async function createTemplate(syear, sheet, inclPoints) {
             } else {
                 setCellValueFormat(sheet, "A" + row, "", true, "", { size: iFontSizeRow, strike: true });
             }
-            setCellValueFormat(sheet, "B" + row, event.datum, true, "", { size: iFontSizeRow });
+            setCellValueFormat(sheet, "B" + row, new Date(event.datum).toLocaleDateString("de-CH", { year: 'numeric', month: "2-digit", day: "2-digit" }), true, "", { size: iFontSizeRow });
             setCellValueFormat(sheet, "C" + row, event.name, true, "C" + row + ":I" + row, { size: iFontSizeRow });
             setCellValueFormat(sheet, "K" + row, event.id, false, "", { size: iFontSizeRow });
         }
