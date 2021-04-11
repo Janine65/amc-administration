@@ -49,7 +49,7 @@ module.exports = {
 		Anlaesse.findAll({ 
 			attributes: ["id", ["longname", "value"]],
 			where: [
-				{"status": 1 },
+	//			{"status": 1 },
 				Sequelize.where(Sequelize.fn('LOWER', Sequelize.col("longname")), {[Op.substring]: (req.query.filter != null ? req.query.filter.value : '')})],
 			order: [["datum","DESC"]]
 			 })
