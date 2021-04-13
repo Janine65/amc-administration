@@ -1595,12 +1595,17 @@ wxAMC.moduleClasses.Journal = class {
         Promise.resolve(promiseJournal)
           .then(function (data) {
             if (data.type == "info") {
-              webix.ajax().response("blob").get('./exports/' + data.filename, function (text, blob, xhr) {
-                console.log(xhr);
-                webix.html.download(blob, data.filename);
-                //            window.open(xhr.responseURL, '_blank');
-                webix.message(data.message, "Info");
-              });
+              webix.modalbox(
+                {
+                  title: "Download Journal",
+                  text: "Hier die Datei zum Herunterladen: <a '_blank' href='./exports/" + data.filename + "'>" + data.filename + "</a>",
+                  buttons:["Ok"]
+                }
+              );
+              // webix.ajax().response("blob").get('./exports/' + data.filename, function (text, blob, xhr) {
+              //   webix.html.download(blob, data.filename);
+              //   webix.message(data.message, "Info");
+              // });
             } else {
               webix.message(data.message, "Error");
             }
