@@ -20,6 +20,10 @@ wxAMC.moduleClasses.Auswertungen = class {
 
   } /* End constructor. */
 
+  formatEvent(value, config) {
+    const datum = new Date(value.datum).toLocaleDateString("de-CH", { year: 'numeric', month: "2-digit", day: "2-digit" });
+    return datum + " " + value.name
+  }
 
   /**
      * Return the module's UI config object.
@@ -57,7 +61,7 @@ wxAMC.moduleClasses.Auswertungen = class {
                   }
                 },
                 {
-                  view: "button", label: "Bild speicher", id: "saveImage",
+                  view: "button", label: "Bild speichern", id: "saveImage",
                   type: "icon", icon: "webix_icon mdi mdi-printer",
                   click: this.saveImage.bind(this)
                 },
@@ -73,7 +77,7 @@ wxAMC.moduleClasses.Auswertungen = class {
               //barWidth:60,
               radius: 0,
               yAxis: {
-                template: "#datum# #name#",
+                template: this.formatEvent,
                 lineColor: "#fff"
               },
               padding: {
@@ -112,7 +116,7 @@ wxAMC.moduleClasses.Auswertungen = class {
               //barWidth:60,
               radius: 0,
               yAxis: {
-                template: "#datum# #name#",
+                template: this.formatEvent,
                 lineColor: "#fff",
                 color: "#fff"
               },
