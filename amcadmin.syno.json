@@ -1,0 +1,57 @@
+{
+   "cap_add" : null,
+   "cap_drop" : null,
+   "cmd" : "cd /usr/src/app && node index.js",
+   "cpu_priority" : 50,
+   "devices" : null,
+   "enable_publish_all_ports" : false,
+   "enable_restart_policy" : false,
+   "enabled" : true,
+   "entrypoint_default" : "docker-entrypoint.sh",
+   "env_variables" : [
+      {
+         "key" : "PATH",
+         "value" : "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      },
+      {
+         "key" : "NODE_VERSION",
+         "value" : "12.18.4"
+      },
+      {
+         "key" : "YARN_VERSION",
+         "value" : "1.22.4"
+      },
+      {
+         "key" : "NODE_ENV",
+         "value" : "production"
+      }
+   ],
+   "exporting" : false,
+   "id" : "8636362e8d5fd7648813c096954f88563f55fb9d6830693d5716f3da900dcaed",
+   "image" : "node:12.18-alpine",
+   "is_ddsm" : false,
+   "is_package" : false,
+   "links" : [],
+   "memory_limit" : 0,
+   "name" : "amcadmin",
+   "network" : [
+      {
+         "driver" : "bridge",
+         "name" : "pgdata_default"
+      }
+   ],
+   "network_mode" : "pgdata_default",
+   "port_bindings" : [],
+   "privileged" : true,
+   "shortcut" : {
+      "enable_shortcut" : false
+   },
+   "use_host_network" : false,
+   "volume_bindings" : [
+      {
+         "host_volume_file" : "/server/logs",
+         "mount_point" : "/usr/src/app/logs",
+         "type" : "rw"
+      }
+   ]
+}
