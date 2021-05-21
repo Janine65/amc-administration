@@ -3,10 +3,13 @@ const {
     Sequelize, Op
 } = require("sequelize");
 
-const FS = require("fs");
+const fs = require("fs");
+const path = require("path");
 const Archiver = require("archiver");
 const ExcelJS = require("exceljs");
-const { Options } = require("pdfkit");
+const libre = require('libreoffice-convert');
+
+
 const cName = "C6";
 const cVorname = "C7";
 const sFirstRow = 13;
@@ -229,6 +232,7 @@ module.exports = {
                 fitToPage: true,
                 fitToHeight: 1,
                 fitToWidth: 1,
+                orientation: "landscape"
             },
             properties: {
                 defaultRowHeight: 22
@@ -271,7 +275,7 @@ module.exports = {
             sheet.getCell('G' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
             if (fReceipt && element.receipt != null) {
                 setCellValueFormat(sheet, 'H' + row, element.receipt, true, '', { size: iFontSizeRow, name: 'Tahoma' });
-                sheet.getCell('H' + row).value = { text: element.receipt, hyperlink: element.receipt };
+                sheet.getCell('H' + row).value = { text: '.\\' + element.receipt, hyperlink: '.\\' + element.receipt };
             } else if (fReceipt) {
                 setCellValueFormat(sheet, 'H' + row, '', true, '', { size: iFontSizeRow, name: 'Tahoma' });
             }
@@ -298,12 +302,27 @@ module.exports = {
                 });
             });
 
+
         var sExt = '.xlsx';
         if (fReceipt) {
             sExt = '.zip';
 
+            // Read file
+            const file = fs.readFileSync("./public/exports/" + filename + ".xlsx");
+
+            // Convert it to pdf format with undefined filter (see Libreoffice doc about filter)
+            libre.convert(file, 'pdf', undefined, (err, done) => {
+                if (err) {
+                console.log(`Error converting file: ${err}`);
+                }
+                
+                // Here in done you have pdf file which you can save or transfer in another stream
+                fs.writeFileSync("./public/exports/" + filename + ".pdf", done);
+            });
+
+
             // create a file to stream archive data to.
-            const output = FS.createWriteStream(global.exports + filename + ".zip");
+            const output = fs.createWriteStream(global.exports + filename + ".zip");
             const archive = Archiver('zip');
 
             // listen for all archive data to be written
@@ -335,7 +354,7 @@ module.exports = {
             archive.pipe(output);
 
             // append a file
-            archive.file("./public/exports/" + filename + ".xlsx", { name: filename + ".xlsx" });
+            archive.file("./public/exports/" + filename + ".pdf", { name: filename + ".pdf" });
 
             // append files from a sub-directory and naming it `new-subdir` within the archive
             archive.directory(global.documents + sjahr + '/receipt/', 'receipt');
