@@ -52,6 +52,7 @@
     "project-version": "^2.0.0",
     "sequelize": "^6.3.5",
     "swissqrbill": "^2.2.0",
+    "underscore": "^1.4.4",
     "uuid": "^8.3.2",
     "webix": "^7.4.0"
   }

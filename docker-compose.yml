@@ -1,4 +1,4 @@
-version: "2"
+version: "3"
 services:
   node:
     image: "node"
@@ -8,6 +8,14 @@ services:
       - NODE_ENV=production
     volumes:
       - ./:/volume1/server/amc-administration
+    container_name: amadmin
+    depends_on: 
+      db: 
+        condition: service_healthy
     expose:
       - "3099"
+    networks: 
+      - pgdata_default
     command: "npm start"
+db:
+  image: postgres
