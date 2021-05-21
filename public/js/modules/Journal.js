@@ -1599,6 +1599,7 @@ wxAMC.moduleClasses.Journal = class {
                 {
                   title: "Download Journal",
                   text: "Hier die Datei zum Herunterladen: <a '_blank' href='./exports/" + data.filename + "'>" + data.filename + "</a>",
+                  width: 500,
                   buttons:["Ok"]
                 }
               );
