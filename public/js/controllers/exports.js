@@ -274,8 +274,9 @@ module.exports = {
             setCellValueFormat(sheet, 'G' + row, eval(element.amount * 1), true, '', { size: iFontSizeRow, name: 'Tahoma' });
             sheet.getCell('G' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
             if (fReceipt && element.receipt != null) {
-                setCellValueFormat(sheet, 'H' + row, element.receipt, true, '', { size: iFontSizeRow, name: 'Tahoma' });
-                sheet.getCell('H' + row).value = { text: '.\\' + element.receipt, hyperlink: '.\\' + element.receipt };
+                var linkAdress = element.receipt.replace('/', '\\')
+                setCellValueFormat(sheet, 'H' + row, linkAdress, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+                sheet.getCell('H' + row).value = { text: linkAdress, hyperlink: linkAdress };
             } else if (fReceipt) {
                 setCellValueFormat(sheet, 'H' + row, '', true, '', { size: iFontSizeRow, name: 'Tahoma' });
             }
@@ -293,7 +294,7 @@ module.exports = {
             sheet.getColumn('H').width = 50;
 
         const filename = "Journal-" + sjahr;
-        await workbook.xlsx.writeFile("./public/exports/" + filename + ".xlsx")
+        await workbook.xlsx.writeFile(global.exports + filename + ".xlsx")
             .catch((e) => {
                 console.error(e);
                 res.json({
@@ -308,64 +309,81 @@ module.exports = {
             sExt = '.zip';
 
             // Read file
-            const file = fs.readFileSync("./public/exports/" + filename + ".xlsx");
+            const file = fs.readFileSync(global.exports + filename + ".xlsx");
 
             // Convert it to pdf format with undefined filter (see Libreoffice doc about filter)
             libre.convert(file, 'pdf', undefined, (err, done) => {
                 if (err) {
-                console.log(`Error converting file: ${err}`);
+                    console.log(`Error converting file: ${err}`);
                 }
-                
+
                 // Here in done you have pdf file which you can save or transfer in another stream
-                fs.writeFileSync("./public/exports/" + filename + ".pdf", done);
+                fs.writeFile(global.exports + filename + ".pdf", done, (err2) => {
+                    if (err2) throw err;
+                    console.log('The file has been saved')
+                    // create a file to stream archive data to.
+                    const output = fs.createWriteStream(global.exports + filename + ".zip");
+                    const archive = Archiver('zip');
+
+                    // listen for all archive data to be written
+                    // 'close' event is fired only when a file descriptor is involved
+                    output.on('close', function () {
+                        console.log(archive.pointer() + ' total bytes');
+                        console.log('archiver has been finalized and the output file descriptor has closed.');
+                        return res.json({
+                            type: "info",
+                            message: "Datei erstellt",
+                            filename: filename + sExt
+                        });
+
+                    });
+
+                    // This event is fired when the data source is drained no matter what was the data source.
+                    // It is not part of this library but rather from the NodeJS Stream API.
+                    // @see: https://nodejs.org/api/stream.html#stream_event_end
+                    output.on('end', function () {
+                        console.log('Data has been drained');
+                    });
+
+                    // good practice to catch warnings (ie stat failures and other non-blocking errors)
+                    archive.on('warning', function (err3) {
+                        if (err3.code === 'ENOENT') {
+                            // log warning
+                        } else {
+                            // throw error
+                            throw err3;
+                        }
+                    });
+                    archive.on('error', function (err4) {
+                        throw err4;
+                    });
+                    archive.pipe(output);
+
+                    // append a file
+                    if (fs.existsSync(global.exports + filename + ".pdf")) {
+                        archive.file(global.exports + filename + ".pdf", { name: filename + ".pdf" });
+                    }
+                    else {
+                        console.error("File not found");
+                    }
+
+                    // append files from a sub-directory and naming it `new-subdir` within the archive
+                    archive.directory(global.documents + sjahr + '/receipt/', 'receipt');
+                    archive.finalize();
+                });
+
             });
 
 
-            // create a file to stream archive data to.
-            const output = fs.createWriteStream(global.exports + filename + ".zip");
-            const archive = Archiver('zip');
-
-            // listen for all archive data to be written
-            // 'close' event is fired only when a file descriptor is involved
-            output.on('close', function () {
-                console.log(archive.pointer() + ' total bytes');
-                console.log('archiver has been finalized and the output file descriptor has closed.');
+        }
+        else {
+            return res.json({
+                type: "info",
+                message: "Datei erstellt",
+                filename: filename + sExt
             });
-
-            // This event is fired when the data source is drained no matter what was the data source.
-            // It is not part of this library but rather from the NodeJS Stream API.
-            // @see: https://nodejs.org/api/stream.html#stream_event_end
-            output.on('end', function () {
-                console.log('Data has been drained');
-            });
-
-            // good practice to catch warnings (ie stat failures and other non-blocking errors)
-            archive.on('warning', function (err) {
-                if (err.code === 'ENOENT') {
-                    // log warning
-                } else {
-                    // throw error
-                    throw err;
-                }
-            });
-            archive.on('error', function (err) {
-                throw err;
-            });
-            archive.pipe(output);
-
-            // append a file
-            archive.file("./public/exports/" + filename + ".pdf", { name: filename + ".pdf" });
-
-            // append files from a sub-directory and naming it `new-subdir` within the archive
-            archive.directory(global.documents + sjahr + '/receipt/', 'receipt');
-            archive.finalize();
         }
 
-        return res.json({
-            type: "info",
-            message: "Datei erstellt",
-            filename: filename + sExt
-        });
     },
 
     /**
@@ -667,7 +685,6 @@ module.exports = {
      * @param {Request} req 
      * @param {Response} res 
      */
-
     writeExcelData: async function (req, res) {
         // TODO #38
         console.log("writeExcelData");
@@ -1000,12 +1017,10 @@ module.exports = {
     },
 
     /**
-     * Schreibe die Kontoauszüge in eine Exceldatei.
-     * Pro Konto ein Worksheet
-     * 
+     * Erstellt ein Excelfile mit dem Journal
      * @param {Request} req 
      * @param {Response} res 
-    */
+     */
     writeAccountToExcel: async function (req, res) {
         console.log("writeAccountToExcel");
         const sJahr = req.query.jahr;
@@ -1102,7 +1117,8 @@ module.exports = {
                 {
                     [Op.or]: [
                         { "from_account": element.id },
-                        { "to_account": element.id }]
+                        { "to_account": element.id }
+                    ]
                 }],
                 order: ["journalno", "date"]
             })
@@ -1130,6 +1146,7 @@ module.exports = {
                     const toAcc = arData.find(rec => rec.id == entry.to_account);
                     if (toAcc)
                         setCellValueFormat(sheet, 'D' + iRow, toAcc.order + " " + toAcc.name, true, false, { size: iFontSizeTitel, name: 'Tahoma' });
+
                     else
                         setCellValueFormat(sheet, 'D' + iRow, entry.to_account, true, false, { size: iFontSizeTitel, name: 'Tahoma' });
 
@@ -1137,6 +1154,7 @@ module.exports = {
                     setCellValueFormat(sheet, 'G' + iRow, "", true, false, { size: iFontSizeTitel, name: 'Tahoma' });
                     if (element.level == 2 || element.level == 6)
                         iSaldo -= iAmount;
+
                     else
                         iSaldo += iAmount;
                     setCellValueFormat(sheet, 'H' + iRow, iSaldo, true, false, { size: iFontSizeTitel, name: 'Tahoma' });
@@ -1144,12 +1162,14 @@ module.exports = {
                     const fromAcc = arData.find(rec => rec.id == entry.from_account);
                     if (fromAcc)
                         setCellValueFormat(sheet, 'D' + iRow, fromAcc.order + " " + fromAcc.name, true, false, { size: iFontSizeRow, name: 'Tahoma' });
+
                     else
                         setCellValueFormat(sheet, 'D' + iRow, entry.from_account, true, false, { size: iFontSizeRow, name: 'Tahoma' });
                     setCellValueFormat(sheet, 'F' + iRow, "", true, false, { size: iFontSizeRow, name: 'Tahoma' });
                     setCellValueFormat(sheet, 'G' + iRow, iAmount, true, false, { size: iFontSizeRow, name: 'Tahoma' });
                     if (element.level == 2 || element.level == 6)
                         iSaldo += iAmount;
+
                     else
                         iSaldo -= iAmount;
                     setCellValueFormat(sheet, 'H' + iRow, iSaldo, true, false, { size: iFontSizeRow, name: 'Tahoma' });
@@ -1177,7 +1197,7 @@ module.exports = {
             filename: filename
         });
 
-    },
+    }
 };
 
 /**

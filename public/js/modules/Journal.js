@@ -876,6 +876,7 @@ wxAMC.moduleClasses.Journal = class {
    * Called whenever this module becomes active.
    */
   activate() {
+    return
   } /* End activate(). */
 
 
@@ -883,7 +884,7 @@ wxAMC.moduleClasses.Journal = class {
    * Called whenever this module becomes inactive.
    */
   deactivate() {
-
+    return
   } /* End deactivate(). */
 
   show_attachment(data) {
@@ -1095,7 +1096,7 @@ wxAMC.moduleClasses.Journal = class {
 
       // add or upd record
       var data = { id: obj.id, account: obj.acc.id, amount: (obj.amount == "" ? 0 : obj.amount), memo: obj.memo, year: $$("moduleJournal-dateSelect").getValue() };
-      //console.log(data);
+      // console.log(data);
       const url = "/Budget/data";
       var method = "PUT";
       if (obj.id == undefined)
@@ -1574,7 +1575,19 @@ wxAMC.moduleClasses.Journal = class {
    */
   exportJournalData() {
     const sJahr = $$("moduleJournal-dateSelect").getValue();
-    
+
+    var popup = webix.ui({ /* Begin Popup Window wait */
+      view:"popup",
+      height:150,
+      width:300,
+      position: "center",
+      head: false,
+      modal: true,
+      body:{
+          template:"Please wait while preparing data to download" 
+      }
+    });
+
     webix.modalbox({
       title: "Export Journal",
       text: "Sollen auch die Belege exportiert werden?",
@@ -1582,6 +1595,9 @@ wxAMC.moduleClasses.Journal = class {
       width: 350
     })
     .then(function (result) {
+        webix.delay(function() {
+          popup.show()
+        });
         const promiseJournal = fetch("/Journal/export?jahr=" + sJahr + "&receipt=" + (result == '0' ? 1 : 0))
           .then(function (response) {
             if (!response.ok)
@@ -1594,6 +1610,7 @@ wxAMC.moduleClasses.Journal = class {
 
         Promise.resolve(promiseJournal)
           .then(function (data) {
+            popup.hide();
             if (data.type == "info") {
               webix.modalbox(
                 {
@@ -1612,6 +1629,7 @@ wxAMC.moduleClasses.Journal = class {
             }
           })
           .catch(function (error) {
+            popup.hide();
             webix.message({ type: "error", text: error })
           });
       }
