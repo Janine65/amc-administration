@@ -7,8 +7,9 @@ const fs = require("fs");
 const path = require("path");
 const Archiver = require("archiver");
 const ExcelJS = require("exceljs");
-const libre = require('libreoffice-convert');
-
+var PDFDocument = require('pdfkit');
+var PdfTable = require('voilab-pdf-table')
+var numeral = require('numeral');
 
 const cName = "C6";
 const cVorname = "C7";
@@ -196,6 +197,26 @@ module.exports = {
         console.log("writeJournal");
         const sjahr = eval(req.query.jahr * 1);
         var fReceipt = (req.query.receipt == '1');
+        // load a locale
+        numeral.register('locale', 'ch', {
+            delimiters: {
+                thousands: ' ',
+                decimal: '.'
+            },
+            abbreviations: {
+                thousand: 'k',
+                million: 'm',
+                billion: 'b',
+                trillion: 't'
+            },
+            ordinal : function (number) {
+                return '.';
+            },
+            currency: {
+                symbol: 'Fr.'
+            }
+        });
+        numeral.locale('ch');
 
         var arData = await Journal.findAll(
             {
@@ -246,6 +267,28 @@ module.exports = {
         // Schreibe Journal
         setCellValueFormat(sheet, 'B1', "Journal " + sjahr, false, '', { bold: true, size: iFontSizeHeader, name: 'Tahoma' });
 
+        const tHeaders = [{id: 'no', header: 'No.', align: 'right', width: 50}, 
+                        {id: 'date', header: 'Date', width: 100},
+                        {id: 'from', header: 'From', width: 30},
+                        {id: 'to', header: 'To', width: 30},
+                        {id: 'text', header: 'Booking Text', width: 150},
+                        {id: 'amount', header: 'Amount', align: 'right', width: 100},
+                        {id: 'receipt', header: 'Receipt', width: 100,
+                            renderer(tb, data, draw, column, pos) {
+                                if (!draw) {
+                                    // Calculating cell size content. We build
+                                    // the complete string (without links)
+                                    return data.receipt;
+                                }
+                                // Drawing cell content. We use standard PDFkit
+                                // methods
+                                tb.pdf
+                                    .fillColor('blue')
+                                    .text(data.receipt, pos.x, pos.y, { continued: true, underline: true, link: data.receipt })
+                                    .fillColor('black')
+                            }
+                        }];
+
         setCellValueFormat(sheet, 'B3', "No", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
         setCellValueFormat(sheet, 'C3', "Date", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
         setCellValueFormat(sheet, 'D3', "From ", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
@@ -259,11 +302,15 @@ module.exports = {
         const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
         var row = 4;
 
+        var tRows = [];
         for (let index = 0; index < arData.length; index++) {
             const element = arData[index];
-
             const date = new Date(element.date);
             var dateFmt = date.toLocaleDateString('de-DE', options);
+            var num = numeral(element.amount * 1)
+
+            var rowRecord = {no: (element.journalno == null ? '' : element.journalno),  date: dateFmt, from: element.fromAccount.order, to: element.toAccount.order, 
+            text: element.memo, amount: num.format('0,0.00'), receipt: ''};
 
             sheet.getRow(row).height = 22;
             setCellValueFormat(sheet, 'B' + row, element.journalno, true, '', { size: iFontSizeRow, name: 'Tahoma' });
@@ -273,13 +320,16 @@ module.exports = {
             setCellValueFormat(sheet, 'F' + row, element.memo, true, '', { size: iFontSizeRow, name: 'Tahoma' });
             setCellValueFormat(sheet, 'G' + row, eval(element.amount * 1), true, '', { size: iFontSizeRow, name: 'Tahoma' });
             sheet.getCell('G' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
+            var linkAdress = ""
             if (fReceipt && element.receipt != null) {
-                var linkAdress = element.receipt.replace('/', '\\')
+                linkAdress = element.receipt.replace('/', '\\')
                 setCellValueFormat(sheet, 'H' + row, linkAdress, true, '', { size: iFontSizeRow, name: 'Tahoma' });
                 sheet.getCell('H' + row).value = { text: linkAdress, hyperlink: linkAdress };
+                rowRecord.receipt = linkAdress ;
             } else if (fReceipt) {
                 setCellValueFormat(sheet, 'H' + row, '', true, '', { size: iFontSizeRow, name: 'Tahoma' });
             }
+            tRows.push(rowRecord);
             row++;
 
         }
@@ -308,73 +358,120 @@ module.exports = {
         if (fReceipt) {
             sExt = '.zip';
 
-            // Read file
-            const file = fs.readFileSync(global.exports + filename + ".xlsx");
-
-            // Convert it to pdf format with undefined filter (see Libreoffice doc about filter)
-            libre.convert(file, 'pdf', undefined, (err, done) => {
-                if (err) {
-                    console.log(`Error converting file: ${err}`);
+            var pdf = new PDFDocument({
+                autoFirstPage: false,
+                layout: 'landscape',
+                size: 'A4',
+                info: {
+                    Title: 'Journal ' + sjahr
                 }
+            }),
+            table = new PdfTable(pdf, {
+                bottomMargin: 3,
+                topargin: 3,
+                leftMargin: 3,
+                rightMargin: 3
+            });
 
-                // Here in done you have pdf file which you can save or transfer in another stream
-                fs.writeFile(global.exports + filename + ".pdf", done, (err2) => {
-                    if (err2) throw err;
-                    console.log('The file has been saved')
-                    // create a file to stream archive data to.
-                    const output = fs.createWriteStream(global.exports + filename + ".zip");
-                    const archive = Archiver('zip');
+            table
+            // add some plugins (here, a 'fit-to-width' for a column)
+            // .addPlugin(new (require('voilab-pdf-table/plugins/fitcolumn'))({
+            //     column: 'text'
+            // }))
+            .onHeaderAdd(tb => {
+                // set header color
+                pdf
+                .font('Helvetica-Bold')
+                .fontSize(12)
+            })
+            .onHeaderAdded(tb => {
+                // reset to standard color
+                pdf
+                .font('Helvetica')
+                .fontSize(10)
+            }) // set defaults to your columns
+            .setColumnsDefaults({
+                headerBorder: ['T','B'],
+                border: ['B'],
+                headerBorderOpacity : 1,
+                borderOpacity : 0.5,
+                padding: [5, 25, 5, 5],
+                align: 'left'
+            })
+            // add table columns
+            .addColumns(tHeaders)
+            // add events (here, we draw headers on each new page)
+            .onPageAdded(function (tb) {
+                tb.addHeader();
+            });
 
-                    // listen for all archive data to be written
-                    // 'close' event is fired only when a file descriptor is involved
-                    output.on('close', function () {
-                        console.log(archive.pointer() + ' total bytes');
-                        console.log('archiver has been finalized and the output file descriptor has closed.');
-                        return res.json({
-                            type: "info",
-                            message: "Datei erstellt",
-                            filename: filename + sExt
-                        });
+            // if no page already exists in your PDF, do not forget to add one
+            pdf.addPage();
+            // Embed a font, set the font size, and render some text
+            pdf
+                .font('Helvetica-Bold')
+                .fontSize(18)
+                .text('Journal ' + sjahr, 100, 100);
 
-                    });
+            // draw content, by passing data to the addBody method
+            table.addBody(tRows);
 
-                    // This event is fired when the data source is drained no matter what was the data source.
-                    // It is not part of this library but rather from the NodeJS Stream API.
-                    // @see: https://nodejs.org/api/stream.html#stream_event_end
-                    output.on('end', function () {
-                        console.log('Data has been drained');
-                    });
+            // Pipe its output somewhere, like to a file or HTTP response
+            // See below for browser usage
+            pdf.pipe(fs.createWriteStream(global.exports + filename + '.pdf'));
 
-                    // good practice to catch warnings (ie stat failures and other non-blocking errors)
-                    archive.on('warning', function (err3) {
-                        if (err3.code === 'ENOENT') {
-                            // log warning
-                        } else {
-                            // throw error
-                            throw err3;
-                        }
-                    });
-                    archive.on('error', function (err4) {
-                        throw err4;
-                    });
-                    archive.pipe(output);
+            // Finalize PDF file
+            pdf.end();
 
-                    // append a file
-                    if (fs.existsSync(global.exports + filename + ".pdf")) {
-                        archive.file(global.exports + filename + ".pdf", { name: filename + ".pdf" });
-                    }
-                    else {
-                        console.error("File not found");
-                    }
+            // create a file to stream archive data to.
+            const output = fs.createWriteStream(global.exports + filename + ".zip");
+            const archive = Archiver('zip');
 
-                    // append files from a sub-directory and naming it `new-subdir` within the archive
-                    archive.directory(global.documents + sjahr + '/receipt/', 'receipt');
-                    archive.finalize();
+            // listen for all archive data to be written
+            // 'close' event is fired only when a file descriptor is involved
+            output.on('close', function () {
+                console.log(archive.pointer() + ' total bytes');
+                console.log('archiver has been finalized and the output file descriptor has closed.');
+                return res.json({
+                    type: "info",
+                    message: "Datei erstellt",
+                    filename: filename + sExt
                 });
 
             });
 
+            // This event is fired when the data source is drained no matter what was the data source.
+            // It is not part of this library but rather from the NodeJS Stream API.
+            // @see: https://nodejs.org/api/stream.html#stream_event_end
+            output.on('end', function () {
+                console.log('Data has been drained');
+            });
 
+            // good practice to catch warnings (ie stat failures and other non-blocking errors)
+            archive.on('warning', function (err3) {
+                if (err3.code === 'ENOENT') {
+                    // log warning
+                } else {
+                    // throw error
+                    throw err3;
+                }
+            });
+            archive.on('error', function (err4) {
+                throw err4;
+            });
+            archive.pipe(output);
+
+            // append a file
+            if (fs.existsSync(global.exports + filename + ".pdf")) {
+                archive.file(global.exports + filename + ".pdf", { name: filename + ".pdf" });
+            }
+            else {
+                console.error("File not found");
+            }
+
+            // append files from a sub-directory and naming it `new-subdir` within the archive
+            archive.directory(global.documents + sjahr + '/receipt/', 'receipt');
+            archive.finalize();
         }
         else {
             return res.json({
