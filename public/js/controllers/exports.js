@@ -59,14 +59,13 @@ module.exports = {
                 order: ["name", "vorname"]
             }
         )
-            .catch((e) => {
-                console.error(e);
-                res.json({
-                    type: "error",
-                    message: e,
-                });
-                return;
+        .catch((e) => {
+            console.error(e);
+            res.json({
+                type: "error",
+                message: e,
             });
+        });
 
         const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
         var fmtToday = new Date().toLocaleDateString("de-CH", { year: 'numeric', month: "2-digit", day: "2-digit" });
@@ -240,8 +239,6 @@ module.exports = {
                 });
             });
 
-
-
         const workbook = new ExcelJS.Workbook();
         workbook.creator = "Janine Franken";
 
@@ -271,21 +268,26 @@ module.exports = {
                         {id: 'date', header: 'Date', width: 100},
                         {id: 'from', header: 'From', width: 30},
                         {id: 'to', header: 'To', width: 30},
-                        {id: 'text', header: 'Booking Text', width: 150},
+                        {id: 'text', header: 'Booking Text', width: 250},
                         {id: 'amount', header: 'Amount', align: 'right', width: 100},
-                        {id: 'receipt', header: 'Receipt', width: 100,
+                        {id: 'receipt', header: 'Receipt', width: 150, link: '#', cache: false,
                             renderer(tb, data, draw, column, pos) {
-                                if (!draw) {
-                                    // Calculating cell size content. We build
-                                    // the complete string (without links)
+                                if (draw) {
+                                    if (data.receipt == '')
+                                        return '';
+
+                                    tb.pdf.fillColor('blue');
+                                    tb.pdf.text(data.receipt, pos.x, pos.y, {
+                                        ...column,
+                                        link: data.receipt,
+                                        height: data._renderedContent.height,
+                                        widht: column.width
+                                    });
+                                    tb.pdf.fillColor('black');
+        
+                                } else {
                                     return data.receipt;
-                                }
-                                // Drawing cell content. We use standard PDFkit
-                                // methods
-                                tb.pdf
-                                    .fillColor('blue')
-                                    .text(data.receipt, pos.x, pos.y, { continued: true, underline: true, link: data.receipt })
-                                    .fillColor('black')
+                                }                             
                             }
                         }];
 
@@ -322,7 +324,7 @@ module.exports = {
             sheet.getCell('G' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
             var linkAdress = ""
             if (fReceipt && element.receipt != null) {
-                linkAdress = element.receipt.replace('/', '\\')
+                linkAdress = element.receipt //.replace('/', '\\')
                 setCellValueFormat(sheet, 'H' + row, linkAdress, true, '', { size: iFontSizeRow, name: 'Tahoma' });
                 sheet.getCell('H' + row).value = { text: linkAdress, hyperlink: linkAdress };
                 rowRecord.receipt = linkAdress ;
@@ -360,17 +362,19 @@ module.exports = {
 
             var pdf = new PDFDocument({
                 autoFirstPage: false,
+                bufferPages: true,
                 layout: 'landscape',
                 size: 'A4',
                 info: {
-                    Title: 'Journal ' + sjahr
+                    Title: 'Journal ' + sjahr,
+                    Author: 'AutoMoto-Club Swissair, Janine Franken'
                 }
-            }),
-            table = new PdfTable(pdf, {
-                bottomMargin: 3,
-                topargin: 3,
-                leftMargin: 3,
-                rightMargin: 3
+            });
+            var table = new PdfTable(pdf, {
+                bottomMargin: 50,
+                topargin: 50,
+                leftMargin: 50,
+                rightMargin: 50
             });
 
             table
@@ -382,7 +386,7 @@ module.exports = {
                 // set header color
                 pdf
                 .font('Helvetica-Bold')
-                .fontSize(12)
+                .fontSize(10)
             })
             .onHeaderAdded(tb => {
                 // reset to standard color
@@ -400,9 +404,12 @@ module.exports = {
             })
             // add table columns
             .addColumns(tHeaders)
-            // add events (here, we draw headers on each new page)
-            .onPageAdded(function (tb) {
-                tb.addHeader();
+            
+            .onPageAdd(function(tab, row, ev){
+                pdf.addPage();
+                tab.addHeader();
+                // page already added
+                ev.cancel = true;
             });
 
             // if no page already exists in your PDF, do not forget to add one
@@ -411,10 +418,28 @@ module.exports = {
             pdf
                 .font('Helvetica-Bold')
                 .fontSize(18)
-                .text('Journal ' + sjahr, 100, 100);
+                .text('Journal ' + sjahr)
+                .moveDown(1);
 
             // draw content, by passing data to the addBody method
             table.addBody(tRows);
+
+            // see the range of buffered pages            
+            var gedrucktAm = 'Erstellt am: ' + new Date().toLocaleDateString('de-DE', options);
+            const range = pdf.bufferedPageRange(); // => { start: 0, count: 1 ... }
+            for (let i = range.start, end = range.start + range.count; i < end; i++) {
+                pdf.switchToPage(i);
+
+                var x = pdf.page.margins.left + 5;
+                var y = pdf.page.height - pdf.heightOfString(gedrucktAm) - pdf.page.margins.bottom;
+                console.log(gedrucktAm + ' ' + x + '/' + y);
+                pdf.text(gedrucktAm, x, y);
+
+                let text = `Page ${i + 1} of ${range.count}`
+                x = pdf.page.width - pdf.widthOfString(text) - pdf.page.margins.right - 5;
+                console.log(text + ' ' + x + '/' + y);
+                pdf.text(text, x, y);
+            }
 
             // Pipe its output somewhere, like to a file or HTTP response
             // See below for browser usage
@@ -1401,9 +1426,8 @@ async function fillTemplate(sheet, id, syear) {
     const data = await Meisterschaft.findAll({
         where: { "mitgliedid": id },
         include: {
-            model: "anlaesse",
-            attributes: [],
-            where: Sequelize.where(Sequelize.fn('YEAR', datum), syear)
+            model: 'anlaesse',
+            where: Sequelize.where(Sequelize.fn('YEAR', 'datum'), syear)
         },
         order: ["id"]
     })
@@ -1412,7 +1436,7 @@ async function fillTemplate(sheet, id, syear) {
             return;
         });
 
-    if (data.length > 0) {
+    if (data != undefined && data.length > 0) {
         var cols = sheet.getColumn('K');
 
         var clubTotal = 0
