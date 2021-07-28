@@ -197,26 +197,35 @@ module.exports = {
         const sjahr = eval(req.query.jahr * 1);
         var fReceipt = (req.query.receipt == '1');
         // load a locale
-        numeral.register('locale', 'ch', {
-            delimiters: {
-                thousands: ' ',
-                decimal: '.'
-            },
-            abbreviations: {
-                thousand: 'k',
-                million: 'm',
-                billion: 'b',
-                trillion: 't'
-            },
-            ordinal : function (number) {
-                return '.';
-            },
-            currency: {
-                symbol: 'Fr.'
-            }
-        });
-        numeral.locale('ch');
+        if (!numeral.locales['de-ch']) {
+            numeral.register('locale', 'ch', {
+                delimiters: {
+                    thousands: ' ',
+                    decimal: '.'
+                },
+                abbreviations: {
+                    thousand: 'k',
+                    million: 'm',
+                    billion: 'b',
+                    trillion: 't'
+                },
+                ordinal : function (number) {
+                    return '.';
+                },
+                currency: {
+                    symbol: 'Fr.'
+                }
+            });
 
+        } else {
+            var locale = numeral.localeData('de-ch')
+            locale.delimiters = {
+                    thousands: ' ',
+                    decimal: '.'
+                };
+        }
+        numeral.locale('ch'); 
+        
         var arData = await Journal.findAll(
             {
                 where: sequelize.where(sequelize.fn('YEAR', sequelize.col('date')), sjahr),
