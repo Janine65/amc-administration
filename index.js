@@ -12,6 +12,7 @@ const https = require("https");
 const fs = require('fs');
 const passport = require('passport');
 const fileUpload = require('express-fileupload');
+const { Sequelize } = require('sequelize');
 
 // environment variables
 if (process.env.NODE_ENV == undefined)
@@ -33,33 +34,35 @@ function extendDefaultFields(defaults, session) {
   };
 }
 
-const database = require("./public/js/database")
+const app = express();
 
-const startServer = async() => {
-  let retries = 5;
+(async() => {
+  const conn = new Sequelize(global.gConfig.database, global.gConfig.db_user, global.cipher.decrypt(global.gConfig.db_pwd), {
+    host: global.gConfig.dbhost, 
+    port: global.gConfig.port,
+    dialect: global.gConfig.dbtype,
+    logging: (...msg) => console.log(msg)
+  });
+  global.sequelize = conn;
+  
+  global.connected = false;
+    let retries = 5;
   while (retries) {
     try {
-      await database.createConnection();
-      if (global.sequelize == null) {
-        retries -= 1;        
-        console.log(`retries left: ${retires}`)
-        await new Promise(res => setTimeout(res, 5000));
-      } else {
-        break;        
-      }
+      await global.sequelize.authenticate();
+      global.connected = true;
+      break;        
     } catch (err) {
       console.log(err);
       retries -= 1;
-      console.log(`retries left: ${retires}`)
+      console.log(`retries left: ${retries}`)
       await new Promise(res => setTimeout(res, 5000));
     }
-  }    
-}
+  } 
+  if (!global.connected)
+    exit(1)
+})();
 
-if (global.sequelize == null) {
-  console.log("DB Connection not successfull");
-  exit(1)
-}
 
 const db = require("./public/js/db")
 
@@ -71,7 +74,6 @@ var store = new SequelizeStore({
   expiration: 30 * 60 * 1000  // The maximum age (in milliseconds) of a valid session.
 });
 
-const app = express();
 // 
 app.use(express.json());
 app.use("/", express.static(path.join(__dirname, '/public')));
@@ -213,7 +215,7 @@ app.get('/Journal/getAtt', journal.getAttachment);
 app.get('/Journal/export', exportData.writeJournal);
 
 const budget = require("./public/js/controllers/budget");
-const { exit } = require('process');
+const { exit, connected } = require('process');
 app.get('/Budget/data', budget.getData);
 app.post('/Budget/data', upload.array(),  budget.addData);
 app.put('/Budget/data', upload.array(), budget.updateData);
