@@ -20,8 +20,6 @@ if (process.env.NODE_ENV == undefined)
 // config variables
 const config = require('./config/config.js');
 
-const { Session } = require('./public/js/db')
-
 global.documents = __dirname + "/documents/"
 global.uploads = __dirname + "/public/uploads/"
 global.exports = __dirname + "/public/exports/"
@@ -34,6 +32,36 @@ function extendDefaultFields(defaults, session) {
     userid: session.userid,
   };
 }
+
+const database = require("./public/js/database")
+
+const startServer = async() => {
+  let retries = 5;
+  while (retries) {
+    try {
+      await database.createConnection();
+      if (global.sequelize == null) {
+        retries -= 1;        
+        console.log(`retries left: ${retires}`)
+        await new Promise(res => setTimeout(res, 5000));
+      } else {
+        break;        
+      }
+    } catch (err) {
+      console.log(err);
+      retries -= 1;
+      console.log(`retries left: ${retires}`)
+      await new Promise(res => setTimeout(res, 5000));
+    }
+  }    
+}
+
+if (global.sequelize == null) {
+  console.log("DB Connection not successfull");
+  exit(1)
+}
+
+const db = require("./public/js/db")
 
 var store = new SequelizeStore({
   db: sequelize,
@@ -185,6 +213,7 @@ app.get('/Journal/getAtt', journal.getAttachment);
 app.get('/Journal/export', exportData.writeJournal);
 
 const budget = require("./public/js/controllers/budget");
+const { exit } = require('process');
 app.get('/Budget/data', budget.getData);
 app.post('/Budget/data', upload.array(),  budget.addData);
 app.put('/Budget/data', upload.array(), budget.updateData);

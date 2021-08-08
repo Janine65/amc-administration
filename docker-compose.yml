@@ -1,18 +1,23 @@
-version: "3"
+version: '3.8'
 services:
-  node:
-    image: "node"
-    user: "node"
-    working_dir: /volume1/server/amc-administration
+  db:
+    image: postgres
     environment:
-      - NODE_ENV=production
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: DimpgP21
+      POSTGRES_DB: postgres
+    ports:
+      - 5435:5432
     volumes:
-      - ./:/volume1/server/amc-administration
-    container_name: amadmin
-    expose:
-      - "3099"
-    networks: 
-      - pgdata_default
-    command: "npm start"
-networks: 
-  pgdata_default: {}
+      - /Users/janine/backup/pgdata:/var/lib/postgresql/data
+
+  amcadmin:
+    image: amcadministration
+    ports: 
+      - "3050:3050"  
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - db
+
+

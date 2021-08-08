@@ -1,27 +1,6 @@
-const { request } = require('express');
 const { Sequelize, Model } = require('sequelize');
 const DataTypes = require('sequelize').DataTypes;
 const UUIDV4 = require('uuid').v4;
-
-const sequelize = new Sequelize(global.gConfig.database, global.gConfig.db_user, global.cipher.decrypt(global.gConfig.db_pwd), {
-  host: global.gConfig.dbhost, 
-  port: global.gConfig.port,
-  dialect: global.gConfig.dbtype,
-  logging: (...msg) => console.log(msg)
-});
-
-console.log(global.cipher.encrypt('testtext'));
-global.sequelize = sequelize;
-
-try {
-  sequelize.authenticate();
-//  sequelize.sync()
-//    .catch((e) => console.error(e));
-  console.log("Connecion has been established successfully.");
-} catch (error) {
-  console.error("Unable to connect to the database.", errro);
-}
-
 
 class Adressen extends Model {
 }
