@@ -24,6 +24,8 @@ module.exports = {
             currency: "CHF",
             amount: 30.0,
             additionalInformation: "Rechnungsnummer " + sJahr + "0000" + adresse.mnr,
+            // av1: "twint/light/02:627a1c3325b04c5cbbbe9afcdfb6501b#6298bbc2451e7f036c9e39e989c20452aa6afd8a#",
+            // av2: "rn/twint/a~8Hbq5Y6GTd6RWWoWJ3pOsg~s~YbdhuKDqS5edL5KCHuzvtw/rn",
             creditor: {
                 name: "Auto-Moto-Club Swissair",
                 address: "Breitenrain 4",
@@ -52,7 +54,7 @@ module.exports = {
 
         // Fit the image within the dimensions
         const img = fs.readFileSync('./public/assets/AMCfarbigKlein.jpg');
-        pdf.image(img.buffer, SwissQRBill.utils.mmToPoints(140), SwissQRBill.utils.mmToPoints(5),
+        pdf.image(img.buffer, SwissQRBill.utils.mm2pt(140), SwissQRBill.utils.mm2pt(5),
             { fit: [100, 100] });
 
         const date = new Date();
@@ -60,16 +62,16 @@ module.exports = {
         pdf.fontSize(12);
         pdf.fillColor("black");
         pdf.font("Helvetica");
-        pdf.text(data.creditor.name + "\n" + data.creditor.address + "\n" + data.creditor.zip + " " + data.creditor.city, SwissQRBill.utils.mmToPoints(20), SwissQRBill.utils.mmToPoints(35), {
-            width: SwissQRBill.utils.mmToPoints(100),
+        pdf.text(data.creditor.name + "\n" + data.creditor.address + "\n" + data.creditor.zip + " " + data.creditor.city, SwissQRBill.utils.mm2pt(20), SwissQRBill.utils.mm2pt(35), {
+            width: SwissQRBill.utils.mm2pt(100),
             align: "left"
         });
 
         pdf.fontSize(12);
         pdf.font("Helvetica");
-        pdf.text(data.debtor.name + "\n" + data.debtor.address + "\n" + data.debtor.zip + " " + data.debtor.city, SwissQRBill.utils.mmToPoints(130), SwissQRBill.utils.mmToPoints(60), {
-            width: SwissQRBill.utils.mmToPoints(70),
-            height: SwissQRBill.utils.mmToPoints(50),
+        pdf.text(data.debtor.name + "\n" + data.debtor.address + "\n" + data.debtor.zip + " " + data.debtor.city, SwissQRBill.utils.mm2pt(130), SwissQRBill.utils.mm2pt(60), {
+            width: SwissQRBill.utils.mm2pt(70),
+            height: SwissQRBill.utils.mm2pt(50),
             align: "left"
         });
 
@@ -77,15 +79,15 @@ module.exports = {
         pdf.fontSize(11);
         pdf.font("Helvetica");
         pdf.text("Oberlunkhofen " + date.getDate() + "." + (date.getMonth() + 1) + "." + date.getFullYear(), {
-            width: SwissQRBill.utils.mmToPoints(170),
+            width: SwissQRBill.utils.mm2pt(170),
             align: "right"
         });
 
         pdf.moveDown();
         pdf.fontSize(14);
         pdf.font("Helvetica-Bold");
-        pdf.text(data.additionalInformation, SwissQRBill.utils.mmToPoints(20), SwissQRBill.utils.mmToPoints(100), {
-            width: SwissQRBill.utils.mmToPoints(140),
+        pdf.text(data.additionalInformation, SwissQRBill.utils.mm2pt(20), SwissQRBill.utils.mm2pt(100), {
+            width: SwissQRBill.utils.mm2pt(140),
             align: "left"
         });
 
@@ -102,7 +104,7 @@ module.exports = {
         text.push("Janine Franken");
 
         pdf.text(`\n${text.join("\n")}\n`, {
-            width: SwissQRBill.utils.mmToPoints(170),
+            width: SwissQRBill.utils.mm2pt(170),
             align: "left"
         });
 
