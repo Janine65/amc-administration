@@ -79,6 +79,7 @@ module.exports = {
 
   addData: function (req, res) {
     var data = req.body;
+		data.id = null;
     console.info("insert: ", data);
     Anlaesse.create(data)
       .then((obj) =>
@@ -93,6 +94,7 @@ module.exports = {
     var data = req.body;
     if (data.id == 0 || data.id == null) {
       // insert
+      data.id = null;
       console.info("insert: anlass", data);
       Anlaesse.create(data)
         .then((obj) =>

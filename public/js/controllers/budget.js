@@ -34,6 +34,7 @@ module.exports = {
 
 	addData: async function (req, res) {
 		var data = req.body;
+		data.id = null;
 		console.info('insert: ', data);
 
 		Budget.create(data)

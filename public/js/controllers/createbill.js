@@ -24,11 +24,12 @@ module.exports = {
             currency: "CHF",
             amount: 30.0,
             additionalInformation: "Rechnungsnummer " + sJahr + "0000" + adresse.mnr,
-            // av1: "twint/light/02:627a1c3325b04c5cbbbe9afcdfb6501b#6298bbc2451e7f036c9e39e989c20452aa6afd8a#",
-            // av2: "rn/twint/a~8Hbq5Y6GTd6RWWoWJ3pOsg~s~YbdhuKDqS5edL5KCHuzvtw/rn",
+            av1: "twint/light/02:627a1c3325b04c5cbbbe9afcdfb6501b#6298bbc2451e7f036c9e39e989c20452aa6afd8a#",
+            av2: "rn/twint/a~8Hbq5Y6GTd6RWWoWJ3pOsg~s~YbdhuKDqS5edL5KCHuzvtw/rn",
             creditor: {
                 name: "Auto-Moto-Club Swissair",
-                address: "Breitenrain 4",
+                address: "Breitenrain",
+                buildingNumber: "4",
                 zip: 8917,
                 city: "Oberlunkhofen",
                 account: "CH3009000000870661227",
@@ -53,7 +54,7 @@ module.exports = {
         }
 
         // Fit the image within the dimensions
-        const img = fs.readFileSync('./public/assets/AMCfarbigKlein.jpg');
+        var img = fs.readFileSync('./public/assets/AMCfarbigKlein.jpg');
         pdf.image(img.buffer, SwissQRBill.utils.mm2pt(140), SwissQRBill.utils.mm2pt(5),
             { fit: [100, 100] });
 
@@ -107,6 +108,11 @@ module.exports = {
             width: SwissQRBill.utils.mm2pt(170),
             align: "left"
         });
+
+        // Fit the image within the dimensions
+        img = fs.readFileSync('./public/assets/RNW-TWINT-SWISS-QR-DE.png');
+        pdf.image(img.buffer, SwissQRBill.utils.mm2pt(0), SwissQRBill.utils.mm2pt(182), {fit: [SwissQRBill.utils.mm2pt(210), SwissQRBill.utils.mm2pt(10)]});
+
 
         pdf.addQRBill();
         pdf.save();

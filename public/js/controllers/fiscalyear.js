@@ -41,6 +41,7 @@ module.exports = {
 
 	addData: function (req, res) {
 		var data = req.body;
+		data.id = null;
 		console.info('insert: ',data);
 		FiscalYear.create(data)
 			.then((obj) => res.json({ id: obj.id }))

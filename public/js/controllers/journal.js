@@ -65,7 +65,7 @@ module.exports = {
 
 	addData: async function (req, res) {
 		var data = req.body;
-
+		data.id = null;
 		console.info('insert: ', data);
 		Journal.create(data)
 			.then((obj) => res.json(obj))

@@ -73,6 +73,7 @@ module.exports = {
 
 	addData: function (req, res) {
 		var data = req.body;
+		data.id = null;
 		if (data.austritt == "" || data.austritt == null) {
 			data.austritt = "3000-01-01T00:00:00";
 		}
@@ -95,6 +96,7 @@ module.exports = {
 		}
 		if (data.mnr == "") {
 			// insert
+			data.id = null;
 			console.info('insert: ',data);
 			Adressen.create(data)
 			.then((obj) => res.json({ id: obj.id }))
