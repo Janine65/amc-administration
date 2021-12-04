@@ -29,8 +29,14 @@ wxAMC.moduleClasses.Parameters = class {
    getUIConfig() {
     var elements = [{id: "SYSTEM", label: "Systemparameter", type: "label"},];
     elements.push();
-    wxAMC.parameter.forEach((value, key) => {
-      elements.push({id:key , label: key , type: "text", value: value},);
+    wxAMC.parameter.forEach((value, key) => {      
+      if (key == "RECHNUNG") {
+        elements.push({id:key , label: key, type: "popup", value: value, width:400},);
+      } else
+      {
+        elements.push({id:key , label: key, type: "text", value: value},);
+      }
+      
     });
 
     return {
@@ -57,7 +63,7 @@ wxAMC.moduleClasses.Parameters = class {
             /* Param list toolbar. */
             { view : "toolbar",
             cols : [
-              { id: "count_param", view : "label", label: "Anzahl 2"},
+              { id: "count_param", view : "label", label: "Anzahl 3"},
               { },
               { view : "button", label : "Save", autowidth: true,
                 type : "icon", icon : "webix_icon mdi mdi-content-save",
@@ -76,21 +82,6 @@ wxAMC.moduleClasses.Parameters = class {
 
 
   /**
-   * Called whenever this module becomes active.
-   */
-  activate() {
-  } /* End activate(). */
-
-
-  /**
-   * Called whenever this module becomes inactive.
-   */
-  deactivate() {
-  } /* End deactivate(). */
-
-
-
-  /**
    * Refresh the parameters list from local storage.
    */
   async refreshData() {  
@@ -101,7 +92,6 @@ wxAMC.moduleClasses.Parameters = class {
     wxAMC.parameter.forEach((value, key) => {
       elements[key] = value;
     });
-    console.log(elements);
 
     $$("moduleParameters-items").setValues(elements);
 } /* End refreshData(). */

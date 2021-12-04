@@ -22,7 +22,7 @@ module.exports = {
     
         const data = {
             currency: "CHF",
-            amount: 30.0,
+            //amount: 30.0,
             additionalInformation: "Rechnungsnummer " + sJahr + "0000" + adresse.mnr,
             av1: "twint/light/02:627a1c3325b04c5cbbbe9afcdfb6501b#6298bbc2451e7f036c9e39e989c20452aa6afd8a#",
             av2: "rn/twint/a~8Hbq5Y6GTd6RWWoWJ3pOsg~s~YbdhuKDqS5edL5KCHuzvtw/rn",
@@ -139,13 +139,27 @@ module.exports = {
 
         await Journal.create(journal)
             .then(resp => {
-                res.json({
-                    type: "info",
-                    message: "QR-Rechnung erstellt und versendet",
-                    filename: filename,
-                    retVal: retVal,
-                    journal: resp
-                });
+                var jahrCost = new Date(resp.date).getFullYear();
+                const pathname = global.documents + jahrCost + '/';
+                const receipt =  'receipt/' + 'Journal-' + resp.id + '.pdf';
+        
+                if (fs.existsSync(global.uploads + filename)) {
+                    fs.copyFileSync(global.uploads + filename, pathname + receipt);
+                    
+                    Journal.update({receipt: receipt}, {where: {id: resp.id}})
+                        .then(resp2 => {
+                            res.json({
+                                type: "info",
+                                message: "QR-Rechnung erstellt und versendet"
+                            });                
+                        })
+                        .catch(e => console.error(e));						
+                } else {
+                    res.json({
+                        type: "error",
+                        message: "QR-Rechnung erstellt und versendet. Konnte File nicht kopieren und an den Journaleintrag hängen"
+                    })
+                }
             })
             .catch(e => {
                 console.error(e);

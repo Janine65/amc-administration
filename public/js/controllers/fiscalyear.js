@@ -1,5 +1,6 @@
 const { Op, Sequelize } = require("sequelize");
 const {FiscalYear, Journal} = require("../db");
+const fs = require('fs');
 
 module.exports = {
 	getData: function (req, res) {		
@@ -44,7 +45,9 @@ module.exports = {
 		data.id = null;
 		console.info('insert: ',data);
 		FiscalYear.create(data)
-			.then((obj) => res.json({ id: obj.id }))
+			.then((obj) => {
+				res.json({ id: obj.id })
+			} )
 			.catch((e) => console.error(e));
 	},
 	
@@ -94,7 +97,6 @@ module.exports = {
 				type: "error",
 				message: err
 			});
-			return;
 		});
 
 		qrySelect = "SELECT j.to_account as account, SUM(j.amount) AS amount";
@@ -115,7 +117,6 @@ module.exports = {
 				type: "error",
 				message: err
 			});
-			return;
 		});
         for (let ind2 = 0; ind2 < arAktiv2.length; ind2++) {
             const record = arAktiv2[ind2];
@@ -146,7 +147,6 @@ module.exports = {
 				type: "error",
 				message: err
 			});
-			return;
 		});
 
 		qrySelect = "SELECT j.to_account as account, SUM(j.amount) AS amount";
@@ -167,7 +167,6 @@ module.exports = {
 				type: "error",
 				message: err
 			});
-			return;
 		});
         for (let ind2 = 0; ind2 < arPassiv2.length; ind2++) {
             const record = arPassiv2[ind2];
@@ -204,7 +203,6 @@ module.exports = {
 					type: "error",
 					message: err
 				});
-				return;
 			});
 		if (!newFiscalyear) {
 			// neues Buchhaltungsjahr erstellen
@@ -218,8 +216,16 @@ module.exports = {
 						type: "error",
 						message: err
 					});
-					return;
-				});				
+				});	
+			// ordner für Belege erstellen
+			const pathname = global.documents;
+			try {
+				fs.mkdirSync(pathname + sNextJahr);
+				fs.mkdirSync(pathname + sNextJahr + "/receipt");					
+			} catch (error) {
+				console.log(error)
+			}
+
 		} else {
 			// lösche alle Eröffnungsbuchungen
 			qrySelect = "DELETE FROM journal where year(date) = " + sNextJahr;
@@ -238,7 +244,6 @@ module.exports = {
 					type: "error",
 					message: err
 				});
-				return;
 			});	
 		}
 
@@ -251,7 +256,6 @@ module.exports = {
 				type: "error",
 				message: err
 			});
-			return;
 		});
 
 		// Status vom Buchungsjahr ändern
@@ -270,7 +274,6 @@ module.exports = {
 				type: "error",
 				message: err
 			});
-			return;
 		});	
 
 		// Buchungsnummern setzten
@@ -299,7 +302,6 @@ module.exports = {
 					type: "error",
 					message: err
 				});
-				return;
 			});
 		}
 
