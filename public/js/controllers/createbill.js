@@ -97,16 +97,29 @@ module.exports = {
         pdf.fillColor("black");
         pdf.font("Helvetica");
 
-        var text = [(adresse.geschlecht == 1 ? "Lieber " : "Liebe ") + adresse.vorname];
-        text.push("");
-        text.push(global.Parameter.get("RECHNUNG"));
-        text.push("");
-        text.push("Mit liebem Clubgruss");
-        text.push("Janine Franken");
-
-        pdf.text(`\n${text.join("\n")}\n`, {
+        var text = (adresse.geschlecht == 1 ? "Lieber " : "Liebe ") + adresse.vorname + "\n";
+        pdf.text(text, {
             width: SwissQRBill.utils.mm2pt(170),
             align: "left"
+        });
+        text += global.Parameter.get("RECHNUNG") + '\n';
+        pdf.text(`${global.Parameter.get("RECHNUNG")}\n`, {
+            width: SwissQRBill.utils.mm2pt(170),
+            align: "justify"
+        });
+        pdf.moveDown();
+        text += `Mit liebem Clubgruss\nJanine Franken`;
+        pdf.text(`Mit liebem Clubgruss\nJanine Franken`, {
+            width: SwissQRBill.utils.mm2pt(170),
+            align: "left"
+        });
+        
+        pdf.moveDown();
+        pdf.fontSize(10);
+        pdf.text(`Bitte beachte, dass für Einzahlungen am Postschalter eine Gebühr von CHF 2.50 erhoben wird. Zahlungen via Twint, Banküberweisung oder E-Finance sind kostenlos.\n`, {
+            width: SwissQRBill.utils.mm2pt(170),
+            align: "justify",
+            oblique: true
         });
 
         // Fit the image within the dimensions
@@ -118,9 +131,11 @@ module.exports = {
         pdf.save();
         pdf.end();
 
+        var email_body = "<p>" + text.split("\n").join("</p><p>") + "</p>";
+
         var email = {
             email_an: adresse.email, email_cc: '', email_bcc: '',
-            email_body: `<p>${text.join("</p><p>")}</p>`,
+            email_body: email_body,
             email_subject: "Auto-Moto-Club Swissair - Mitgliederrechnung",
             uploadFiles: filename,
             email_signature: "JanineFranken"
