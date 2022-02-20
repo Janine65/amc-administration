@@ -226,6 +226,47 @@ module.exports = {
 				console.log(error)
 			}
 
+			// Budgetzahlen übertragen vom Vorjahr
+			qrySelect = "INSERT INTO budget (account, year, amount) " +
+				"SELECT account.id, " + sNextJahr + ", 0 FROM account WHERE account.status = 1 AND account.level in (4,6) and account.order > 3999";
+			await global.sequelize.query(qrySelect,
+				{
+					type: Sequelize.QueryTypes.INSERT,
+					plain: false,
+					logging: console.log,
+					raw: false
+				}
+			)
+			.catch(err => {
+				console.error(err);
+				res.json({
+					type: "error",
+					message: err
+				});
+			});	
+
+			qrySelect = "UPDATE budget ba " +
+				"SET amount = bb.amount " +
+				"FROM budget bb " +
+				"WHERE bb.year = " + sJahr + 
+				"AND bb.account = ba.account " +
+				"AND ba.year = " + sNextJahr;
+			await global.sequelize.query(qrySelect,
+				{
+					type: Sequelize.QueryTypes.INSERT,
+					plain: false,
+					logging: console.log,
+					raw: false
+				}
+			)
+			.catch(err => {
+				console.error(err);
+				res.json({
+					type: "error",
+					message: err
+				});
+			});	
+			
 		} else {
 			// lösche alle Eröffnungsbuchungen
 			qrySelect = "DELETE FROM journal where year(date) = " + sNextJahr;
