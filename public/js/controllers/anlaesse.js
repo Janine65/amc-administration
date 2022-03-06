@@ -28,7 +28,7 @@ module.exports = {
       { "istsamanlass": false },
       { "nachkegeln": false }]
     });
-    arResult[0].anzahl = total;
+    arResult[0].value = total;
     total = await Anlaesse.count({
       where: [Sequelize.where(Sequelize.fn('YEAR', Sequelize.col('datum')), global.Parameter.get("CLUBJAHR")),
       { "datum": { [Op.gte]: Sequelize.fn("NOW") } },
@@ -36,7 +36,7 @@ module.exports = {
       { "istsamanlass": false },
       { "nachkegeln": false }]
     });
-    arResult[1].anzahl = total;
+    arResult[1].value = total;
 
     res.json(arResult);
   },
