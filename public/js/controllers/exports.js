@@ -197,7 +197,14 @@ module.exports = {
         const sjahr = eval(req.query.jahr * 1);
         var fReceipt = (req.query.receipt == '1');
         // load a locale
-        if (!numeral.locales['de-ch']) {
+        try {
+            var locale = numeral.localeData('ch')
+            
+            locale.delimiters = {
+                thousands: ' ',
+                decimal: '.'
+            };
+        } catch (error) {
             numeral.register('locale', 'ch', {
                 delimiters: {
                     thousands: ' ',
@@ -217,12 +224,6 @@ module.exports = {
                 }
             });
 
-        } else {
-            var locale = numeral.localeData('de-ch')
-            locale.delimiters = {
-                    thousands: ' ',
-                    decimal: '.'
-                };
         }
         numeral.locale('ch'); 
         
