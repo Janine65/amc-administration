@@ -1471,9 +1471,14 @@ wxAMC.moduleClasses.Journal = class {
         var record2 = {};
         record2.id = 0;
         record2.order = 9998
+        record2.diff = iGewinnVerlustBudget - iGewinnVerlust;
         record2.amount = Math.abs(iGewinnVerlust);
-        record2.budget = Math.abs(iGewinnVerlustBudget);
-        record2.diff = record2.budget - record2.amount;
+        if ((iGewinnVerlustBudget < 0 && iGewinnVerlust > 0) || (iGewinnVerlustBudget > 0 && iGewinnVerlust < 0)) {
+          record2.budget = Math.abs(iGewinnVerlustBudget) * -1;
+        } else {
+          record2.budget = Math.abs(iGewinnVerlustBudget);
+        }
+        
 
         if (iGewinnVerlust >= 0) {
           record1.name = "Verlust"
