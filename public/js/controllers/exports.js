@@ -905,19 +905,19 @@ module.exports = {
             });
 
         for (let index = 0; index < accBudget.length; index++) {
-            found = accData.findIndex(acc => acc.id == accBudget[index].account);
+            let found = accData.findIndex(acc => acc.id == accBudget[index].account);
             if (found == -1) {
                 console.warn("Account: " + accBudget[index].account + " hat Budget aber keine Stammdaten!");
             } else {
                 switch (accBudget[index].year) {
-                    case sjahr:
-                        accData[found].budget = accBudget[index].amount;
+                    case eval(sjahr * 1):
+                        accData[found].budget = eval(accBudget[index].amount * 1);
                         break;
                     case iVJahr:
-                        accData[found].budgetVJ = accBudget[index].amount;
+                        accData[found].budgetVJ = eval(accBudget[index].amount * 1);
                         break;
                     case iNJahr:
-                        accData[found].budgetNJ = accBudget[index].amount;
+                        accData[found].budgetNJ = eval(accBudget[index].amount * 1);
                         break;
                 }
             }
@@ -937,7 +937,7 @@ module.exports = {
             });
         for (let ind2 = 0; ind2 < arrAmount.length; ind2++) {
             const element = arrAmount[ind2];
-            var found = accData.findIndex(acc => acc.id == element.from_account);
+            let found = accData.findIndex(acc => acc.id == element.from_account);
             accData[found].amount = eval(element.amount + 0);
         }
 
@@ -955,7 +955,7 @@ module.exports = {
             });
         for (let ind2 = 0; ind2 < arrAmount.length; ind2++) {
             const element = arrAmount[ind2];
-            found = accData.findIndex(acc => acc.id == element.to_account);
+            let found = accData.findIndex(acc => acc.id == element.to_account);
             switch (accData[found].level) {
                 case 1:
                 case 4:
@@ -981,7 +981,7 @@ module.exports = {
             });
         for (let ind2 = 0; ind2 < arrAmount.length; ind2++) {
             const element = arrAmount[ind2];
-            found = accData.findIndex(acc => acc.id == element.from_account);
+            let found = accData.findIndex(acc => acc.id == element.from_account);
             accData[found].amountVJ = eval(element.amount + 0);
         }
 
@@ -999,7 +999,7 @@ module.exports = {
             });
         for (let ind2 = 0; ind2 < arrAmount.length; ind2++) {
             const element = arrAmount[ind2];
-            found = accData.findIndex(acc => acc.id == element.to_account);
+            let found = accData.findIndex(acc => acc.id == element.to_account);
             switch (accData[found].level) {
                 case 1:
                 case 4:
@@ -1061,7 +1061,7 @@ module.exports = {
         esheet.getCell('H3').alignment = { horizontal: "right" };
 
         var accEData = accData.filter(function (value, index, array) {
-            return (value.status == 1 || value.amount != 0 || value.amountVJ != 0) && value.level > 2 && value.level < 9;
+            return (value.status == 1 || value.amount != 0 || value.amountVJ != 0 || value.budget != 0 || value.budgetNJ != 0) && value.level > 2 && value.level < 9;
         });
         Total = writeArray(esheet, accEData, 4, true);
         row = Total.lastRow + 2;
