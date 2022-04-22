@@ -1040,6 +1040,18 @@ module.exports = {
         bsheet.getCell('E' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
         bsheet.getCell('F' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
 
+        row += 2;
+        formula1 = { formula: 'D' + Total.lastRow + '+D' + eval(Total.lastRow + 2) };
+        formula2 = { formula: 'E' + Total.lastRow + '+E' + eval(Total.lastRow + 2) };
+        formula3 = { formula: 'D' + row + '-E' + row };
+        setCellValueFormat(bsheet, 'B' + row, "Vermögen Ende Jahr", true, 'B' + row + ':C' + row, { bold: true, size: iFontSizeHeader, name: 'Tahoma' });
+        setCellValueFormat(bsheet, 'D' + row, formula1, true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        setCellValueFormat(bsheet, 'E' + row, formula2, true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        setCellValueFormat(bsheet, 'F' + row, formula3, true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        bsheet.getCell('D' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
+        bsheet.getCell('E' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
+        bsheet.getCell('F' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
+
         bsheet.getColumn('C').width = 32;
         bsheet.getColumn('D').width = 18;
         bsheet.getColumn('E').width = 18;
@@ -1179,7 +1191,6 @@ module.exports = {
                         type: "error",
                         message: e,
                     });
-                    return;
                 });
         } else {
             arData = await Account.findAll({
@@ -1192,7 +1203,6 @@ module.exports = {
                         type: "error",
                         message: e,
                     });
-                    return;
                 });
 
         }
