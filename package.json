@@ -57,7 +57,8 @@
     "underscore": "^1.13.2",
     "uuid": "^8.3.2",
     "voilab-pdf-table": "^0.5.1",
-    "webix": "^8.3.0"
+    "webix": "^8.3.0",
+    "winston": "^3.7.2"
   },
   "devDependencies": {
     "jest": "^27.4.5"

@@ -1,4 +1,4 @@
-var {Journal, Account} = require("../db");
+var {Journal, Account, Receipt} = require("../db");
 const { Op, Sequelize } = require("sequelize");
 const ExcelJS = require("exceljs");
 const fs = require("fs");
@@ -9,10 +9,25 @@ module.exports = {
 	getData: function (req, res) {
 		Journal.findAll(
 			{
+				attributes: [
+					'id','date','memo','journalno','amount','status',
+					[Sequelize.fn("COUNT", Sequelize.col("receipts.id")), "receipts"]
+				],
 				where: sequelize.where(sequelize.fn('YEAR', sequelize.col('date')), req.query.jahr),
 				include: [
 					{ model: Account, as: 'fromAccount', required: true, attributes: ['id', 'order', 'name'] },
-					{ model: Account, as: 'toAccount', required: true, attributes: ['id', 'order', 'name'] }
+					{ model: Account, as: 'toAccount', required: true, attributes: ['id', 'order', 'name'] },
+					// { model: Receipt, as: 'receipts', required: false, attributes: ['id', 'receipt'],  through: {
+					// 	attributes: [],
+					//   },}
+					{ model: Receipt, as: 'receipts', required: false, attributes: [],  through: {
+						attributes: [],
+					  },}
+				],
+				group: ['journal.id', 'journal.date', 'journal.memo','journal.journalno',
+						'journal.amount','journal.status', 
+					'fromAccount.id', 'fromAccount.order', 'fromAccount.name',
+					'toAccount.id', 'toAccount.order', 'toAccount.name'
 				],
 				order: [
 					['journalno', 'asc'],

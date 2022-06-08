@@ -1,4 +1,5 @@
-const { Sequelize, Model } = require('sequelize');
+const { Sequelize, Model, Association } = require('sequelize');
+const { extend } = require('underscore');
 const DataTypes = require('sequelize').DataTypes;
 const UUIDV4 = require('uuid').v4;
 
@@ -436,17 +437,46 @@ Journal.init({
     }
   },
   amount: DataTypes.DECIMAL(7, 2),
-  status: DataTypes.INTEGER,
-  receipt: DataTypes.STRING
+  status: DataTypes.INTEGER
 },
   {
     sequelize,
     tableName: 'journal',
     modelName: 'journal'
   });
+class Receipt extends Model {
+}
+Receipt.init({
+  id: {
+    type: Sequelize.INTEGER,
+    allowNull: false,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  receipt: DataTypes.STRING
+},
+{
+  sequelize,
+  tableName: 'receipt',
+  modelName: 'receipt'
+});
+
+class JournalReceipt extends Model {
+}
+JournalReceipt.init({
+},
+  {
+    sequelize,
+    tableName: 'con_journal_receipt',
+    modelName: 'journalreceipt'
+  });
 
   Journal.belongsTo(Account, { as: 'fromAccount', constraints: true, foreignKey: 'from_account' });
   Journal.belongsTo(Account, { as: 'toAccount', constraints: true, foreignKey: 'to_account' });
+  Receipt.belongsToMany(Journal, {as: 'journals', through: JournalReceipt, foreignKey: 'journalid', otherKey: 'receiptid' });
+  Receipt.hasMany(JournalReceipt);
+  Journal.belongsToMany(Receipt, {as: 'receipts', through: JournalReceipt, foreignKey: 'receiptid', otherKey: 'journalid' });
+  Journal.hasMany(JournalReceipt);
   Account.hasMany(Journal, { as: 'fromAccount', constraints: true, foreignKey: 'from_account' });
   Account.hasMany(Journal, { as: 'toAccount', constraints: true, foreignKey: 'to_account' });
 
@@ -480,6 +510,6 @@ Journal.init({
     Account.hasMany(Budget, { constraints: true, foreignKey: 'account' });
   
   module.exports = {
-  Adressen, Anlaesse, Parameter, Meisterschaft, Clubmeister, Kegelmeister, User, Session, Account, Journal, FiscalYear, Budget,
+  Adressen, Anlaesse, Parameter, Meisterschaft, Clubmeister, Kegelmeister, User, Session, Account, Journal, FiscalYear, Budget, Receipt, JournalReceipt, 
 };
 
