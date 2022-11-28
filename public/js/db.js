@@ -467,16 +467,16 @@ JournalReceipt.init({
 },
   {
     sequelize,
-    tableName: 'con_journal_receipt',
+    tableName: 'journal_receipt',
     modelName: 'journalreceipt'
   });
 
   Journal.belongsTo(Account, { as: 'fromAccount', constraints: true, foreignKey: 'from_account' });
   Journal.belongsTo(Account, { as: 'toAccount', constraints: true, foreignKey: 'to_account' });
   Receipt.belongsToMany(Journal, {as: 'journals', through: JournalReceipt, foreignKey: 'journalid', otherKey: 'receiptid' });
-  Receipt.hasMany(JournalReceipt);
+  Receipt.hasMany(JournalReceipt, {as: 'receipt2journal', constraints: true, foreignKey: 'receiptid'});
   Journal.belongsToMany(Receipt, {as: 'receipts', through: JournalReceipt, foreignKey: 'receiptid', otherKey: 'journalid' });
-  Journal.hasMany(JournalReceipt);
+  Journal.hasMany(JournalReceipt, {as: 'journal2receipt', constraints: true, foreignKey: 'journalid'});
   Account.hasMany(Journal, { as: 'fromAccount', constraints: true, foreignKey: 'from_account' });
   Account.hasMany(Journal, { as: 'toAccount', constraints: true, foreignKey: 'to_account' });
 

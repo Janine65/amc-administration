@@ -95,7 +95,7 @@ wxAMC.moduleClasses.Journal = class {
                 { id: "memo", header: "Booking text", fillspace: true, hidden: false },
                 {
                   id: "receipt", header: "Receipt", adjust: true, hidden: false, template: function (obj) {
-                    return (obj.receipt ? "<span class='mdi mdi-paperclip'></span>" : "");
+                    return (obj.receipts == "0" ? "" : "<span class='mdi mdi-paperclip'></span>");
                   }
                 }
               ],
@@ -131,14 +131,14 @@ wxAMC.moduleClasses.Journal = class {
                     }
                   }
                 },
-                onAfterSelect: function (selection, preserve) {
+                onAfterSelect: function () {
                   if (wxAMC.UserRole == 'admin') {
                     $$("moduleJournal-editButton").enable();
                     $$("moduleJournal-copyButton").enable();
                     $$("moduleJournal-deleteButton").enable();
                   }
                 },
-                onItemDblClick: function (selection, preserve) {
+                onItemDblClick: function (selection) {
                   if (selection.column == "receipt") {
                     const data = this.getItem(selection.row);
                     wxAMC.modules['Journal'].show_attachment(data);
@@ -888,7 +888,7 @@ wxAMC.moduleClasses.Journal = class {
   } /* End deactivate(). */
 
   show_attachment(data) {
-    if (!data.receipt) {
+    if (data.receipts == "0") {
       if (wxAMC.UserRole == 'admin') {
         // show add attachment
         data.journaltext = data.date + " " + data.memo;

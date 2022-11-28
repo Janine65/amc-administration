@@ -1,4 +1,4 @@
-var {Journal, Account, Receipt} = require("../db");
+var {Journal, Account, Receipt, JournalReceipt} = require("../db");
 const { Op, Sequelize } = require("sequelize");
 const ExcelJS = require("exceljs");
 const fs = require("fs");
@@ -11,18 +11,13 @@ module.exports = {
 			{
 				attributes: [
 					'id','date','memo','journalno','amount','status',
-					[Sequelize.fn("COUNT", Sequelize.col("receipts.id")), "receipts"]
+					[Sequelize.fn("COUNT", Sequelize.col("journal2receipt.receiptid")), "receipts"]
 				],
 				where: sequelize.where(sequelize.fn('YEAR', sequelize.col('date')), req.query.jahr),
 				include: [
 					{ model: Account, as: 'fromAccount', required: true, attributes: ['id', 'order', 'name'] },
 					{ model: Account, as: 'toAccount', required: true, attributes: ['id', 'order', 'name'] },
-					// { model: Receipt, as: 'receipts', required: false, attributes: ['id', 'receipt'],  through: {
-					// 	attributes: [],
-					//   },}
-					{ model: Receipt, as: 'receipts', required: false, attributes: [],  through: {
-						attributes: [],
-					  },}
+					{ model: JournalReceipt, as: 'journal2receipt', required: false, attributes: []}
 				],
 				group: ['journal.id', 'journal.date', 'journal.memo','journal.journalno',
 						'journal.amount','journal.status', 
@@ -43,6 +38,33 @@ module.exports = {
 	},
 
 	getAttachment: function (req, res) {
+		// Hier müssen nun die Belege gelesen werden und nicht nur das Attribut auf dem Journal
+		Receipt.findAll(
+			{
+				attributes: [
+					'id', 'receipt'
+				],				
+				include: [
+					{ model: JournalReceipt, as: 'receipt2journal', required: true, attributes: [], where: {'journalid': req.query.id}}
+				]
+			}
+		)
+		.then(data => {
+			data.forEach(rec => {
+				const pathname = global.documents + '/';
+				console.log(pathname + rec.receipt);
+				try {
+					fs.copyFileSync( pathname + rec.receipt, global.uploads + rec.receipt);
+					rec.receipt = global.public + rec.receipt
+				} catch (ex) {
+					rec.receipt = 'File not found' + rec.receipt
+				}								
+			});
+			res.json(data);
+		})
+		.catch((e) => console.error(e));
+
+/* 
 		Journal.findByPk(req.query.id)
 			.then(data => {
 				if (data.receipt != null) {
@@ -58,7 +80,7 @@ module.exports = {
 				}
 			})
 			.catch((e) => console.error(e));
-
+ */
 	},
 
 	getOneData: function (req, res) {
