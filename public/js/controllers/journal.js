@@ -1,4 +1,4 @@
-var {Journal, Account, Receipt, JournalReceipt} = require("../db");
+const { Journal, Account, Receipt, JournalReceipt } = require("../db");
 const { Op, Sequelize } = require("sequelize");
 const ExcelJS = require("exceljs");
 const fs = require("fs");
@@ -10,17 +10,17 @@ module.exports = {
 		Journal.findAll(
 			{
 				attributes: [
-					'id','date','memo','journalno','amount','status',
+					'id', 'date', 'memo', 'journalno', 'amount', 'status',
 					[Sequelize.fn("COUNT", Sequelize.col("journal2receipt.receiptid")), "receipts"]
 				],
 				where: sequelize.where(sequelize.fn('YEAR', sequelize.col('date')), req.query.jahr),
 				include: [
 					{ model: Account, as: 'fromAccount', required: true, attributes: ['id', 'order', 'name'] },
 					{ model: Account, as: 'toAccount', required: true, attributes: ['id', 'order', 'name'] },
-					{ model: JournalReceipt, as: 'journal2receipt', required: false, attributes: []}
+					{ model: JournalReceipt, as: 'journal2receipt', required: false, attributes: [] }
 				],
-				group: ['journal.id', 'journal.date', 'journal.memo','journal.journalno',
-						'journal.amount','journal.status', 
+				group: ['journal.id', 'journal.date', 'journal.memo', 'journal.journalno',
+					'journal.amount', 'journal.status',
 					'fromAccount.id', 'fromAccount.order', 'fromAccount.name',
 					'toAccount.id', 'toAccount.order', 'toAccount.name'
 				],
@@ -43,44 +43,27 @@ module.exports = {
 			{
 				attributes: [
 					'id', 'receipt'
-				],				
+				],
 				include: [
-					{ model: JournalReceipt, as: 'receipt2journal', required: true, attributes: [], where: {'journalid': req.query.id}}
+					{ model: JournalReceipt, as: 'receipt2journal', required: true, attributes: [], where: { 'journalid': req.query.id } }
 				]
 			}
 		)
-		.then(data => {
-			data.forEach(rec => {
-				const pathname = global.documents + '/';
-				console.log(pathname + rec.receipt);
-				try {
-					fs.copyFileSync( pathname + rec.receipt, global.uploads + rec.receipt);
-					rec.receipt = global.public + rec.receipt
-				} catch (ex) {
-					rec.receipt = 'File not found' + rec.receipt
-				}								
-			});
-			res.json(data);
-		})
-		.catch((e) => console.error(e));
-
-/* 
-		Journal.findByPk(req.query.id)
 			.then(data => {
-				if (data.receipt != null) {
-					var sJahr = new Date(data.date).getFullYear();
-					const pathname = global.documents + sJahr + '/';
-					console.log(pathname + data.receipt);
-					
-					fs.copyFileSync( pathname + data.receipt, global.uploads + data.receipt);
-
-					res.json({filename: global.public +  data.receipt});
-				} else {
-					res.json({filename: undefined})
-				}
+				data.forEach(rec => {
+					const pathname = global.documents + req.query.jahr + '/';
+					console.log(pathname + rec.receipt);
+					try {
+						fs.copyFileSync(pathname + rec.receipt, global.uploads + rec.receipt);
+						rec.receipt = global.public + rec.receipt
+					} catch (ex) {
+						rec.receipt = 'File not found: ' + rec.receipt
+					}
+				});
+				res.json(data);
 			})
 			.catch((e) => console.error(e));
- */
+
 	},
 
 	getOneData: function (req, res) {
@@ -101,7 +84,7 @@ module.exports = {
 	},
 
 	addData: async function (req, res) {
-		var data = req.body;
+		let data = req.body;
 		data.id = null;
 		console.info('insert: ', data);
 		Journal.create(data)
@@ -110,11 +93,11 @@ module.exports = {
 	},
 
 	updateData: function (req, res) {
-		var data = req.body;
+		let data = req.body;
 		console.info('update: ', data);
 
 		Journal.findByPk(data.id)
-			.then((journal) => journal.update(data, {fields: ["from_account", "to_account", "journalno", "date", "memo", "amount", "status"]})
+			.then((journal) => journal.update(data, { fields: ["from_account", "to_account", "journalno", "date", "memo", "amount", "status"] })
 				.then((obj) => res.json(obj))
 				.catch((e) => console.error(e)))
 			.catch((e) => console.error(e));
@@ -125,87 +108,90 @@ module.exports = {
 
 		if (data.uploadFiles == undefined) {
 			// nothing to do -> return
-			res.json({type: "error", message: "No file to store in database"});
+			res.json({ type: "error", message: "No file to store in database" });
 			return;
 		}
+	
+		const listUploadFiles = data.uploadFiles.split(',')
 
-		var sJahr = new Date(data.date).getFullYear();
-		const path = global.documents + sJahr + '/';
-		const receipt =  'receipt/' + 'Journal-' + data.id + '.pdf';
+		if (listUploadFiles.length > 0) {
 
-		var filename = global.uploads + data.uploadFiles;
+			let sJahr = new Date(data.date).getFullYear();
+			const path = global.documents + sJahr + '/';
+			const receipt = 'receipt/' + listUploadFiles[0]
 
-		if (fs.existsSync(filename)) {
-			fs.copyFileSync(filename, path + receipt);
-			
-			Journal.update({receipt: receipt}, {where: {id: data.id}})
-					.then(resp => res.json(resp))
-					.catch(e => console.error(e));						
-		} else {
-			res.json({type: "error", message: "Error while reading the file"});
+			let filename = global.uploads + listUploadFiles[0];
+
+			if (fs.existsSync(filename)) {
+				fs.copyFileSync(filename, path + receipt);
+				Receipt.create({id: 0, receipt: receipt})
+				.then(result => JournalReceipt.create({journalid: data.id, receiptid: result.id})
+					.then(rec => res.json(rec))
+					.catch(e => res.json({ type: "error", message: "Error while saving new receipt" })))
+				.catch(e => res.json({ type: "error", message: "Error while saving new receipt" }))
+			} else {
+				res.json({ type: "error", message: "Error while reading the file" });
+			}
 		}
 	},
 
 	delAttachment: function (req, res) {
 		const data = req.body;
 
-		var sJahr = new Date(data.date).getFullYear();
-		const path = global.documents + sJahr + '/';
-		const receipt =  data.receipt;
-
-		if (fs.existsSync(path + receipt)){
-			fs.rmSync(path + receipt);
-		}
-
-		Journal.update({receipt: null}, {where: {id: data.id}})
-			.then(resp => res.json(resp))
-			.catch(e => console.error(e));
-			
+		JournalReceipt.findOne({
+			where: [
+				{ journalid: data.journalid },
+				{ receiptid: data.receiptid }
+			]
+		}).then(resp => resp.destroy()
+			.then(ret => res.json({type: "info", message: "Attachment deleted"}))
+			.catch(e => console.error(e)))
+		.catch(e => console.error(e))
 	},
-	
+
 	getAccData: function (req, res) {
 		Promise.all([
 			Journal.findAll({
 				attributes: [
 					"id", "journalno", "date", "memo", "amount"],
-				where: [{"from_account" : req.query.acc},
-						Sequelize.where(Sequelize.fn('YEAR', Sequelize.col('date')), req.query.jahr)],
+				where: [{ "from_account": req.query.acc },
+				Sequelize.where(Sequelize.fn('YEAR', Sequelize.col('date')), req.query.jahr)],
 				include: { model: Account, as: 'fromAccount', required: true }
 			}),
 			Journal.findAll({
 				attributes: [
-					"id", "journalno", "date", "memo", "amount" ],
-				where: [{"to_account" : req.query.acc},
-						Sequelize.where(Sequelize.fn('YEAR', Sequelize.col('date')), req.query.jahr)],
+					"id", "journalno", "date", "memo", "amount"],
+				where: [{ "to_account": req.query.acc },
+				Sequelize.where(Sequelize.fn('YEAR', Sequelize.col('date')), req.query.jahr)],
 				include: { model: Account, as: 'toAccount', required: true }
 			})
 		])
-		.then((modelReturn) => {
-			var arPreData = modelReturn.flat();
-			var arData = [];
-			for (let index = 0; index < arPreData.length; index++) {
-				const element = arPreData[index];
-				var record = {id : element.id, journalno : element.journalno, date: element.date, memo: element.memo}
+			.then((modelReturn) => {
+				let arPreData = modelReturn.flat();
+				let arData = [];
+				for (let index = 0; index < arPreData.length; index++) {
+					const element = arPreData[index];
+					let record = { id: element.id, journalno: element.journalno, date: element.date, memo: element.memo }
 
-				if (element.fromAccount == null) {
-					record.account = element.toAccount.order + " " + element.toAccount.name
-					record.haben = element.amount
-					record.soll = 0
-				} else {
-					record.account = element.fromAccount.order + " " + element.fromAccount.name
-					record.soll = element.amount
-					record.haben = 0
+					if (element.fromAccount == null) {
+						record.account = element.toAccount.order + " " + element.toAccount.name
+						record.haben = element.amount
+						record.soll = 0
+					} else {
+						record.account = element.fromAccount.order + " " + element.fromAccount.name
+						record.soll = element.amount
+						record.haben = 0
+					}
+					arData.push(record);
 				}
-				arData.push(record);
-			}
-			res.json(arData);
-		})
-		.catch((err) => console.error(err));
+				res.json(arData);
+			})
+			.catch((err) => console.error(err));
 	},
 
 	importJournal: async function (req, res) {
-		var data = req.body;
-		var filename = data.sname.replace(process.cwd(), ".");
+		let data = req.body;
+		let filename = data.sname.replace(process.cwd(), ".");
 		console.log(filename);
 
 		const workbook = new ExcelJS.Workbook();
@@ -223,15 +209,15 @@ module.exports = {
 		];
 
 
-		var arInsData = [];
+		let arInsData = [];
 
 		// einlesen vom Kontoplan
-		var arAccount = await Account.findAll({
+		let arAccount = await Account.findAll({
 			order: ["level", "order"]
 		})
-		.catch((e) => {
-			logWorksheet.addRow({ 'timestamp': new Date().toUTCString(), 'type': 'Warnung', 'message': e });
-		});
+			.catch((e) => {
+				logWorksheet.addRow({ 'timestamp': new Date().toUTCString(), 'type': 'Warnung', 'message': e });
+			});
 
 		const cNr = 1
 		const cDatum = 2
@@ -277,7 +263,7 @@ module.exports = {
 					idHaben = 43;
 				}
 
-				var formDate;
+				let formDate;
 				if (Datum instanceof Date) {
 					const offset = Datum.getTimezoneOffset()
 					Datum = new Date(Datum.getTime() - (offset * 60 * 1000))
@@ -286,19 +272,19 @@ module.exports = {
 					formDate = Datum.split('.')[2] + '-' + Datum.split('.')[1] + '-' + Datum.split('.')[0]
 				}
 
-				var record = {"journalno": Nr, "date": formDate, "from_account": idSoll, "to_account": idHaben, "memo": Buchungstext, "amount": Betrag};
+				let record = { "journalno": Nr, "date": formDate, "from_account": idSoll, "to_account": idHaben, "memo": Buchungstext, "amount": Betrag };
 				arInsData.push(record);
 				logWorksheet.addRow({ 'timestamp': new Date().toString(), 'type': 'Warnung', 'message': record.toString() });
 			}
 		})
 
-		await Journal.bulkCreate(arInsData, 
-			{fields: ["journalno", "date", "from_account", "to_account", "memo", "amount"]})
-		.catch((e) => {
-			logWorksheet.addRow({ 'timestamp': new Date().toUTCString(), 'type': 'Warnung', 'message': e });
-		});
+		await Journal.bulkCreate(arInsData,
+			{ fields: ["journalno", "date", "from_account", "to_account", "memo", "amount"] })
+			.catch((e) => {
+				logWorksheet.addRow({ 'timestamp': new Date().toUTCString(), 'type': 'Warnung', 'message': e });
+			});
 
-		var filenamenew = filename.replace('.xlsx', 'imported.xlsx');
+		let filenamenew = filename.replace('.xlsx', 'imported.xlsx');
 		await workbook.xlsx.writeFile(filenamenew)
 			.catch((e) => {
 				console.error(e);

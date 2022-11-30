@@ -18,9 +18,9 @@ webix.protoUI({
 			return;
 		};
 
-		var sources = [];
+		let sources = [];
 		
-		var cdn = this.config.cdn ? this.config.cdn : "https://cdnjs.cloudflare.com/ajax/libs/NicEdit/0.93";
+		let cdn = this.config.cdn ? this.config.cdn : "https://cdnjs.cloudflare.com/ajax/libs/NicEdit/0.93";
 
 		sources.push(cdn+"/nicEdit.js");
 
@@ -35,14 +35,14 @@ webix.protoUI({
 	},
 	_render_nic_editor:function(){
 		if (!this._editorCss){
-			var style = ".nicEdit-panel{height:auto}\n";
+			let style = ".nicEdit-panel{height:auto}\n";
 			style += ".nicEdit-panelContain{border-top-width:0px !important;}\n";
 			style += ".webix_selectable>div:nth-child(2){overflow-y:auto;}";
 			webix.html.addStyle(style);
 			this._editorCss = true;
 		}
 				
-		var nic = new nicEditor(this.config.config).panelInstance(this.$view.firstChild);
+		let nic = new nicEditor(this.config.config).panelInstance(this.$view.firstChild);
 		this._editor = nic.nicInstances[nic.nicInstances.length-1];
 		this._set_inner_size();
 
@@ -55,13 +55,13 @@ webix.protoUI({
 	_set_inner_size:function(){
 		if (!this._editor || !this.$width) return;
 
-		var editorView = this.$view;
-		var toolbar = editorView.firstChild;
+		let editorView = this.$view;
+		let toolbar = editorView.firstChild;
 
 		toolbar.style.width = this.$width+"px";
 
-		var toolbarHeight = toolbar.clientHeight || 0;
-		var editor = toolbar.nextSibling;
+		let toolbarHeight = toolbar.clientHeight || 0;
+		let editor = toolbar.nextSibling;
 		
 		editor.style.width = (this.$width-20)+"px";	//2x10 - padding
 		editor.style.height = (this.$height-20-toolbarHeight)+"px";	//2x10 padding + header with borders

@@ -41,7 +41,7 @@ module.exports = {
 	},
 
 	addData: function (req, res) {
-		var data = req.body;
+		let data = req.body;
 		data.id = null;
 		console.info('insert: ',data);
 		FiscalYear.create(data)
@@ -52,7 +52,7 @@ module.exports = {
 	},
 	
 	updateData: function (req, res) {
-		var data = req.body;
+		let data = req.body;
 		console.info('update: ',data);
 			
 		FiscalYear.findOne(
@@ -65,9 +65,9 @@ module.exports = {
 	},
 
 	closeYear: async function (req, res) {
-		var sJahr = req.query.jahr;
-		var sNextJahr = parseInt(sJahr) + 1;
-		var iStatus = req.query.status;
+		let sJahr = req.query.jahr;
+		let sNextJahr = parseInt(sJahr) + 1;
+		let iStatus = req.query.status;
 		/**
 		 * Ein Geschäftsjahr wird geschlossen (provisorisch oder definitiv)
 		 * 1. Neues Fiscalyear eröffnen - sofern nicht schon eröffnet
@@ -79,11 +79,11 @@ module.exports = {
 
 		// Journal - Bilanz Summen lesen
 		// Aktive
-		var qrySelect = "SELECT j.from_account as account, SUM(j.amount) AS amount";
+		let qrySelect = "SELECT j.from_account as account, SUM(j.amount) AS amount";
 		qrySelect += " FROM journal j WHERE YEAR(j.date) = " + sJahr;
 		qrySelect += " and j.from_account in (select id from account where level = 1)";
 		qrySelect += " GROUP BY j.from_account";
-		var arAktiv = await global.sequelize.query(qrySelect,
+		let arAktiv = await global.sequelize.query(qrySelect,
             {
                 type: Sequelize.QueryTypes.SELECT,
                 plain: false,
@@ -103,7 +103,7 @@ module.exports = {
 		qrySelect += " FROM journal j WHERE YEAR(j.date) = " + sJahr;
 		qrySelect += " and j.to_account in (select id from account where level = 1)";
 		qrySelect += " GROUP BY j.to_account";
-		var arAktiv2 = await global.sequelize.query(qrySelect,
+		let arAktiv2 = await global.sequelize.query(qrySelect,
             {
                 type: Sequelize.QueryTypes.SELECT,
                 plain: false,
@@ -120,7 +120,7 @@ module.exports = {
 		});
         for (let ind2 = 0; ind2 < arAktiv2.length; ind2++) {
             const record = arAktiv2[ind2];
-			var found = arAktiv.findIndex(acc => acc.account == record.account);
+			let found = arAktiv.findIndex(acc => acc.account == record.account);
 			if (found > -1) {
 				arAktiv[found].amount = arAktiv[found].amount - record.amount;
 			} else {
@@ -133,7 +133,7 @@ module.exports = {
 		qrySelect += " FROM journal j WHERE YEAR(j.date) = " + sJahr;
 		qrySelect += " and j.from_account in (select id from account where level = 2)";
 		qrySelect += " GROUP BY j.from_account";
-		var arPassiv = await global.sequelize.query(qrySelect,
+		let arPassiv = await global.sequelize.query(qrySelect,
             {
                 type: Sequelize.QueryTypes.SELECT,
                 plain: false,
@@ -153,7 +153,7 @@ module.exports = {
 		qrySelect += " FROM journal j WHERE YEAR(j.date) = " + sJahr;
 		qrySelect += " and j.to_account in (select id from account where level = 2)";
 		qrySelect += " GROUP BY j.to_account";
-		var arPassiv2 = await global.sequelize.query(qrySelect,
+		let arPassiv2 = await global.sequelize.query(qrySelect,
             {
                 type: Sequelize.QueryTypes.SELECT,
                 plain: false,
@@ -170,7 +170,7 @@ module.exports = {
 		});
         for (let ind2 = 0; ind2 < arPassiv2.length; ind2++) {
             const record = arPassiv2[ind2];
-			found = arPassiv.findIndex(acc => acc.account == record.account);
+			let found = arPassiv.findIndex(acc => acc.account == record.account);
 			if (found > -1) {
 				arPassiv[found].amount = record.amount - arPassiv[found].amount;
 			} else {
@@ -178,8 +178,8 @@ module.exports = {
 			}
 		}
 
-		var arEroeffnung = [];
-		var iGewinn = 0.0;
+		let arEroeffnung = [];
+		let iGewinn = 0.0;
 
         for (let ind2 = 0; ind2 < arAktiv.length; ind2++) {
             const entry = arAktiv[ind2];
@@ -195,7 +195,7 @@ module.exports = {
 		}
 
 		 // Fiscalyear erfassen
-		var newFiscalyear = await FiscalYear.findOne(
+		let newFiscalyear = await FiscalYear.findOne(
 			{ where: { year: sNextJahr} })
 			.catch(err => {
 				console.error(err);
@@ -324,7 +324,7 @@ module.exports = {
 		qrySelect += " where year(j.date) = " + sJahr;
 		qrySelect += " order by j.date, f.order, t.order";
 
-		var arJournal = await global.sequelize.query(qrySelect,
+		let arJournal = await global.sequelize.query(qrySelect,
             {
                 type: Sequelize.QueryTypes.SELECT,
                 plain: false,
@@ -332,7 +332,7 @@ module.exports = {
                 raw: false
             }
 		).catch((e) => console.error(e));
-		var rownum = 1;
+		let rownum = 1;
         for (let ind2 = 0; ind2 < arJournal.length; ind2++) {
             const record = arJournal[ind2];
 			await Journal.update({"journalno": rownum++},

@@ -74,11 +74,11 @@ wxAMC.getSideMenuConfig = function () {
     scroll: true,
     data: listItems,
     arrow: function(obj) {
-      var html = "";
-      for (var i=1; i<=obj.$level; i++) {
+      let html = "";
+      for (let i=1; i<=obj.$level; i++) {
           if (i==obj.$level && obj.$count) {
-              var icon = "mdi-menu-"+(obj.open?"down":"left");
-              var className = "webix_sidebar_dir_icon mdi "+ icon;
+              let icon = "mdi-menu-"+(obj.open?"down":"left");
+              let className = "webix_sidebar_dir_icon mdi "+ icon;
               html+="<span class='"+className+"'></span>";
           }
       }
@@ -87,9 +87,7 @@ wxAMC.getSideMenuConfig = function () {
     on: {
       onBeforeSelect: function (id) {
         let css = $$("sidemenu").getItem(id).$css
-        if (css != undefined && !css.endsWith("disabledMenuItem"))
-          return true;
-        return false;
+        return !!(css != undefined && !css.endsWith("disabledMenuItem"));
       },
       onAfterSelect: function (id) {
         wxAMC.actionSidemenu(id)
@@ -103,7 +101,7 @@ wxAMC.setHidden = function () {
 
   let element
   let css
-  var logged = $$("sidemenu").getItem("loggedUser");
+  let logged = $$("sidemenu").getItem("loggedUser");
 
   if (wxAMC.isAuthenticated) {
     logged.value = wxAMC.loggedUser;

@@ -150,13 +150,15 @@ wxAMC.moduleClasses.Meisterschaft = class {
    * Called whenever this module becomes inactive.
    */
   deactivate() {
+    // TODO document why this method 'deactivate' is empty
+  
   } /* End deactivate(). */
 
   /**
    * Recalculate both championships
    */
   async refreshMeister() {
-    var url = "/Clubmeister/refresh?jahr=" + $$("moduleMeisterschaftdatumSelect").getValue();
+    let url = "/Clubmeister/refresh?jahr=" + $$("moduleMeisterschaftdatumSelect").getValue();
     await fetch(url)      
       .catch(error => webix.message({ type:"error", text: error}));
     url = "/Kegelmeister/refresh?jahr=" + $$("moduleMeisterschaftdatumSelect").getValue();
@@ -170,13 +172,13 @@ wxAMC.moduleClasses.Meisterschaft = class {
    * Refresh the meisterschaft list from local storage.
    */
   async refreshData() {
-    var sSelYear = $$("moduleMeisterschaftdatumSelect").getValue();
+    let sSelYear = $$("moduleMeisterschaftdatumSelect").getValue();
     if (sSelYear == "")
       sSelYear = wxAMC.parameter.get('CLUBJAHR');
 
 
     const url = "/Clubmeister/data?jahr=" + sSelYear;
-   // var dataItems;
+   // let dataItems;
 
     const promiseModule = fetch(url)
       .then(function(response) {
@@ -243,9 +245,9 @@ wxAMC.moduleClasses.Meisterschaft = class {
     } 
 
     // Populate the day-at-a-glance screen.
-    var rows = [ ];
+    let rows = [ ];
 
-    var promiseModule = await fetch("/Clubmeister/getOverviewData")
+    let promiseModule = await fetch("/Clubmeister/getOverviewData")
       .then((response) => response.json())
       .catch((e) => webix.message({ type:"error", text: e}));
 

@@ -1,11 +1,11 @@
-var {Journal, Account, Budget} = require("../db");
+let {Journal, Account, Budget} = require("../db");
 const { Op, Sequelize } = require("sequelize");
 
 module.exports = {
 	getData: async function (req, res) {
-		var arJournalIds = [];
+		let arJournalIds = [];
 
-		var arfromAcc = await global.sequelize.query("SELECT DISTINCT from_account FROM journal WHERE year(date) = ?",
+		let arfromAcc = await global.sequelize.query("SELECT DISTINCT from_account FROM journal WHERE year(date) = ?",
 			{
 				replacements: [req.query.jahr],
 				type: Sequelize.QueryTypes.SELECT,
@@ -35,7 +35,7 @@ module.exports = {
 			arJournalIds.push(element.to_account);
 		}
 
-		var arAccount = [];
+		let arAccount = [];
 
 		if (req.query.all == 0) {
 			arAccount = await Account.findAll(
@@ -82,7 +82,7 @@ module.exports = {
 			order: [["level", "ASC"], ["order", "ASC"]]
 		})
 			.then(function (data) {
-				var arReturn = [];
+				let arReturn = [];
 				for (let index = 0; index < data.length; index++) {
 					const element = data[index];
 					arReturn.push({ id: element.id, value: '<span class=\"small\">' + element.name + '</span>' });
@@ -93,7 +93,7 @@ module.exports = {
 	},
 
 	addData: function (req, res) {
-		var data = req.body;
+		let data = req.body;
 		data.id = null;
 		console.info('insert: ', data);
 		Account.create(data)
@@ -102,7 +102,7 @@ module.exports = {
 	},
 
 	updateData: function (req, res) {
-		var data = req.body;
+		let data = req.body;
 		console.info('update: ', data);
 
 		Account.findByPk(data.id)
@@ -113,8 +113,8 @@ module.exports = {
 	},
 
 	getAccountSummary: async function (req, res) {
-		var arData = [];
-		var arBudget = await Budget.findAll({
+		let arData = [];
+		let arBudget = await Budget.findAll({
 			attributes: ["amount"],
 			where: { 'year': req.query.jahr },
 			include: [
@@ -146,7 +146,7 @@ module.exports = {
 				})
 					.then(function (data2) {
 						for (let ind2 = 0; ind2 < data.length; ind2++) {
-							var record = {}
+							let record = {}
 							record.id = data[ind2].fromAccount.id
 							record.name = data[ind2].fromAccount.name
 							record.level = data[ind2].fromAccount.level
@@ -155,7 +155,7 @@ module.exports = {
 							record.budget = 0
 							record.diff = 0
 							record.$css = (data[ind2].fromAccount.status ? "active" : "inactive")
-							var found = data2.findIndex(acc => acc.toAccount.id == data[ind2].fromAccount.id);
+							let found = data2.findIndex(acc => acc.toAccount.id == data[ind2].fromAccount.id);
 							if (found >= 0) {
 								const acc2 = data2[found];
 								switch (data[ind2].fromAccount.level) {
@@ -184,7 +184,7 @@ module.exports = {
 							arData.push(record);
 						}
 						for (let ind2 = 0; ind2 < data2.length; ind2++) {
-							record = {}
+							let record = {}
 							record.id = data2[ind2].toAccount.id
 							record.name = data2[ind2].toAccount.name
 							record.level = data2[ind2].toAccount.level
@@ -207,8 +207,8 @@ module.exports = {
 						}
 
 						for (let ind2 = 0; ind2 < arData.length; ind2++) {
-							found = arBudget.findIndex(element => element.acc.id == arData[ind2].id);
-							record = arData[ind2];
+							let found = arBudget.findIndex(element => element.acc.id == arData[ind2].id);
+							let record = arData[ind2];
 							if (found >= 0) {
 								const acc = arBudget[found];
 								record.budget = eval(acc.amount * 1);
@@ -221,7 +221,7 @@ module.exports = {
 						}
 
 						for (let ind2 = 0; ind2 < arBudget.length; ind2++) {
-							record = {};
+							let record = {};
 							record.id = arBudget[ind2].acc.id
 							record.name = arBudget[ind2].acc.name
 							record.level = arBudget[ind2].acc.level

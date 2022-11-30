@@ -16,10 +16,10 @@ webix.protoUI({
 		//we will store current state here
 		this._folders = [];
 
-		var locale = webix.i18n.selectDialog;
+		let locale = webix.i18n.selectDialog;
 
 		//inner configuration
-		var buttons = config.toolbar || [
+		let buttons = config.toolbar || [
 			{},
 			{ view:"button", value:locale.open, width:150,
 				click:function(){ this.getTopParentView().select(); } },
@@ -27,7 +27,7 @@ webix.protoUI({
 				click:function(){ this.getTopParentView().exit(); } }
 		];
 
-		var cols = config.columns || [
+		let cols = config.columns || [
 			{ id:"type", header:"", template:"{common.dialog_icon()}", width:50 },
 			{ id:"name", header:locale.name, fillspace:true }
 		];
@@ -36,8 +36,8 @@ webix.protoUI({
 			rows:[
 				{	view:"template", id:"template", css:"webix_path",
 					height:35, template:function(data){
-						var html = "<span class='wbx_seldialog_icon webix_icon fa-level-up'></span>/";
-						for(var i in data)
+						let html = "<span class='wbx_seldialog_icon webix_icon fa-level-up'></span>/";
+						for(let i in data)
 							html+="<span class='wbx_seldialog_folder' data-id='"+data[i].id+"'>"+data[i].name+"</span> / ";
 						return html;
 					}
@@ -73,7 +73,7 @@ webix.protoUI({
 		this._showState();
 	},
 	_on_data_load:function(data){
-		var dtable = this.getDatatable();
+		let dtable = this.getDatatable();
 
 		dtable.$blockRender = true;
 		dtable.parse(data);
@@ -87,8 +87,8 @@ webix.protoUI({
 		webix.ui.window.prototype.show.apply(this, arguments);
 	},
 	_after_init:function(){
-		var dtable = this.getDatatable();
-		var tpl = this.getTemplate();
+		let dtable = this.getDatatable();
+		let tpl = this.getTemplate();
 		
 		tpl.define("onClick", {
 			wbx_seldialog_icon : function(){
@@ -121,7 +121,7 @@ webix.protoUI({
 		}, dtable);
 
 		webix.UIManager.addHotKey("escape", function(view){
-			var dialog = view.getTopParentView();
+			let dialog = view.getTopParentView();
 			if(dialog.isVisible())
 				dialog.exit();
 		}, dtable);
@@ -134,12 +134,11 @@ webix.protoUI({
 			obj.folder_id = this._folders.length ? this._folders[this._folders.length - 1]: 0;
 		});
 
-		dtable = tpl = null;
 	},
 	_showState:function(select_id){
 		this.getTemplate().setValues(this._folders);
-		var dtable = this.getDatatable();
-		var pid = this._folders.length ? this._folders[this._folders.length - 1].id: 0;
+		let dtable = this.getDatatable();
+		let pid = this._folders.length ? this._folders[this._folders.length - 1].id: 0;
 
 		dtable.filter(function(obj){
 			return obj.folder_id == pid;
@@ -151,7 +150,7 @@ webix.protoUI({
 	},
 	_levelUp:function(to_folder){
 		if (to_folder){
-			for (var i = 0; i < this._folders.length; i++){
+			for (let i = 0; i < this._folders.length; i++){
 				if (this._folders[i].id == to_folder){
 					this._folders.splice(i+1, this._folders.length - i - 1);
 					this._showState();
@@ -159,7 +158,7 @@ webix.protoUI({
 				}
 			}
 		} else if (this._folders.length){
-			var leaving = this._folders.pop();
+			let leaving = this._folders.pop();
 			this._showState(leaving.id);
 		}
 	},
@@ -168,8 +167,8 @@ webix.protoUI({
 		this.hide();
 	},
 	select:function(){
-		var view = this.getDatatable();
-		var id = view.getSelectedId();
+		let view = this.getDatatable();
+		let id = view.getSelectedId();
 		if(id){
 			if(view.getItem(id).type=="folder"){
 				this._folders.push(view.getItem(id));
@@ -181,10 +180,10 @@ webix.protoUI({
 		}
 	},
 	_openFile:function(id){
-		var item = this.getDatatable().getItem(id);
+		let item = this.getDatatable().getItem(id);
 
-		var path = [];
-		for (var key in this._folders)
+		let path = [];
+		for (let key in this._folders)
 			path.push(this._folders[key].name);
 		path = "/"+path.join("/");
 		

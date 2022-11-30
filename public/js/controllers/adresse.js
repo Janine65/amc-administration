@@ -16,9 +16,9 @@ module.exports = {
 		// count of SAM_Mitglieder
 		// count of not SAM_Mitglieder
 		
-		var arResult = [{label: 'Aktive Mitglieder', anzahl: 0},{label: 'SAM Mitglieder', anzahl: 0},{label: 'Freimitglieder', anzahl: 0}];
+		let arResult = [{label: 'Aktive Mitglieder', anzahl: 0},{label: 'SAM Mitglieder', anzahl: 0},{label: 'Freimitglieder', anzahl: 0}];
 
-		var anzahl = await Adressen.count({
+		let anzahl = await Adressen.count({
 			where: {"austritt": { [Op.gt]: Sequelize.fn('NOW') } }
 		});
 		arResult[0].anzahl = anzahl;
@@ -72,7 +72,7 @@ module.exports = {
 	},
 
 	addData: function (req, res) {
-		var data = req.body;
+		let data = req.body;
 		data.id = null;
 		if (data.austritt == "" || data.austritt == null) {
 			data.austritt = "3000-01-01T00:00:00";
@@ -87,7 +87,7 @@ module.exports = {
 	},
 	
 	updateData: function (req, res) {
-		var data = req.body;
+		let data = req.body;
 		if (data.austritt == "" || data.austritt == null) {
 			data.austritt = "3000-01-01T00:00:00";
 		}

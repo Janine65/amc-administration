@@ -3,7 +3,7 @@
  * Get the UI config object for the base layout.
  */
 wxAMC.getBaseLayoutConfig = function() {
-  var baseLayout = {
+  let baseLayout = {
       id : "baseLayout",
       rows : [
         /* ---------- wxAMC header. ---------- */

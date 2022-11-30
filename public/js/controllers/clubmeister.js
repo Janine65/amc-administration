@@ -13,8 +13,8 @@ module.exports = {
 	},
 
 	getOverviewData: async function (req, res) {
-		var arResult = [{label: 'Clubmeisterschaft', value: 0}]
-		var anzahl = await Clubmeister.count({
+		let arResult = [{label: 'Clubmeisterschaft', value: 0}]
+		let anzahl = await Clubmeister.count({
 			where: [{"jahr" : global.Parameter.get('CLUBJAHR')},
 			{"status" : true}]
 		});
@@ -25,13 +25,13 @@ module.exports = {
 	calcMeister: async function (req, res) {
 		// berechnet den Clubmeister für das Jahr req.query.jahr
 
-		var arMeister = []
-		var allMitgliedId = []
+		let arMeister = []
+		let allMitgliedId = []
 
-		var data = await Anlaesse.findAll({
+		let data = await Anlaesse.findAll({
 			where: Sequelize.where(Sequelize.fn('year', Sequelize.col("datum")), req.query.jahr)
 		});
-		var arAnlaesse = []
+		let arAnlaesse = []
 		for (let ind = 0; ind < data.length; ind++) {
 			arAnlaesse.push(data[ind].id);
 		}
@@ -46,7 +46,7 @@ module.exports = {
 
 		for (let ind = 0; ind < data.length; ind++) {
 			allMitgliedId.push(data[ind].mitgliedid)
-			var meister = {jahr: req.query.jahr, mitgliedid: data[ind].mitgliedid, punkte: Number(data[ind].punkte), anlaesse: Number(data[ind].anzahl), werbungen: 0, mitglieddauer: 0}
+			let meister = {jahr: req.query.jahr, mitgliedid: data[ind].mitgliedid, punkte: Number(data[ind].punkte), anlaesse: Number(data[ind].anzahl), werbungen: 0, mitglieddauer: 0}
 			arMeister.push(meister);
 		}
 
@@ -59,9 +59,9 @@ module.exports = {
 		
 		for (let ind = 0; ind < data.length; ind++) {
 			let lPunkte = data[ind].anzahl * 50
-				var ifound = arMeister.findIndex((element) => element.mitgliedid == data[ind].adressenid)
+				let ifound = arMeister.findIndex((element) => element.mitgliedid == data[ind].adressenid)
 				if (ifound > -1) {
-					meister = arMeister[ifound]
+					let meister = arMeister[ifound]
 					meister.werbungen = Number(data[ind].anzahl)
 					meister.punkte = meister.punkte + lPunkte
 					arMeister[ifound] = meister
@@ -77,9 +77,9 @@ module.exports = {
 			})
 
 			for (let ind = 0; ind < data.length; ind++) {
-				ifound = arMeister.findIndex((element) => element.mitgliedid == data[ind].id)
+				let ifound = arMeister.findIndex((element) => element.mitgliedid == data[ind].id)
 				if (ifound > -1) {
-					meister = arMeister[ifound]
+					let meister = arMeister[ifound]
 					meister.mnr = data[ind].mnr
 					meister.vorname = data[ind].vorname
 					meister.nachname = data[ind].name
@@ -94,7 +94,7 @@ module.exports = {
 
 		// nun wird der Array sortiert nach den entsprechenden Kriterien
 		arMeister.sort((e1, e2) => {
-			var order = 0
+			let order = 0
 			if (e1.punkte > e2.punkte)
 				order = -1
 			else if (e1.punkte == e2.punkte && e1.anlaesse > e2.anlaesse)

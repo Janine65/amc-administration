@@ -36,7 +36,7 @@ function closeWindow() {
 }
 
 function sendEmail() {
-    var loginInfo = $$("login-detailsform").getValues();
+    let loginInfo = $$("login-detailsform").getValues();
 
     if (loginInfo.username == undefined || loginInfo.username == "") {
         $$("loginmessage").setValue("Email missing for sending a new password");
@@ -44,7 +44,7 @@ function sendEmail() {
     }
 
     // verify email 
-    var url = '/Users/checkEmail?email=' + loginInfo.username;
+    let url = '/Users/checkEmail?email=' + loginInfo.username;
 
     const promiseModule = fetch(url)
         .then(resp => {
@@ -70,7 +70,7 @@ function sendEmail() {
                 closeWindow();
 
                 user.password = Math.random().toString(36).slice(-8);
-                var mail = {
+                let mail = {
                     email_an: user.email, email_subject: "Auto-Moto-Club Swissair : Login für Internes", email_body:
                         "<p>Hallo " + user.name + "</p>" +
                         "<p>Hier ist dein neues Passwort. " + user.password + "</p>" +

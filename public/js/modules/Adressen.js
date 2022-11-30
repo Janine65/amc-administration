@@ -94,9 +94,9 @@ wxAMC.moduleClasses.Adressen = class {
               on: {
                 onCollectValues:function(id, req){
                   if (id == "sam_mitglied" || id == "ehrenmitglied" || id == "vorstand" || id == "revisor" || id == "allianz") {
-                    for(var i = 0; i<req.values.length; i++){
+                    for(let i = 0; i<req.values.length; i++){
                       //console.info(req.values[i]);
-                      if (req.values[i].value == false) {
+                      if (!req.values[i].value) {
                         req.values[i].value = "Nein";
                         req.values[i].id = 0;
                       } else {
@@ -421,30 +421,16 @@ wxAMC.moduleClasses.Adressen = class {
 
 
   /**
-   * Called whenever this module becomes active.
-   */
-  activate() {
-  } /* End activate(). */
-
-
-  /**
-   * Called whenever this module becomes inactive.
-   */
-  deactivate() {
-
-  } /* End deactivate(). */
-
-  /**
    * createBill
    * @param (boolean) fSelection alle selektierten Adresse oder 1 aus dem Formular
    **/
   createBill(fSelection) {
     // read the fiscalyear to handle all the rights
 
-    var arAdr = [];
+    let arAdr = [];
 
     if (fSelection) {
-      var listId = $$("moduleAdressen-items").getFirstId();
+      let listId = $$("moduleAdressen-items").getFirstId();
       while (listId > 0) {
         arAdr.push($$("moduleAdressen-items").getItem(listId));
         listId = $$("moduleAdressen-items").getNextId(listId);
@@ -492,7 +478,7 @@ wxAMC.moduleClasses.Adressen = class {
    */
   exportData() {
     // read the fiscalyear to handle all the rights
-    var state = $$("moduleAdressen-items").getState();
+    let state = $$("moduleAdressen-items").getState();
 
     const promiseAccount = fetch("/Adressen/export",
       {
@@ -662,7 +648,7 @@ wxAMC.moduleClasses.Adressen = class {
 
   showEmailFormAll() {
 
-    var lstEmail = []
+    let lstEmail = []
     $$("moduleAdressen-items").eachRow(function (row) {
       const record = $$("moduleAdressen-items").getItem(row);
       if (record.email != "")
@@ -678,7 +664,7 @@ wxAMC.moduleClasses.Adressen = class {
 
   showEmailForm(lstEmail) {
 
-    var emailData = [];
+    let emailData = [];
 
     if (lstEmail.length > 1) {
       emailData.email_an = "info@automoto-sr.info";
@@ -703,14 +689,14 @@ wxAMC.moduleClasses.Adressen = class {
    * Refresh the adressen list from local storage.
    */
   async refreshData() {
-    var state = $$("moduleAdressen-items").getState();
+    let state = $$("moduleAdressen-items").getState();
     if (!state || !state.sort)
       state.sort = [{ by: "name", id: "name", dir: "asc" }, { by: "vorname", id: "vorname", dir: "asc" }];
     // you can save it to the local storage 
     webix.storage.local.put("state", state);
 
     const url = "/Adressen/data";
-    // var dataItems;
+    // let dataItems;
 
     const promiseModule = fetch(url)
       .then(function (response) {
@@ -762,7 +748,7 @@ wxAMC.moduleClasses.Adressen = class {
     }
 
     // Populate the day-at-a-glance screen.
-    var rows = [];
+    let rows = [];
 
     const promiseModule = fetch("/Adressen/getOverviewData")
       .then((response) => response.json())

@@ -1,6 +1,6 @@
-var crypto = require('crypto');
-var passport = require('passport');
-var LocalStrategy = require('passport-local').Strategy;
+let crypto = require('crypto');
+let passport = require('passport');
+let LocalStrategy = require('passport-local').Strategy;
 const { User}  = require('../db');
 const { v4: uuid } = require('uuid');
 
@@ -19,7 +19,7 @@ passport.use(new LocalStrategy({
         if (user == null) {
           return done(null, false, { message: 'Incorrect email.' });
         }
-        var tempPwd = crypto.pbkdf2Sync(password, user.salt, 10000, 64, 'sha512').toString('base64');
+        let tempPwd = crypto.pbkdf2Sync(password, user.salt, 10000, 64, 'sha512').toString('base64');
         if (user.password !== tempPwd) {
           return done(null, false, { message: 'Incorrect password.' });
         }
@@ -32,15 +32,12 @@ passport.use(new LocalStrategy({
 ));
 
 function isValidPassword(password) {
-  if (password.length >= 8) {
-    return true;
-  }
-  return false;
+  return password.length >= 8;
 }
 
 //uses a regex to check if email is valid
 function isValidEmail(email) {
-  var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return re.test(String(email).toLowerCase());
 }
 
@@ -52,7 +49,7 @@ module.exports = {
   },
 
   updateData: function (req, res, next) {
-    var data = req.body;
+    let data = req.body;
 
     User.findByPk(data.id)
       .then((user) => {
@@ -65,7 +62,7 @@ module.exports = {
   },
 
   deleteData: function (req, res, next) {
-    var data = req.body;
+    let data = req.body;
 
     User.findByPk(data.id)
       .then((user) => {
@@ -78,7 +75,7 @@ module.exports = {
   },
 
   readUser: function (req, res, next) {
-    var name = req.query.name;
+    let name = req.query.name;
 
     User.findOne({ where: { name: name }, attributes: ["id", "name", "email"] })
       .then((user) => {
@@ -89,7 +86,7 @@ module.exports = {
   },
 
   checkEmail: function (req, res, next) {
-    var email = req.query.email;
+    let email = req.query.email;
 
     User.findOne({ where: { email: email }} )
       .then((user) => {
@@ -100,7 +97,7 @@ module.exports = {
   },
 
   updateProfle: function (req, res, next) {
-    var data = req.body;
+    let data = req.body;
 
     if (data.password != undefined && data.password != "" && !isValidPassword(data.password)) {
       res.json({ status: 'error', message: 'Password must be 8 or more characters.' });
@@ -116,10 +113,10 @@ module.exports = {
 
     User.findByPk(data.id)
       .then((user) => {
-        var update = {}
-        var hasChange = false
+        let update = {}
+        let hasChange = false
         if (data.password != undefined && data.password != "") {
-          var password = crypto.pbkdf2Sync(data.password, user.salt, 10000, 64, 'sha512').toString('base64');
+          let password = crypto.pbkdf2Sync(data.password, user.salt, 10000, 64, 'sha512').toString('base64');
           if (password != user.password) {
             update.password = password;
             hasChange = true;
@@ -170,8 +167,8 @@ module.exports = {
   },
 
   registerPost: function (req, res, next) {
-    var salt = crypto.randomBytes(64).toString('hex');
-    var password = crypto.pbkdf2Sync(req.body.password, salt, 10000, 64, 'sha512').toString('base64');
+    let salt = crypto.randomBytes(64).toString('hex');
+    let password = crypto.pbkdf2Sync(req.body.password, salt, 10000, 64, 'sha512').toString('base64');
 
     if (!isValidPassword(req.body.password)) {
       res.json({ status: 'error', message: 'Password must be 8 or more characters.' });
@@ -184,7 +181,7 @@ module.exports = {
       return;
     }
 
-    var userid = uuid();
+    let userid = uuid();
 
 
     User.create({

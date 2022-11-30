@@ -105,7 +105,7 @@ wxAMC.moduleClasses.Journal = class {
                   this.showOverlay("Loading...");
                 },
                 onAfterLoad: function () {
-                  var sJahr = $$("moduleJournal-dateSelect").getValue();
+                  let sJahr = $$("moduleJournal-dateSelect").getValue();
                   if (sJahr == "") {
                     $$("moduleJournal-dateSelect").setValue(wxAMC.parameter.get('CLUBJAHR'));
                     sJahr = wxAMC.parameter.get('CLUBJAHR');
@@ -519,7 +519,7 @@ wxAMC.moduleClasses.Journal = class {
                         {
                           "icon": "mdi mdi-magnify", view: "icon", "width": 38, "height": 0,
                           click: function () {
-                            var value = $$("listAccountSearch").getValue().toLowerCase();
+                            let value = $$("listAccountSearch").getValue().toLowerCase();
                             $$("listAccountsList").filter("#name#", value);
                           }
                         },
@@ -746,9 +746,9 @@ wxAMC.moduleClasses.Journal = class {
               elements: [
                 { view: "text", label: "Journal", labelPosition: "top", name: "journaltext", readonly: true },
                 {
-                  view: "uploader", value: 'Attachments', link: "journalupload_list", apiOnly: true,
+                  view: "uploader", value: 'Neue Anhänge', link: "journalupload_list", apiOnly: true,
                   upload: "/uploadFiles", accept: "application/pdf",
-                  multiple: false, autosend: false,
+                  multiple: true, autosend: false,
                   name: "uploadFiles", id: "journalupload"
                 },
                 {
@@ -757,22 +757,13 @@ wxAMC.moduleClasses.Journal = class {
                   type: "uploader",
 
                   autoheight: false,
-                  height: 50,
+                  height: 100,
                   scroll: false,
                   borderless: true
-                }, /* End Journal Attachment From */
-                { /* Begin Journal Attachment Toolbar */
+                },/* End Journal Attachment From */
+                { /* Begin Journal in Form Attachment Toolbar */
                   view: "toolbar",
                   cols: [
-                    { width: 6 },
-                    {
-                      view: "button", label: "Zurück", autowidth: true,
-                      type: "icon", icon: "webix_icon mdi mdi-arrow-left",
-                      click: () => {
-                        $$("moduleJournal-itemsCell").show();
-                      }
-                    },
-                    {},
                     {
                       id: "journalAtt-sendButton", view: "button", label: "Senden",
                       autowidth: true, type: "icon",
@@ -780,10 +771,63 @@ wxAMC.moduleClasses.Journal = class {
                       click: this.save_attachment.bind(this)
                     }
                   ]
-                } /* End Journal Attachment toolbar */
-              ]
-            }
-          ]
+                }, /* End Journal in Form Attachment toolbar */
+              {
+                type: "header",
+                template: "gebundene Anhänge"
+              },
+              {
+                view: "list",
+                id: "journalatt_list",
+                // 'File not found: '
+                template: function (obj) {
+                  if (obj.receipt.startsWith('File not found: '))
+                    return "<span class='inactive'>" + obj.receipt + "</span>";
+                  else
+                    return obj.receipt;
+                },
+                select: true,
+                scroll: true,
+                padding: 40,
+                scheme: {
+                  $sort: {
+                    by: "receipt",
+                    dir: "asc"
+                  }
+                },              
+                height:100,
+                autowidth: true,
+                autoheight: false
+
+              },
+              { /* Begin Journal Attachment Toolbar */
+                view: "toolbar",
+                cols: [
+                  { width: 6 },
+                  {
+                    view: "button", label: "Zurück", autowidth: true,
+                    type: "icon", icon: "webix_icon mdi mdi-arrow-left",
+                    click: () => {
+                      $$("moduleJournal-itemsCell").show();
+                    }
+                  },
+                  {
+                    id: "journalAtt-showButton", view: "button", label: "Anzeigen",
+                    autowidth: true, type: "icon",
+                    icon: "webix_icon mdi mdi-eye-outline",
+                    click: this.display_attachment.bind(this)
+                  },
+                  {
+                    id: "journalAtt-deleteButton", view: "button", label: "Löschen",
+                    autowidth: true, type: "icon",
+                    icon: "webix_icon mdi mdi-delete",
+                    click: this.del_attachment.bind(this)
+                  }
+                ]
+              } /* End Journal Attachment toolbar */
+            ]
+          },
+        ]
         },
         { /* Begin Journal Attachment */
           id: "journalAtt-View",
@@ -811,12 +855,6 @@ wxAMC.moduleClasses.Journal = class {
                   click: () => {
                     $$("moduleJournal-itemsCell").show();
                   }
-                },
-                {},
-                {
-                  view: "button", label: "Löschen", autowidth: true,
-                  type: "icon", icon: "webix_icon mdi mdi-delete",
-                  click: this.del_attachment.bind(this), disabled: (wxAMC.UserRole == 'admin' ? false : true)
                 },
               ]
             } /* End Journal Attachment toolbar */
@@ -888,18 +926,17 @@ wxAMC.moduleClasses.Journal = class {
   } /* End deactivate(). */
 
   show_attachment(data) {
-    if (data.receipts == "0") {
-      if (wxAMC.UserRole == 'admin') {
-        // show add attachment
-        data.journaltext = data.date + " " + data.memo;
-        $$("journalAtt-Form").setValues(data);
-        $$("journalupload").addDropZone($$("journalupload_list").$view, "Drop files here");
-        $$("journalAtt-Detail").show();
-      }
-    } else {
-      // Anhang anzeigen oder hinzufügen, wenn null
-      data.journaltext = data.date + " " + data.memo;
-      const promiseObj = fetch('/Journal/getAtt?id=' + data.id)
+    data.journaltext = data.date + " " + data.memo;
+    $$("journalAtt-Form").setValues(data);
+    
+    if (wxAMC.UserRole == 'admin') {
+      // show add attachment
+      $$("journalupload").addDropZone($$("journalupload_list").$view, "Drop files here");
+    }
+    // Anhang anzeigen oder hinzufügen, wenn null
+    let sJahr = $$("moduleJournal-dateSelect").getValue();
+    if (data.receipt != "0") {
+      const promiseObj = fetch('/Journal/getAtt?id=' + data.id + '&jahr=' + sJahr)
         .then(function (response) {
           if (!response.ok)
             webix.message('Fehler beim Schreiben der Kontoauszüge', 'Error');
@@ -911,15 +948,25 @@ wxAMC.moduleClasses.Journal = class {
 
       Promise.resolve(promiseObj)
         .then(function (res) {
-          console.log(res.filename);
-          data.downloadFile = res.filename;
-          $$("journalAtt-ViewForm").setValues(data);
-          $$("pdfFilename").load(data.downloadFile);
-          $$("journalAtt-View").show();
+          const itemsAsArray = wxAMC.objectAsArray(res);
+
+          $$("journalatt_list").parse(itemsAsArray)
+          
         })
         .catch(err => webix.message(err, "error"));
     }
+    $$("journalAtt-Detail").show();
   }
+
+  /**
+   * display_attachment
+   */
+   display_attachment() {
+     // TODO document why this method 'display_attachment' is empty
+   
+
+   }
+
   /**
    * save_attachment
    */
@@ -953,13 +1000,14 @@ wxAMC.moduleClasses.Journal = class {
    * del_attachment
    */
   del_attachment() {
-    const data = $$("journalAtt-ViewForm").getValues();
+    const data = $$("journalatt_list").getSelectedItem();
+    const dataJ = $$("journalAtt-Form").getValues()
     fetch('/Journal/delAtt', {
       method: "DELETE",
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ id: data.id })
+      body: JSON.stringify({ journalid: dataJ.id, receiptid: data.id })
     })
       .then(resp => {
         if (!resp.ok) {
@@ -981,7 +1029,7 @@ wxAMC.moduleClasses.Journal = class {
     const sJahr = $$("moduleJournal-dateSelect").getValue();
     const value = $$("moduleJournal-dateSelect").getList().getItem(sJahr).value.split(' - ');
 
-    var state = 1;
+    let state = 1;
     switch (value[1]) {
       case "abgeschlossen":
         state = 3
@@ -995,7 +1043,7 @@ wxAMC.moduleClasses.Journal = class {
         break;
     }
 
-    var data = { year: sJahr, name: value[0], state: state };
+    let data = { year: sJahr, name: value[0], state: state };
 
     $$("moduleJournal-details").show();
     $$("moduleJournal-detailsForm").clear();
@@ -1008,9 +1056,8 @@ wxAMC.moduleClasses.Journal = class {
    */
   saveFiscalyear() {
     // Merge all forms together.  Usually there's just one, but some modules may have more than one.
-    if ($$("moduleJournal-detailsForm").isDirty()) {
-      var itemData = $$("moduleJournal-detailsForm").getValues();
-    } else {
+    let itemData = $$("moduleJournal-detailsForm").getValues();
+    if (!$$("moduleJournal-detailsForm").isDirty()) {
       webix.message({
         type: "info",
         text: "Keine Änderungen vorgenommen"
@@ -1046,7 +1093,7 @@ wxAMC.moduleClasses.Journal = class {
         // Refresh the module's summary list and return to that list.
         $$("moduleJournal-itemsCell").show();
         const itemOld = $$("moduleJournal-dateSelect").getList().getItem(itemData.year);
-        var list = $$("moduleJournal-dateSelect").getList();
+        let list = $$("moduleJournal-dateSelect").getList();
         list.clearAll();
         list.load("/Fiscalyear/getFkData", async function () {
           const item = $$("moduleJournal-dateSelect").getList().getItem(itemData.year);
@@ -1095,10 +1142,10 @@ wxAMC.moduleClasses.Journal = class {
     $$("listBudgetList").data.each(function (obj) {
 
       // add or upd record
-      var data = { id: obj.id, account: obj.acc.id, amount: (obj.amount == "" ? 0 : obj.amount), memo: obj.memo, year: $$("moduleJournal-dateSelect").getValue() };
+      let data = { id: obj.id, account: obj.acc.id, amount: (obj.amount == "" ? 0 : obj.amount), memo: obj.memo, year: $$("moduleJournal-dateSelect").getValue() };
       // console.log(data);
       const url = "/Budget/data";
-      var method = "PUT";
+      let method = "PUT";
       if (obj.id == undefined)
         method = "POST";
 
@@ -1147,14 +1194,14 @@ wxAMC.moduleClasses.Journal = class {
   }
 
   addAccount() {
-    var itemData = { id: 0, status: 1 };
+    let itemData = { id: 0, status: 1 };
     $$("Account-detailsForm").clear();
     $$("Account-details").show();
     $$("Account-detailsForm").setValues(itemData);
   }
 
   editAccount() {
-    var itemData = $$("listAccountsList").getSelectedItem();
+    let itemData = $$("listAccountsList").getSelectedItem();
     console.log(itemData);
     $$("Account-detailsForm").clear();
     $$("Account-detailsForm").setValues(itemData);
@@ -1248,7 +1295,7 @@ wxAMC.moduleClasses.Journal = class {
       return;
     }
 
-    var fValid = true;
+    let fValid = true;
 
     if (itemData.id == undefined || itemData.id == 0) {
       const promiseModule = fetch("/Account/getOneDataByOrder?order=" + itemData.order)
@@ -1271,20 +1318,18 @@ wxAMC.moduleClasses.Journal = class {
               type: "error",
               text: "Kontonummer ist nicht eindeutig"
             })
-            return;
           }
         })
         .catch(function (error) {
           fValid = false;
           webix.message({ type: "error", text: error });
           console.log(error);
-          return;
         });
     }
 
     if (fValid) {
       const url = "/Account/data";
-      var smethond = (itemData.id > 0 ? "PUT" : "POST");
+      let smethond = (itemData.id > 0 ? "PUT" : "POST");
 
       fetch(url, {
         method: smethond, // *GET, POST, PUT, DELETE, etc.
@@ -1330,10 +1375,10 @@ wxAMC.moduleClasses.Journal = class {
    * refreshAccountData: Read the entries for the selected account
    */
   refreshAccountData() {
-    var sJahr = $$("moduleJournal-dateSelect").getValue();
-    var itemAcc = $$("listAccountsList").getSelectedItem();
+    let sJahr = $$("moduleJournal-dateSelect").getValue();
+    let itemAcc = $$("listAccountsList").getSelectedItem();
 
-    var url = "/Journal/getAccData?jahr=" + sJahr + "&acc=" + itemAcc.id;
+    let url = "/Journal/getAccData?jahr=" + sJahr + "&acc=" + itemAcc.id;
 
     const promiseModule = fetch(url)
       .then(function (response) {
@@ -1348,13 +1393,13 @@ wxAMC.moduleClasses.Journal = class {
       .then(function (dataItems) {
         const itemsAsArray = wxAMC.objectAsArray(dataItems);
 
-        var iSaldo = 0
+        let iSaldo = 0
         for (let ind2 = 0; ind2 < itemsAsArray.length; ind2++) {
           const element = itemsAsArray[ind2];
           iSaldo -= eval(element.soll * 1);
           iSaldo += eval(element.haben * 1);
         }
-        var record = { id: 0, journalno: "", account: "", memo: "Saldo", date: new Date(), soll: (iSaldo < 0 ? iSaldo * -1 : null), haben: (iSaldo < 0 ? null : iSaldo) };
+        let record = { id: 0, journalno: "", account: "", memo: "Saldo", date: new Date(), soll: (iSaldo < 0 ? iSaldo * -1 : null), haben: (iSaldo < 0 ? null : iSaldo) };
 
         itemsAsArray.push(record);
         $$("listAccountsData").clearAll();
@@ -1371,7 +1416,7 @@ wxAMC.moduleClasses.Journal = class {
    * Close the Fiscalyear
    */
   closeFiscalYear(iStatus) {
-    var sJahr = $$("moduleJournal-dateSelect").getValue();
+    let sJahr = $$("moduleJournal-dateSelect").getValue();
     if (sJahr == "")
       sJahr = wxAMC.parameter.get("CLUBJAHR");
     const url = "/Fiscalyear/close?jahr=" + sJahr + "&status=" + iStatus;
@@ -1408,7 +1453,7 @@ wxAMC.moduleClasses.Journal = class {
    * Show details of Fiscalyear
    */
   showFiscalYear() {
-    var sJahr = $$("moduleJournal-dateSelect").getValue();
+    let sJahr = $$("moduleJournal-dateSelect").getValue();
     const url = "/Account/showData?jahr=" + sJahr;
 
     const promiseModule = fetch(url)
@@ -1425,9 +1470,9 @@ wxAMC.moduleClasses.Journal = class {
         // Get the items as an array of objects.
         const itemsAsArray = wxAMC.objectAsArray(dataItems);
 
-        var arAktiv = [], arPassiv = [], arAufwand = [], arErtrag = [];
-        var iGewinnVerlust = 0;
-        var iGewinnVerlustBudget = 0;
+        let arAktiv = [], arPassiv = [], arAufwand = [], arErtrag = [];
+        let iGewinnVerlust = 0;
+        let iGewinnVerlustBudget = 0;
 
         for (let ind2 = 0; ind2 < itemsAsArray.length; ind2++) {
           const element = itemsAsArray[ind2];
@@ -1463,12 +1508,12 @@ wxAMC.moduleClasses.Journal = class {
         }
 
         $$("moduleJournal-FiscalYeardetails").show();
-        var record1 = {};
+        let record1 = {};
         record1.id = 0;
         record1.order = 9998
         record1.amount = Math.abs(iGewinnVerlust);
 
-        var record2 = {};
+        let record2 = {};
         record2.id = 0;
         record2.order = 9998
         record2.diff = iGewinnVerlustBudget - iGewinnVerlust;
@@ -1520,9 +1565,9 @@ wxAMC.moduleClasses.Journal = class {
    * Import Journal from an Excelfile
    */
   importData() {
-    var message_text = "Exceldatei hier hochladen, um sie als Einträge ins Journal zu importieren";
+    let message_text = "Exceldatei hier hochladen, um sie als Einträge ins Journal zu importieren";
 
-    var compose_form = {
+    let compose_form = {
       view: "form", rows: [
         {
           view: "textarea", value: message_text, label: "message", labelPosition: "top", autoheight: true
@@ -1581,7 +1626,7 @@ wxAMC.moduleClasses.Journal = class {
   exportJournalData() {
     const sJahr = $$("moduleJournal-dateSelect").getValue();
 
-    var popup = webix.ui({ /* Begin Popup Window wait */
+    let popup = webix.ui({ /* Begin Popup Window wait */
       view:"popup",
       height:150,
       width:300,
@@ -1720,7 +1765,7 @@ wxAMC.moduleClasses.Journal = class {
    */
   async refreshData() {
 
-    var sJahr = $$("moduleJournal-dateSelect").getValue();
+    let sJahr = $$("moduleJournal-dateSelect").getValue();
     if (sJahr == "") {
       sJahr = wxAMC.parameter.get("CLUBJAHR");
     }
@@ -1778,7 +1823,7 @@ wxAMC.moduleClasses.Journal = class {
     }
 
     // Populate the day-at-a-glance screen.
-    var rows = [];
+    let rows = [];
 
     const sJahr = wxAMC.parameter.get("CLUBJAHR");
 

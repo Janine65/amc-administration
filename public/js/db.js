@@ -468,7 +468,8 @@ JournalReceipt.init({
   {
     sequelize,
     tableName: 'journal_receipt',
-    modelName: 'journalreceipt'
+    modelName: 'journalreceipt',
+    timestamps: false
   });
 
   Journal.belongsTo(Account, { as: 'fromAccount', constraints: true, foreignKey: 'from_account' });

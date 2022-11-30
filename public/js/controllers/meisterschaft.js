@@ -1,4 +1,4 @@
-var { Meisterschaft, Adressen, Anlaesse } = require("../db");
+let { Meisterschaft, Adressen, Anlaesse } = require("../db");
 const { Op, Sequelize } = require("sequelize");
 
 module.exports = {
@@ -63,7 +63,7 @@ module.exports = {
 		})
 		.then(data => {
 			// console.log(data);   
-			var arAnlaesse = [];
+			let arAnlaesse = [];
 			for (let index = 0; index < data.length; index++) {
 				arAnlaesse.push(data[index].anlaesseid);
 			}
@@ -114,7 +114,7 @@ module.exports = {
 	removeData: function (req, res) {
 		const data = req.body;
 		if (data == undefined) {
-			throw "Record not correct";
+			throw Error("Record not correct");
 		}
 		console.info('delete: ', data);
 		Meisterschaft.findByPk(data.id)
@@ -125,7 +125,7 @@ module.exports = {
 	},
 
 	addData: function (req, res) {
-		var data = req.body;
+		let data = req.body;
 		data.id = null;
 		console.info('insert: ', data);
 		Meisterschaft.create(data)
@@ -134,7 +134,7 @@ module.exports = {
 	},
 
 	updateData: function (req, res) {
-		var data = req.body;
+		let data = req.body;
 		// update
 		console.info('update: ', data);
 
