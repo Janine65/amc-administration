@@ -225,6 +225,7 @@ app.get('/Journal/getAccData', journal.getAccData);
 app.post('/Journal/addAtt', journal.addAttachment);
 app.delete('/Journal/delAtt', journal.delAttachment);
 app.get('/Journal/getAtt', journal.getAttachment);
+app.get('/Journal/getAllAtt', journal.getAllAttachment);
 app.get('/Journal/export', exportData.writeJournal);
 
 const budget = require("./public/js/controllers/budget");

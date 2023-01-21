@@ -453,7 +453,9 @@ Receipt.init({
     autoIncrement: true,
     primaryKey: true
   },
-  receipt: DataTypes.STRING
+  receipt: DataTypes.STRING,
+  bezeichnung: DataTypes.STRING,
+  jahr: DataTypes.STRING
 },
 {
   sequelize,

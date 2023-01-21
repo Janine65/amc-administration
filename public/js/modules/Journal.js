@@ -164,6 +164,11 @@ wxAMC.moduleClasses.Journal = class {
                 },
                 { width: 6 },
                 {
+                  id: "moduleJournal-recAllButton", view: "button", label: "Belege", autowidth: true, type: "icon",
+                  icon: "webix_icon mdi mdi-file", click: this.showReciepts.bind(this)
+                },
+                { width: 6 },
+                {
                   id: "moduleJournal-editButton", view: "button", label: "Edit", autowidth: true, type: "icon", disabled: true,
                   icon: "webix_icon mdi mdi-pen", click: this.editExisting.bind(this)
                 },
@@ -742,6 +747,60 @@ wxAMC.moduleClasses.Journal = class {
           id: "journalAtt-Detail",
           rows: [
             {
+              view: "list",
+              id: "journalatt_list",
+              // 'File not found: '
+              template: function (obj) {
+                if (obj.receipt.startsWith('File not found: '))
+                  return "<span class='inactive'>" + obj.receipt + "</span>";
+                else
+                  return obj.receipt;
+              },
+              select: true,
+              scroll: true,
+              padding: 40,
+              scheme: {
+                $sort: {
+                  by: "receipt",
+                  dir: "asc"
+                }
+              },              
+              height:100,
+              autowidth: true,
+              autoheight: false
+
+            },
+            { /* Begin Journal Attachment Toolbar */
+              view: "toolbar",
+              cols: [
+                { width: 6 },
+                {
+                  view: "button", label: "Zurück", autowidth: true,
+                  type: "icon", icon: "webix_icon mdi mdi-arrow-left",
+                  click: () => {
+                    $$("moduleJournal-itemsCell").show();
+                  }
+                },
+                {
+                  id: "journalAtt-addButton", view: "button", label: "Hinzufügen",
+                  autowidth: true, type: "icon",
+                  icon: "webix_icon mdi mdi-new",
+                  click: this.add_attachment.bind(this)
+                },
+                {
+                  id: "journalAtt-showButton", view: "button", label: "Anzeigen",
+                  autowidth: true, type: "icon",
+                  icon: "webix_icon mdi mdi-eye-outline",
+                  click: this.display_attachment.bind(this)
+                },
+                {
+                  id: "journalAtt-deleteButton", view: "button", label: "Löschen",
+                  autowidth: true, type: "icon",
+                  icon: "webix_icon mdi mdi-delete",
+                  click: this.del_attachment.bind(this)
+                }
+              ]
+            }, /* End Journal Attachment toolbar */                                  {
               view: "form", id: "journalAtt-Form",
               elements: [
                 { view: "text", label: "Journal", labelPosition: "top", name: "journaltext", readonly: true },
@@ -771,63 +830,11 @@ wxAMC.moduleClasses.Journal = class {
                       click: this.save_attachment.bind(this)
                     }
                   ]
-                }, /* End Journal in Form Attachment toolbar */
-              {
-                type: "header",
-                template: "gebundene Anhänge"
-              },
-              {
-                view: "list",
-                id: "journalatt_list",
-                // 'File not found: '
-                template: function (obj) {
-                  if (obj.receipt.startsWith('File not found: '))
-                    return "<span class='inactive'>" + obj.receipt + "</span>";
-                  else
-                    return obj.receipt;
-                },
-                select: true,
-                scroll: true,
-                padding: 40,
-                scheme: {
-                  $sort: {
-                    by: "receipt",
-                    dir: "asc"
-                  }
-                },              
-                height:100,
-                autowidth: true,
-                autoheight: false
+                } /* End Journal in Form Attachment toolbar */
+              ]
+            }
 
-              },
-              { /* Begin Journal Attachment Toolbar */
-                view: "toolbar",
-                cols: [
-                  { width: 6 },
-                  {
-                    view: "button", label: "Zurück", autowidth: true,
-                    type: "icon", icon: "webix_icon mdi mdi-arrow-left",
-                    click: () => {
-                      $$("moduleJournal-itemsCell").show();
-                    }
-                  },
-                  {
-                    id: "journalAtt-showButton", view: "button", label: "Anzeigen",
-                    autowidth: true, type: "icon",
-                    icon: "webix_icon mdi mdi-eye-outline",
-                    click: this.display_attachment.bind(this)
-                  },
-                  {
-                    id: "journalAtt-deleteButton", view: "button", label: "Löschen",
-                    autowidth: true, type: "icon",
-                    icon: "webix_icon mdi mdi-delete",
-                    click: this.del_attachment.bind(this)
-                  }
-                ]
-              } /* End Journal Attachment toolbar */
-            ]
-          },
-        ]
+          ]
         },
         { /* Begin Journal Attachment */
           id: "journalAtt-View",
@@ -904,6 +911,50 @@ wxAMC.moduleClasses.Journal = class {
             } /* End Budget Toolbar */
           ]
         }, /* End Budget list */
+        {
+          id: "moduleJournal-listReceipt",
+          rows: [
+            { /* Begin Receipt List */
+            columns: [
+              { id: "id", header: "ID", autowidth: true, hidden: false },
+              { id: "receipt", header: "Beleg", autowidth: true, hidden: false },
+              { id: "bezeichnung", header: "Bezeichnung", fillspace: true, hidden: false },
+              { id: "updatedAt", header: "Hinzugefügt am", autowidth: true, hidden: false },
+            ],
+            view: "datatable",
+              id: "listReceiptList",
+              select: true, autofit: true,
+              resizeColumn: { headerOnly: true },
+              scroll: true,
+              editable: false,
+              on: {
+                onItemDblClick: function (selection) {
+                  const data = this.getItem(selection.row);
+                  wxAMC.modules['Journal'].display_receipt(data);
+                }
+              }
+            }, /* End Receipt List */
+            { /* Begin Receipt Toolbar */
+              view: "toolbar",
+              cols: [
+                { width: 6 },
+                {
+                  view: "button", label: "Zurück", autowidth: true,
+                  type: "icon", icon: "webix_icon mdi mdi-arrow-left",
+                  click: () => {
+                    $$("moduleJournal-itemsCell").show();
+                  }
+                },
+                {},
+                // {
+                //   view: "button", label: "Save", autowidth: true,
+                //   type: "icon", icon: "webix_icon mdi mdi-content-save",
+                //   click: this.saveReceipt.bind(this), disabled: (wxAMC.UserRole == 'admin' ? false : true)
+                // }
+              ]
+            } /* End Receipt Toolbar */
+          ]
+        }, /* End Budget list */
       ] /* End main layout cells. */
     };
 
@@ -925,6 +976,10 @@ wxAMC.moduleClasses.Journal = class {
     return
   } /* End deactivate(). */
 
+  add_attachment(data) {
+    // TODO add_attachment form
+  }
+
   show_attachment(data) {
     data.journaltext = data.date + " " + data.memo;
     $$("journalAtt-Form").setValues(data);
@@ -933,7 +988,7 @@ wxAMC.moduleClasses.Journal = class {
       // show add attachment
       $$("journalupload").addDropZone($$("journalupload_list").$view, "Drop files here");
     }
-    // Anhang anzeigen oder hinzufügen, wenn null
+    // Liste der Anhänge anzeigen
     let sJahr = $$("moduleJournal-dateSelect").getValue();
     if (data.receipt != "0") {
       const promiseObj = fetch('/Journal/getAtt?id=' + data.id + '&jahr=' + sJahr)
@@ -962,9 +1017,24 @@ wxAMC.moduleClasses.Journal = class {
    * display_attachment
    */
    display_attachment() {
-     // TODO document why this method 'display_attachment' is empty
-   
+    // TODO document why this method 'display_attachment' is empty
+    const data = $$("journalatt_list").getSelectedItem();
+    $$("pdfFilename").load(data.receipt);
+    const dataJ = $$("journalAtt-Form").getValues()
+    $$("journalAtt-ViewForm").setValues(dataJ)
 
+    $$("journalAtt-View").show()
+   }
+
+  /**
+   * display_receipt
+   */
+  display_receipt(data) {    
+    $$("pdfFilename").load(data.receipt);
+    //const dataJ = $$("journalAtt-Form").getValues()
+    //$$("journalAtt-ViewForm").setValues(dataJ)
+
+    $$("journalAtt-View").show()
    }
 
   /**
@@ -1123,6 +1193,17 @@ wxAMC.moduleClasses.Journal = class {
         text: e
       }));
 
+  }
+
+  showReciepts() {
+    $$("moduleJournal-listReceipt").show();
+    this.refreshReceiptList();
+
+  }
+  
+  refreshReceiptList() {
+    $$("listReceiptList").clearAll();
+    $$("listReceiptList").load("/Journal/getAllAtt?jahr=" + $$("moduleJournal-dateSelect").getValue());    
   }
 
   showBudget() {
