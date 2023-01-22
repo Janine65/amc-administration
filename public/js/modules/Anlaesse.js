@@ -407,10 +407,19 @@ custom_checkbox(obj, common, value){
     // during an add.
     $$("moduleAnlaesse-details").show();
     $$("moduleAnlaesse-detailsForm").clear();
-    $$("moduleAnlaesse-detailsForm").elements.istkegeln.data.value = 0;
-    $$("moduleAnlaesse-detailsForm").elements.nachkegeln.data.value = 0;
-    $$("moduleAnlaesse-detailsForm").elements.istsamanlass.data.value = 0;
-    $$("moduleAnlaesse-detailsForm").elements.punkte.data.value = 50;
+    let anlass = [];
+    anlass.id = null;
+    anlass.datum = null;
+    anlass.name = null;
+    anlass.status = 1;
+    anlass.beschreibung = null;
+    anlass.istkegeln = false;
+    anlass.nachkegeln = false;
+    anlass.istsamanlass = false;
+    anlass.punkte = 50;
+    anlass.anlaesseid = null;
+    $$("moduleAnlaesse-detailsForm").setValues(anlass);
+    $$("moduleAnlaesse-detailsForm").setDirty(true);
     $$("moduleAnlaesse-deleteButton").disable();
 
   } /* End newHandler(). */

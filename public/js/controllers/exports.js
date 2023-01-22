@@ -1467,7 +1467,7 @@ async function fillTemplate(sheet, id, syear) {
                             } else {
                                 // setzte diagonale Linie - > Streichresultat                                
                                 sheet.getRow(row).eachCell({ includeEmpty: false }, function (formatCell, colNumber) {
-                                    formatCell.border = {
+                                    formatCell.style.border = {
                                         diagonal: {
                                             up: true,
                                             down: true,
@@ -1587,6 +1587,7 @@ async function createTemplate(syear, sheet, inclPoints) {
     let row = sFirstRow - 1;
     setCellValueFormat(sheet, "A" + row, "Club", true, "", { bold: true, size: iFontSizeRow });
     setCellValueFormat(sheet, "B" + row, "Datum", true, "", { bold: true, size: iFontSizeRow });
+    sheet.getColumn("B").width = 11;
     setCellValueFormat(sheet, "C" + row, "Resultate", true, "C" + row + ":G" + row, { bold: true, size: iFontSizeRow });
     setCellValueFormat(sheet, "H" + row, "z Pkt.", true, "", { bold: true, size: iFontSizeRow });
     setCellValueFormat(sheet, "I" + row, "Total", true, "", { bold: true, size: iFontSizeRow });
