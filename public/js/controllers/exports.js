@@ -1467,6 +1467,11 @@ async function fillTemplate(sheet, id, syear) {
                             } else {
                                 // setzte diagonale Linie - > Streichresultat                                
                                 sheet.getRow(row).eachCell({ includeEmpty: false }, function (formatCell, colNumber) {
+                                    formatCell.style.fill = {
+                                        type: 'pattern',
+                                        pattern: 'solid',
+                                        bgColor: { argb: '96C8FB'}
+                                    };
                                     formatCell.style.border = {
                                         diagonal: {
                                             up: true,
