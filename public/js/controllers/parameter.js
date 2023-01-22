@@ -6,7 +6,7 @@ module.exports = {
 		Parameter.findAll()
 		.then(data => {
 			console.log(data);
-			var param = new Parameter({key: "Version", value: global.system.version});
+			let param = new Parameter({key: "Version", value: global.system.version});
 			data.push(param);			
 			return res.json(data);
 		})
@@ -48,7 +48,7 @@ module.exports = {
 	},
 
 	addData: function (req, res) {
-		var data = req.body;
+		let data = req.body;
 		data.id = null;
 		console.info('insert: ',data);
 		Parameter.create(data)
@@ -57,8 +57,8 @@ module.exports = {
 	},
 	
 	updateData: function (req, res) {
-		var lparam = req.body;
-		var ok = true;
+		let lparam = req.body;
+		let ok = true;
 		if (lparam) {
 			for (let k of Object.keys(lparam)) {
 				// update

@@ -54,7 +54,7 @@ module.exports = {
         }
 
         // Fit the image within the dimensions
-        var img = fs.readFileSync('./public/assets/AMCfarbigKlein.jpg');
+        let img = fs.readFileSync('./public/assets/AMCfarbigKlein.jpg');
         pdf.image(img.buffer, SwissQRBill.utils.mm2pt(140), SwissQRBill.utils.mm2pt(5),
             { fit: [100, 100] });
 
@@ -97,7 +97,7 @@ module.exports = {
         pdf.fillColor("black");
         pdf.font("Helvetica");
 
-        var text = (adresse.geschlecht == 1 ? "Lieber " : "Liebe ") + adresse.vorname + "\n";
+        let text = (adresse.geschlecht == 1 ? "Lieber " : "Liebe ") + adresse.vorname + "\n";
         pdf.text(text, {
             width: SwissQRBill.utils.mm2pt(170),
             align: "left"
@@ -131,9 +131,9 @@ module.exports = {
         pdf.save();
         pdf.end();
 
-        var email_body = "<p>" + text.split("\n").join("</p><p>") + "</p>";
+        let email_body = "<p>" + text.split("\n").join("</p><p>") + "</p>";
 
-        var email = {
+        let email = {
             email_an: adresse.email, email_cc: '', email_bcc: '',
             email_body: email_body,
             email_subject: "Auto-Moto-Club Swissair - Mitgliederrechnung",
@@ -144,7 +144,7 @@ module.exports = {
         const retVal = await fncSendEmail(email);
 
         // journal Eintrag erstellen
-        var journal = {};
+        let journal = {};
         journal.memo = "Mitgliederbeitrag " + sJahr + " von " + data.debtor.name;
         journal.date = new Date();
         journal.amount = 30;
@@ -154,7 +154,7 @@ module.exports = {
 
         await Journal.create(journal)
             .then(resp => {
-                var jahrCost = new Date(resp.date).getFullYear();
+                let jahrCost = new Date(resp.date).getFullYear();
                 const pathname = global.documents + jahrCost + '/';
                 const receipt =  'receipt/' + 'Journal-' + resp.id + '.pdf';
         
@@ -232,7 +232,7 @@ async function fncSendEmail(email) {
     let attachments = []
 
     if (email.uploadFiles) {
-        var files = email.uploadFiles.split(',');
+        let files = email.uploadFiles.split(',');
         for (let ind2 = 0; ind2 < files.length; ind2++) {
             const file = files[ind2];
             attachments.push({ filename: file, path: path.join(__dirname, '../../uploads/' + file) });

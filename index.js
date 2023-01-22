@@ -66,7 +66,7 @@ const app = express();
 
 const db = require("./public/js/db")
 
-var store = new SequelizeStore({
+let store = new SequelizeStore({
   db: sequelize,
   table: "Session",
   extendDefaultFields: extendDefaultFields,
@@ -78,7 +78,7 @@ var store = new SequelizeStore({
 app.use(express.json());
 app.use("/", express.static(path.join(__dirname, '/public')));
 
-var expireDate = new Date();
+let expireDate = new Date();
 expireDate.setDate(expireDate.getDate() + 1);
 
 app.use(helmet());

@@ -1,4 +1,4 @@
-var { Meisterschaft, Adressen, Kegelmeister, Clubmeister, Account, Budget, Journal, Anlaesse } = require("../db");
+let { Meisterschaft, Adressen, Kegelmeister, Clubmeister, Account, Budget, Journal, Anlaesse } = require("../db");
 const {
     Sequelize, Op
 } = require("sequelize");
@@ -7,9 +7,9 @@ const fs = require("fs");
 const path = require("path");
 const Archiver = require("archiver");
 const ExcelJS = require("exceljs");
-var PDFDocument = require('pdfkit');
-var PdfTable = require('voilab-pdf-table')
-var numeral = require('numeral');
+let PDFDocument = require('pdfkit');
+let PdfTable = require('voilab-pdf-table')
+let numeral = require('numeral');
 
 const cName = "C6";
 const cVorname = "C7";
@@ -33,7 +33,7 @@ module.exports = {
         const filter = req.body.filter;
         console.log(filter);
 
-        var sWhere = { austritt: { [Op.gte]: new Date() } };
+        let sWhere = { austritt: { [Op.gte]: new Date() } };
         if (filter.adresse != '')
             sWhere.adresse = { [Op.like]: "%" + filter.adresse + "%" };
         if (filter.name != '')
@@ -53,7 +53,7 @@ module.exports = {
         if (filter.ehrenmitglied != '')
             sWhere.ehrenmitglied = filter.ehrenmitglied;
 
-        var arData = await Adressen.findAll(
+        let arData = await Adressen.findAll(
             {
                 where: sWhere,
                 order: ["name", "vorname"]
@@ -68,14 +68,14 @@ module.exports = {
         });
 
         const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-        var fmtToday = new Date().toLocaleDateString("de-CH", { year: 'numeric', month: "2-digit", day: "2-digit" });
+        let fmtToday = new Date().toLocaleDateString("de-CH", { year: 'numeric', month: "2-digit", day: "2-digit" });
         const workbook = new ExcelJS.Workbook();
         workbook.creator = "Janine Franken";
 
         // Force workbook calculation on load
         workbook.calcProperties.fullCalcOnLoad = true;
 
-        var sheet = workbook.addWorksheet("Adressen", {
+        let sheet = workbook.addWorksheet("Adressen", {
             pageSetup: {
                 fitToPage: true,
                 fitToHeight: 1,
@@ -110,7 +110,7 @@ module.exports = {
         setCellValueFormat(sheet, 'S1', "Eintritt", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
         setCellValueFormat(sheet, 'T1', "Austritt", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
 
-        var row = 2;
+        let row = 2;
 
         for (let index = 0; index < arData.length; index++) {
             const element = arData[index];
@@ -139,8 +139,8 @@ module.exports = {
             setCellValueFormat(sheet, 'R' + row, (element.allianz == "1" ? "Ja" : "Nein"), true, '', { size: iFontSizeRow, name: 'Tahoma' });
             sheet.getCell('R' + row).alignment = { horizontal: "center" };
             setCellValueFormat(sheet, 'S' + row, new Date(element.eintritt).toLocaleDateString("de-CH", { year: 'numeric', month: "2-digit", day: "2-digit" }), true, '', { size: iFontSizeRow, name: 'Tahoma' });
-            var date = new Date(element.austritt);
-            var dateFmt = date.toLocaleDateString('de-DE', options);
+            let date = new Date(element.austritt);
+            let dateFmt = date.toLocaleDateString('de-DE', options);
             setCellValueFormat(sheet, 'T' + row, (dateFmt == "01.01.3000" ? "" : dateFmt), true, '', { size: iFontSizeRow, name: 'Tahoma' });
 
             row++;
@@ -195,10 +195,10 @@ module.exports = {
     writeJournal: async function (req, res) {
         console.log("writeJournal");
         const sjahr = eval(req.query.jahr * 1);
-        var fReceipt = (req.query.receipt == '1');
+        let fReceipt = (req.query.receipt == '1');
         // load a locale
         try {
-            var locale = numeral.localeData('ch')
+            let locale = numeral.localeData('ch')
             
             locale.delimiters = {
                 thousands: ' ',
@@ -227,7 +227,7 @@ module.exports = {
         }
         numeral.locale('ch'); 
         
-        var arData = await Journal.findAll(
+        let arData = await Journal.findAll(
             {
                 where: sequelize.where(sequelize.fn('YEAR', sequelize.col('date')), sjahr),
                 include: [
@@ -255,7 +255,7 @@ module.exports = {
         // Force workbook calculation on load
         workbook.calcProperties.fullCalcOnLoad = true;
 
-        var sheet = workbook.addWorksheet("Journal", {
+        let sheet = workbook.addWorksheet("Journal", {
             pageSetup: {
                 fitToPage: true,
                 fitToHeight: 1,
@@ -312,16 +312,16 @@ module.exports = {
             setCellValueFormat(sheet, 'H3', "Receipt", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
 
         const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-        var row = 4;
+        let row = 4;
 
-        var tRows = [];
+        let tRows = [];
         for (let index = 0; index < arData.length; index++) {
             const element = arData[index];
             const date = new Date(element.date);
-            var dateFmt = date.toLocaleDateString('de-DE', options);
-            var num = numeral(element.amount * 1)
+            let dateFmt = date.toLocaleDateString('de-DE', options);
+            let num = numeral(element.amount * 1)
 
-            var rowRecord = {no: (element.journalno == null ? '' : element.journalno),  date: dateFmt, from: element.fromAccount.order, to: element.toAccount.order, 
+            let rowRecord = {no: (element.journalno == null ? '' : element.journalno),  date: dateFmt, from: element.fromAccount.order, to: element.toAccount.order, 
             text: element.memo, amount: num.format('0,0.00'), receipt: ''};
 
             sheet.getRow(row).height = 22;
@@ -332,7 +332,7 @@ module.exports = {
             setCellValueFormat(sheet, 'F' + row, element.memo, true, '', { size: iFontSizeRow, name: 'Tahoma' });
             setCellValueFormat(sheet, 'G' + row, eval(element.amount * 1), true, '', { size: iFontSizeRow, name: 'Tahoma' });
             sheet.getCell('G' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
-            var linkAdress = ""
+            let linkAdress = ""
             if (fReceipt && element.receipt != null) {
                 linkAdress = element.receipt //.replace('/', '\\')
                 setCellValueFormat(sheet, 'H' + row, linkAdress, true, '', { size: iFontSizeRow, name: 'Tahoma' });
@@ -366,11 +366,11 @@ module.exports = {
             });
 
 
-        var sExt = '.xlsx';
+        let sExt = '.xlsx';
         if (fReceipt) {
             sExt = '.zip';
 
-            var pdf = new PDFDocument({
+            let pdf = new PDFDocument({
                 autoFirstPage: false,
                 bufferPages: true,
                 layout: 'landscape',
@@ -380,7 +380,7 @@ module.exports = {
                     Author: 'AutoMoto-Club Swissair, Janine Franken'
                 }
             });
-            var table = new PdfTable(pdf, {
+            let table = new PdfTable(pdf, {
                 bottomMargin: 50,
                 topargin: 50,
                 leftMargin: 50,
@@ -435,13 +435,13 @@ module.exports = {
             table.addBody(tRows);
 
             // see the range of buffered pages            
-            var gedrucktAm = 'Erstellt am: ' + new Date().toLocaleDateString('de-DE', options);
+            let gedrucktAm = 'Erstellt am: ' + new Date().toLocaleDateString('de-DE', options);
             const range = pdf.bufferedPageRange(); // => { start: 0, count: 1 ... }
             for (let i = range.start, end = range.start + range.count; i < end; i++) {
                 pdf.switchToPage(i);
 
-                var x = pdf.page.margins.left + 5;
-                var y = pdf.page.height - pdf.heightOfString(gedrucktAm) - pdf.page.margins.bottom;
+                let x = pdf.page.margins.left + 5;
+                let y = pdf.page.height - pdf.heightOfString(gedrucktAm) - pdf.page.margins.bottom;
                 console.log(gedrucktAm + ' ' + x + '/' + y);
                 pdf.text(gedrucktAm, x, y);
 
@@ -526,13 +526,13 @@ module.exports = {
     writeAuswertung: async function (req, res) {
         console.log("writeAuswertung");
 
-        var objSave = req.body;
+        let objSave = req.body;
 
         const workbook = new ExcelJS.Workbook();
         await workbook.xlsx.readFile("./public/exports/Meisterschaft-Vorlage.xlsx");
 
         // Clubmeisterschaft lesen und exportieren
-        var dbMeister = await Clubmeister.findAll({
+        let dbMeister = await Clubmeister.findAll({
             where: { jahr: { [Op.eq]: objSave.year } },
             order: [
                 ['rang', 'asc']
@@ -555,9 +555,9 @@ module.exports = {
                 });
             });
 
-        var worksheet = workbook.getWorksheet('Clubmeisterschaft');
+        let worksheet = workbook.getWorksheet('Clubmeisterschaft');
         worksheet.getCell("A1").value = "Clubmeisterschaft " + objSave.year;
-        var row = 5
+        let row = 5
         for (const meister of dbMeister) {
             // Add a row by contiguous Array (assign to columns A, B & C)
             worksheet.insertRow(row, [meister.rang, meister.punkte, meister.vorname, meister.nachname, meister.mitgliedid, meister.anlaesse, meister.werbungen, meister.mitglieddauer, meister.status], 'i+');
@@ -605,7 +605,7 @@ module.exports = {
         worksheet.spliceRows(4, 1);
 
         // Datei sichern
-        var filename = "Meisterschaft-" + objSave.year + ".xlsx";
+        let filename = "Meisterschaft-" + objSave.year + ".xlsx";
         await workbook.xlsx.writeFile("./public/exports/" + filename)
             .catch((e) => {
                 console.error(e);
@@ -640,7 +640,7 @@ module.exports = {
         let sheet
         let oneAdresse
 
-        var objSave = req.body;
+        let objSave = req.body;
 
         switch (objSave.type) {
             case 0:
@@ -732,15 +732,8 @@ module.exports = {
                 // Datenblatt gefüllt für Adressen
                 if (objSave.id == 0) {
                     // für alle aktiven Mitglieder
-                    const dbAdressen = await Adressen.findAll({
-                        where: { "austritt": { [Op.gt]: new Date() } },
-                        include: {
-                            model: Meisterschaft, required: true,
-                            attributes: [],
-                            where: Sequelize.where(Sequelize.fn('YEAR', Sequelize.col("datum")), objSave.year)
-                        },
-                        order: ["adressen.name", "vorname"]
-                    });
+                    const sqlquery = "select a.* from adressen a join (SELECT m.mitgliedid, count(m.id) as inmeister from meisterschaft m join anlaesse an on m.eventid = an.id and year(an.datum) = '" + objSave.year + "' group by m.mitgliedid having count(m.id) > 0) AS mm on a.id = mm.mitgliedid where a.austritt > now() order by a.name, a.vorname"
+                    const dbAdressen = await sequelize.query(sqlquery, { type: QueryTypes.SELECT, logging: console.log, raw: false, model: Adressen })
 
                     for (let index = 0; index < dbAdressen.length; index++) {
                         const adress = dbAdressen[index];
@@ -820,17 +813,17 @@ module.exports = {
     writeExcelData: async function (req, res) {
         // TODO #38
         console.log("writeExcelData");
-        var sjahr = req.query.jahr;
+        let sjahr = req.query.jahr;
 
-        var iVJahr = eval((sjahr * 1) - 1);
-        var iNJahr = eval((sjahr * 1) + 1);
+        let iVJahr = eval((sjahr * 1) - 1);
+        let iNJahr = eval((sjahr * 1) + 1);
 
         const workbook = new ExcelJS.Workbook();
 
         // Force workbook calculation on load
         workbook.calcProperties.fullCalcOnLoad = true;
 
-        var bsheet = workbook.addWorksheet("Bilanz", {
+        let bsheet = workbook.addWorksheet("Bilanz", {
             pageSetup: {
                 fitToPage: true,
                 fitToHeight: 1,
@@ -845,7 +838,7 @@ module.exports = {
             }
         });
 
-        var esheet = workbook.addWorksheet("Erfolgsrechnung", {
+        let esheet = workbook.addWorksheet("Erfolgsrechnung", {
             pageSetup: {
                 fitToPage: true,
                 fitToHeight: 1,
@@ -860,7 +853,7 @@ module.exports = {
             }
         });
 
-        var busheet = workbook.addWorksheet("Budget", {
+        let busheet = workbook.addWorksheet("Budget", {
             pageSetup: {
                 fitToPage: true,
                 fitToHeight: 1,
@@ -875,7 +868,7 @@ module.exports = {
             }
         });
 
-        var accData = await Account.findAll({
+        let accData = await Account.findAll({
             attributes: ["id", "name", "level", "order", "status",
                 [Sequelize.literal(0), "amount"], [Sequelize.literal(0), "amountVJ"],
                 [Sequelize.literal(0), "budget"], [Sequelize.literal(0), "budgetVJ"], [Sequelize.literal(0), "budgetNJ"]
@@ -891,7 +884,7 @@ module.exports = {
                 });
             });
 
-        var accBudget = await Budget.findAll({
+        let accBudget = await Budget.findAll({
             where: { "year": { [Op.in]: [sjahr, iVJahr, iNJahr] } },
             order: ["year", "account"],
             raw: true
@@ -923,7 +916,7 @@ module.exports = {
             }
 
         }
-        var arrAmount = await Journal.findAll({
+        let arrAmount = await Journal.findAll({
             attributes: ["from_account", [Sequelize.fn('SUM', Sequelize.col("amount")), "amount"]],
             where: Sequelize.where(Sequelize.fn('YEAR', Sequelize.col("date")), sjahr),
             group: ["from_account"]
@@ -1023,15 +1016,15 @@ module.exports = {
         setCellValueFormat(bsheet, 'F3', "Differenz", true, false, { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
         bsheet.getCell('F3').alignment = { horizontal: "right" };
 
-        var accBData = accData.filter(function (value, index, array) {
+        let accBData = accData.filter(function (value, index, array) {
 
             return (value.status == 1 || value.amount != 0 || value.amountVJ != 0) && value.level < 3;
         });
-        var Total = writeArray(bsheet, accBData, 4, false);
-        var row = Total.lastRow + 2;
-        var formula1 = { formula: 'D' + Total.total1 + '-D' + Total.total2 };
-        var formula2 = { formula: 'E' + Total.total1 + '-E' + Total.total2 };
-        var formula3 = { formula: 'D' + row + '-E' + row };
+        let Total = writeArray(bsheet, accBData, 4, false);
+        let row = Total.lastRow + 2;
+        let formula1 = { formula: 'D' + Total.total1 + '-D' + Total.total2 };
+        let formula2 = { formula: 'E' + Total.total1 + '-E' + Total.total2 };
+        let formula3 = { formula: 'D' + row + '-E' + row };
         setCellValueFormat(bsheet, 'B' + row, "Gewinn / Verlust", true, 'B' + row + ':C' + row, { bold: true, size: iFontSizeHeader, name: 'Tahoma' });
         setCellValueFormat(bsheet, 'D' + row, formula1, true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
         setCellValueFormat(bsheet, 'E' + row, formula2, true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
@@ -1072,7 +1065,7 @@ module.exports = {
         setCellValueFormat(esheet, 'H3', "Differenz", true, false, { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
         esheet.getCell('H3').alignment = { horizontal: "right" };
 
-        var accEData = accData.filter(function (value, index, array) {
+        let accEData = accData.filter(function (value, index, array) {
             return (value.status == 1 || value.amount != 0 || value.amountVJ != 0 || value.budget != 0 || value.budgetNJ != 0) && value.level > 2 && value.level < 9;
         });
         Total = writeArray(esheet, accEData, 4, true);
@@ -1080,8 +1073,8 @@ module.exports = {
         formula1 = { formula: 'D' + Total.total2 + '-D' + Total.total1 };
         formula2 = { formula: 'E' + Total.total2 + '-E' + Total.total1 };
         formula3 = { formula: 'D' + row + '-E' + row };
-        var formula4 = { formula: 'G' + Total.total2 + '-G' + Total.total1 };
-        var formula5 = { formula: 'G' + row + '-D' + row };
+        let formula4 = { formula: 'G' + Total.total2 + '-G' + Total.total1 };
+        let formula5 = { formula: 'G' + row + '-D' + row };
         setCellValueFormat(esheet, 'B' + row, "Gewinn / Verlust", true, 'B' + row + ':C' + row, { bold: true, size: iFontSizeHeader, name: 'Tahoma' });
         setCellValueFormat(esheet, 'D' + row, formula1, true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
         setCellValueFormat(esheet, 'E' + row, formula2, true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
@@ -1168,14 +1161,14 @@ module.exports = {
     writeAccountToExcel: async function (req, res) {
         console.log("writeAccountToExcel");
         const sJahr = req.query.jahr;
-        var arData = [];
+        let arData = [];
 
         if (req.query.all == 0) {
-            var arAccId = await Journal.findAll({
+            let arAccId = await Journal.findAll({
                 attributes: ["from_account", "to_account"],
                 where: Sequelize.where(Sequelize.fn('YEAR', Sequelize.col("date")), req.query.jahr)
             });
-            var arAccounts = [];
+            let arAccounts = [];
             for (let index = 0; index < arAccId.length; index++) {
                 arAccounts.push(arAccId[index].from_account);
                 arAccounts.push(arAccId[index].to_account);
@@ -1215,8 +1208,8 @@ module.exports = {
         for (let index = 0; index < arData.length; index++) {
             const element = arData[index];
 
-            var sSheetName = element.order + " " + element.name.replace("/", "");
-            var sheet = workbook.addWorksheet(sSheetName.substr(0, 31), {
+            let sSheetName = element.order + " " + element.name.replace("/", "");
+            let sheet = workbook.addWorksheet(sSheetName.substr(0, 31), {
                 pageSetup: {
                     fitToPage: true,
                     fitToHeight: 1,
@@ -1251,10 +1244,10 @@ module.exports = {
             sheet.getColumn('H').width = 12;
 
 
-            var iSaldo = 0.0;
-            var iRow = 4;
+            let iSaldo = 0.0;
+            let iRow = 4;
 
-            var arJournal = await Journal.findAll({
+            let arJournal = await Journal.findAll({
                 where: [Sequelize.where(Sequelize.fn('YEAR', Sequelize.col("date")), sJahr),
                 {
                     [Op.or]: [
@@ -1351,9 +1344,9 @@ module.exports = {
  * @param {boolean} fBudgetVergleich
  */
 function writeArray(sheet, arData, firstRow, fBudget = false, fBudgetVergleich = false) {
-    var row = firstRow;
+    let row = firstRow;
 
-    var cellLevel;
+    let cellLevel;
 
     for (let ind2 = 0; ind2 < arData.length; ind2++) {
         const element = arData[ind2];
@@ -1377,7 +1370,7 @@ function writeArray(sheet, arData, firstRow, fBudget = false, fBudgetVergleich =
                 sheet.getCell('H' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
             }
         } else {
-            var font = { name: 'Tahoma', size: iFontSizeRow };
+            let font = { name: 'Tahoma', size: iFontSizeRow };
             setCellValueFormat(sheet, "B" + row, element.order, true, '', font);
             setCellValueFormat(sheet, "C" + row, element.name, true, '', font);
             setCellValueFormat(sheet, 'D' + row, element.amount, true, '', font);
@@ -1443,24 +1436,14 @@ function writeArray(sheet, arData, firstRow, fBudget = false, fBudgetVergleich =
  * @param {string} syear 
  */
 async function fillTemplate(sheet, id, syear) {
-    const data = await Meisterschaft.findAll({
-        where: { "mitgliedid": id },
-        include: {
-            model: 'anlaesse',
-            where: Sequelize.where(Sequelize.fn('YEAR', 'datum'), syear)
-        },
-        order: ["id"]
-    })
-        .catch(err => {
-            console.error(err);
-            return;
-        });
+    const sqlstring = "select m.* from meisterschaft as m join anlaesse as a on m.eventid = a.id and year(a.datum) = " + syear + " where m.mitgliedid = " + id + " order by m.id"
+    const data = await sequelize.query(sqlstring, { type: QueryTypes.SELECT, logging: console.log, raw: false, model: Meisterschaft } )
 
     if (data != undefined && data.length > 0) {
-        var cols = sheet.getColumn('K');
+        let cols = sheet.getColumn('K');
 
-        var clubTotal = 0
-        var kegelTotal = 0
+        let clubTotal = 0
+        let kegelTotal = 0
 
         cols.eachCell(function (cell, row) {
             if (cell.value != null && cell.value != "eventid") {
@@ -1472,7 +1455,7 @@ async function fillTemplate(sheet, id, syear) {
 
                         if (meisterschaft.wurf1 > 0 || meisterschaft.wurf2 > 0 || meisterschaft.wurf3 > 0 || meisterschaft.wurf4 > 0 || meisterschaft.wurf5 > 0) {
                             // Kegelresultat
-                            var kegelSumme = meisterschaft.wurf1 + meisterschaft.wurf2 + meisterschaft.wurf3 + meisterschaft.wurf4 + meisterschaft.wurf5 + meisterschaft.zusatz;
+                            let kegelSumme = meisterschaft.wurf1 + meisterschaft.wurf2 + meisterschaft.wurf3 + meisterschaft.wurf4 + meisterschaft.wurf5 + meisterschaft.zusatz;
                             sheet.getCell('C' + cell.row).value = meisterschaft.wurf1;
                             sheet.getCell('D' + cell.row).value = meisterschaft.wurf2;
                             sheet.getCell('E' + cell.row).value = meisterschaft.wurf3;
@@ -1693,7 +1676,7 @@ async function createTemplate(syear, sheet, inclPoints) {
  * @param {*} font Object of font settings
  */
 function setCellValueFormat(sheet, range, value, border, merge, font) {
-    var cell = sheet.getCell(range)
+    let cell = sheet.getCell(range)
     cell.value = value;
     if (merge != "") {
         sheet.mergeCells(merge);

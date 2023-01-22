@@ -12,3 +12,4 @@ public/js/.DS_Store
 public/uploads/*
 node_modules
 documents/*
+patchDB.sql

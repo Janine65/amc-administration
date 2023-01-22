@@ -21,8 +21,8 @@ module.exports = {
     // count of SAM_Mitglieder
     // count of not SAM_Mitglieder
 
-    var arResult = [{ label: 'Total Anlässe', value: 0 }, { label: 'Zukünftige Anlässe', value: 0 }]
-    var total = await Anlaesse.count({
+    let arResult = [{ label: 'Total Anlässe', value: 0 }, { label: 'Zukünftige Anlässe', value: 0 }]
+    let total = await Anlaesse.count({
       where: [Sequelize.where(Sequelize.fn('YEAR', Sequelize.col('datum')), global.Parameter.get("CLUBJAHR")),
       { "status": 1 },
       { "istsamanlass": false },
@@ -78,7 +78,7 @@ module.exports = {
   },
 
   addData: function (req, res) {
-    var data = req.body;
+    let data = req.body;
 		data.id = null;
     console.info("insert: ", data);
     Anlaesse.create(data)
@@ -91,7 +91,7 @@ module.exports = {
   },
 
   updateData: function (req, res) {
-    var data = req.body;
+    let data = req.body;
     if (data.id == 0 || data.id == null) {
       // insert
       data.id = null;

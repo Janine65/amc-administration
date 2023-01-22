@@ -27,7 +27,7 @@ wxAMC.moduleClasses.Parameters = class {
    * Return the module's UI config object.
    */
    getUIConfig() {
-    var elements = [{id: "SYSTEM", label: "Systemparameter", type: "label"},];
+    let elements = [{id: "SYSTEM", label: "Systemparameter", type: "label"},];
     elements.push();
     wxAMC.parameter.forEach((value, key) => {      
       if (key == "RECHNUNG") {
@@ -85,7 +85,7 @@ wxAMC.moduleClasses.Parameters = class {
    * Refresh the parameters list from local storage.
    */
   async refreshData() {  
-    var elements = {};
+    let elements = {};
     
     await wxAMC.reloadParameters();
     
@@ -102,7 +102,7 @@ wxAMC.moduleClasses.Parameters = class {
    */
 
   async saveParameters() {
-    var mUpdate = Object.create(null);
+    let mUpdate = Object.create(null);
     
     wxAMC.parameter.forEach((value, key) => {
         if (value !== $$("moduleParameters-items").getItem(key).value)
@@ -117,7 +117,7 @@ wxAMC.moduleClasses.Parameters = class {
         callback : function(inResult) {
           if (inResult) {
             const url = "/Parameter/data/";
-            var stringified = JSON.stringify(mUpdate);
+            let stringified = JSON.stringify(mUpdate);
             console.log(stringified);
             fetch(url, {
               method: 'PUT', // *GET, POST, PUT, DELETE, etc.

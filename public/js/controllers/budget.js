@@ -1,4 +1,4 @@
-var db = require("../db");
+let db = require("../db");
 const { Budget, Account } = require("../db")
 
 module.exports = {
@@ -33,7 +33,7 @@ module.exports = {
 	},
 
 	addData: async function (req, res) {
-		var data = req.body;
+		let data = req.body;
 		data.id = null;
 		console.info('insert: ', data);
 
@@ -44,7 +44,7 @@ module.exports = {
 	},
 
 	updateData: function (req, res) {
-		var data = req.body;
+		let data = req.body;
 		console.info('update: ', data);
 
 		Budget.findByPk(data.id)

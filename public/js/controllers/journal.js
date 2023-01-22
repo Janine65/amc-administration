@@ -1,4 +1,4 @@
-var {Journal, Account} = require("../db");
+const {Journal, Account} = require("../db");
 const { Op, Sequelize } = require("sequelize");
 const ExcelJS = require("exceljs");
 const fs = require("fs");
@@ -31,7 +31,7 @@ module.exports = {
 		Journal.findByPk(req.query.id)
 			.then(data => {
 				if (data.receipt != null) {
-					var sJahr = new Date(data.date).getFullYear();
+					let sJahr = new Date(data.date).getFullYear();
 					const pathname = global.documents + sJahr + '/';
 					console.log(pathname + data.receipt);
 					
@@ -64,7 +64,7 @@ module.exports = {
 	},
 
 	addData: async function (req, res) {
-		var data = req.body;
+		let data = req.body;
 		data.id = null;
 		console.info('insert: ', data);
 		Journal.create(data)
@@ -73,7 +73,7 @@ module.exports = {
 	},
 
 	updateData: function (req, res) {
-		var data = req.body;
+		let data = req.body;
 		console.info('update: ', data);
 
 		Journal.findByPk(data.id)
@@ -92,14 +92,19 @@ module.exports = {
 			return;
 		}
 
-		var sJahr = new Date(data.date).getFullYear();
+		let sJahr = new Date(data.date).getFullYear();
 		const path = global.documents + sJahr + '/';
 		const receipt =  'receipt/' + 'Journal-' + data.id + '.pdf';
 
-		var filename = global.uploads + data.uploadFiles;
+		let filename = global.uploads + data.uploadFiles;
 
 		if (fs.existsSync(filename)) {
 			fs.copyFileSync(filename, path + receipt);
+			fs.chmod(path + receipt + filename, '0640', err => {
+				if (err) {
+					payload.message = "Error while changing the mode of the file - " + err.message
+				}
+			  });
 			
 			Journal.update({receipt: receipt}, {where: {id: data.id}})
 					.then(resp => res.json(resp))
@@ -112,7 +117,7 @@ module.exports = {
 	delAttachment: function (req, res) {
 		const data = req.body;
 
-		var sJahr = new Date(data.date).getFullYear();
+		let sJahr = new Date(data.date).getFullYear();
 		const path = global.documents + sJahr + '/';
 		const receipt =  data.receipt;
 
@@ -144,11 +149,11 @@ module.exports = {
 			})
 		])
 		.then((modelReturn) => {
-			var arPreData = modelReturn.flat();
-			var arData = [];
+			let arPreData = modelReturn.flat();
+			let arData = [];
 			for (let index = 0; index < arPreData.length; index++) {
 				const element = arPreData[index];
-				var record = {id : element.id, journalno : element.journalno, date: element.date, memo: element.memo}
+				let record = {id : element.id, journalno : element.journalno, date: element.date, memo: element.memo}
 
 				if (element.fromAccount == null) {
 					record.account = element.toAccount.order + " " + element.toAccount.name
@@ -167,8 +172,8 @@ module.exports = {
 	},
 
 	importJournal: async function (req, res) {
-		var data = req.body;
-		var filename = data.sname.replace(process.cwd(), ".");
+		let data = req.body;
+		let filename = data.sname.replace(process.cwd(), ".");
 		console.log(filename);
 
 		const workbook = new ExcelJS.Workbook();
@@ -186,10 +191,10 @@ module.exports = {
 		];
 
 
-		var arInsData = [];
+		let arInsData = [];
 
 		// einlesen vom Kontoplan
-		var arAccount = await Account.findAll({
+		let arAccount = await Account.findAll({
 			order: ["level", "order"]
 		})
 		.catch((e) => {
@@ -240,7 +245,7 @@ module.exports = {
 					idHaben = 43;
 				}
 
-				var formDate;
+				let formDate;
 				if (Datum instanceof Date) {
 					const offset = Datum.getTimezoneOffset()
 					Datum = new Date(Datum.getTime() - (offset * 60 * 1000))
@@ -249,7 +254,7 @@ module.exports = {
 					formDate = Datum.split('.')[2] + '-' + Datum.split('.')[1] + '-' + Datum.split('.')[0]
 				}
 
-				var record = {"journalno": Nr, "date": formDate, "from_account": idSoll, "to_account": idHaben, "memo": Buchungstext, "amount": Betrag};
+				let record = {"journalno": Nr, "date": formDate, "from_account": idSoll, "to_account": idHaben, "memo": Buchungstext, "amount": Betrag};
 				arInsData.push(record);
 				logWorksheet.addRow({ 'timestamp': new Date().toString(), 'type': 'Warnung', 'message': record.toString() });
 			}
@@ -261,7 +266,7 @@ module.exports = {
 			logWorksheet.addRow({ 'timestamp': new Date().toUTCString(), 'type': 'Warnung', 'message': e });
 		});
 
-		var filenamenew = filename.replace('.xlsx', 'imported.xlsx');
+		let filenamenew = filename.replace('.xlsx', 'imported.xlsx');
 		await workbook.xlsx.writeFile(filenamenew)
 			.catch((e) => {
 				console.error(e);

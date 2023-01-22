@@ -13,8 +13,8 @@ module.exports = {
 	},
 
 	getOverviewData: async function (req, res) {
-		var arResult = [{ label: 'Kegelmeisterschaft', value: 0 }]
-		var anzahl = await Kegelmeister.count({
+		let arResult = [{ label: 'Kegelmeisterschaft', value: 0 }]
+		let anzahl = await Kegelmeister.count({
 			where: [{ "jahr": global.Parameter.get('CLUBJAHR') },
 			{ "status": true }]
 		});
@@ -25,22 +25,22 @@ module.exports = {
 	calcMeister: async function (req, res) {
 		// berechnet den Kegelmeister für das Jahr req.query.jahr
 
-		var arMeister = []
-		var allMitgliedId = []
-		var data = []
+		let arMeister = []
+		let allMitgliedId = []
+		let data = []
 
 		data = await Anlaesse.findAll({
 			where: [Sequelize.where(Sequelize.fn('year', Sequelize.col("datum")), req.query.jahr),
 			{ "istkegeln": true }]
 		});
-		var arAnlaesse = []
+		let arAnlaesse = []
 		for (let ind1 = 0; ind1 < data.length; ind1++) {
 			arAnlaesse.push(data[ind1].id);
 		}
 
 		// Streichresultate ermitteln - nur im aktuellen Clubjahr
 		if (req.query.jahr <= global.Parameter.get('CLUBJAHR')) {
-			var anzahl = await Anlaesse.count({
+			let anzahl = await Anlaesse.count({
 				where: [Sequelize.where(Sequelize.fn('year', Sequelize.col("datum")), req.query.jahr),
 				{ "nachkegeln": false },
 				{ "istkegeln": true },
@@ -92,7 +92,7 @@ module.exports = {
 					order: ["mitgliedid", ["total_kegel", "DESC"]],
 					raw: true
 				})
-				var zwmitgliedid = 0
+				let zwmitgliedid = 0
 				anzahl = 0
 				for (let ind = 0; ind < data.length; ind++) {
 					if (zwmitgliedid != data[ind].mitgliedid) {
@@ -233,7 +233,7 @@ module.exports = {
 			for (let ind = 0; ind < data.length; ind++) {
 				let ifound = arMeister.findIndex((element) => element.mitgliedid == data[ind].id)
 				if (ifound > -1) {
-					var meister = arMeister[ifound]
+					let meister = arMeister[ifound]
 					meister.mnr = data[ind].mnr
 					meister.vorname = data[ind].vorname
 					meister.nachname = data[ind].name
@@ -247,7 +247,7 @@ module.exports = {
 		}
 		// nun wird der Array sortiert nach den entsprechenden Kriterien
 		arMeister.sort((e1, e2) => {
-			var order = 0
+			let order = 0
 			if (e1.punkte > e2.punkte)
 				order = -1
 			else if (e1.punkte == e2.punkte && e1.anlaesse > e2.anlaesse)

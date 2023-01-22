@@ -203,8 +203,8 @@ wxAMC.moduleClasses.Auswertungen = class {
    */
   async refreshData() {
 
-    var sSelYear = $$("moduleAuswertungendatumSelect").getValue();
-    var url = "/Meisterschaft/getChartData?jahr=" + sSelYear;
+    let sSelYear = $$("moduleAuswertungendatumSelect").getValue();
+    let url = "/Meisterschaft/getChartData?jahr=" + sSelYear;
     let chart
     if ($$("checkVorjahr").getValue() == 1) {
       url += "&vorjahr=true";

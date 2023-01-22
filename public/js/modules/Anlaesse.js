@@ -370,9 +370,9 @@ custom_checkbox(obj, common, value){
   } /* End getUIConfig(). */
 
   calcTotal() {
-    var data = $$("moduleAnlaesse-punkteForm").getValues();
+    let data = $$("moduleAnlaesse-punkteForm").getValues();
 
-    var total = Number(data.wurf1) + Number(data.wurf2) + Number(data.wurf3) + Number(data.wurf4) + Number(data.wurf5) + Number(data.zusatz);
+    let total = Number(data.wurf1) + Number(data.wurf2) + Number(data.wurf3) + Number(data.wurf4) + Number(data.wurf5) + Number(data.zusatz);
     $$("kegelTotal").setValue(total);
 
 
@@ -432,11 +432,11 @@ custom_checkbox(obj, common, value){
     $$("moduleAnlaesse-punkteList").clearAll();
     $$("moduleAnlaesse-punkteForm").clear();
     $$("moduleAnlaesse-punkteForm").disable();
-    var longname = new Date(anlass.datum).toLocaleDateString() + ' ' + anlass.name;
+    let longname = new Date(anlass.datum).toLocaleDateString() + ' ' + anlass.name;
     $$("moduleAnlaesse-punkteEvent").setValue("<div style='font-size:20px;'>" + longname + "</div>");
     $$("moduleAnlaesse-anzahlGaeste").setValue("<div style='font-size:20px;'>Anzahl Gäste: " + anlass.gaeste + "</div>");
 
-    var zusatz = [this.anlass.istkegeln ? [this.anlass.nachkegeln ? 0 : 5] : 0];
+    let zusatz = [this.anlass.istkegeln ? [this.anlass.nachkegeln ? 0 : 5] : 0];
     $$("punkte")[this.anlass.nachkegeln ? "disable" : "enable"]();
     $$("kegelresultate")[this.anlass.istkegeln ? "show" : "hide"]();
 
@@ -477,9 +477,9 @@ custom_checkbox(obj, common, value){
   } /* End eeventsEditing */
 
   deletePunkteForm() {
-    var itemData = $$(`moduleAnlaesse-punkteList`).getSelectedItem();
+    let itemData = $$(`moduleAnlaesse-punkteList`).getSelectedItem();
     const url = "/Meisterschaft/data";
-    var smethod = "DELETE";
+    let smethod = "DELETE";
 
     fetch(url, {
       method: smethod, // *GET, POST, PUT, DELETE, etc.
@@ -502,7 +502,7 @@ custom_checkbox(obj, common, value){
     })
     .then((data) => {
       // Refresh the module's summary list and return to that list.
-      var idEntry = $$(`moduleAnlaesse-punkteList`).getSelectedId(); 
+      let idEntry = $$(`moduleAnlaesse-punkteList`).getSelectedId(); 
       $$(`moduleAnlaesse-punkteList`).remove(idEntry);
       $$("moduleAnlaesse-punkteForm").clear();
       $$("moduleAnlaesse-punkteForm").disable();
@@ -521,7 +521,7 @@ custom_checkbox(obj, common, value){
     $$(`moduleAnlaesse-punkteList`).unselectAll();
     $$("moduleAnlaesse-punkteForm").clear();
     $$("moduleAnlaesse-punkteForm").enable();
-    var itemData = { id: 0, eventid: this.anlass.id, punkte: this.anlass.punkte, zusatz: [this.anlass.istkegeln ? [this.anlass.nachkegeln ? 0 : 5] : 0], wurf1: 0, wurf2: 0, wurf3: 0, wurf4: 0, wurf5: 0, streichresultat: 0 };
+    let itemData = { id: 0, eventid: this.anlass.id, punkte: this.anlass.punkte, zusatz: [this.anlass.istkegeln ? [this.anlass.nachkegeln ? 0 : 5] : 0], wurf1: 0, wurf2: 0, wurf3: 0, wurf4: 0, wurf5: 0, streichresultat: 0 };
     $$("moduleAnlaesse-punkteForm").setValues(itemData);
     $$("punkte")[this.anlass.nachkegeln ? "disable" : "enable"]();
     $$("kegelresultate")[this.anlass.istkegeln ? "show" : "hide"]();
@@ -537,18 +537,18 @@ custom_checkbox(obj, common, value){
     if (!$$("moduleAnlaesse-punkteForm").isDirty())
       return;
 
-    var itemData = $$("moduleAnlaesse-punkteForm").getValues();
+    let itemData = $$("moduleAnlaesse-punkteForm").getValues();
 
     console.log("savePunkteForm: itemData: ",itemData);
     const url = "/Meisterschaft/data";
     //$$("mitgliedid").show();
     //$$("mitgliedListe").hide();
 
-    var smethond = (itemData.id > 0 ? "PUT" : "POST");
+    let smethond = (itemData.id > 0 ? "PUT" : "POST");
 
     if (itemData.id == 0 || itemData.id == null) {
       // check duplicate
-      var fObj = $$(`moduleAnlaesse-punkteList`).find(function(obj)
+      let fObj = $$(`moduleAnlaesse-punkteList`).find(function(obj)
       {
         return (obj.mitgliedid == itemData.mitgliedid)
       },true);
@@ -581,7 +581,7 @@ custom_checkbox(obj, common, value){
     .then((data) => {
       // Refresh the module's summary list and return to that list.
       if (smethond == 'PUT') {
-        var idEntry = $$(`moduleAnlaesse-punkteList`).getSelectedId(); 
+        let idEntry = $$(`moduleAnlaesse-punkteList`).getSelectedId(); 
         $$(`moduleAnlaesse-punkteList`).updateItem(idEntry, itemData);
       } else {
         console.log('after post', data);
@@ -622,9 +622,9 @@ custom_checkbox(obj, common, value){
 
     const anlassOrig = $$('moduleAnlaesse-items').getSelectedItem();
     console.log(anlassOrig);
-    var anlass = [];
+    let anlass = [];
     anlass.id = null;
-    var datum = new Date(anlassOrig.datum);
+    let datum = new Date(anlassOrig.datum);
     datum.setUTCFullYear(new Date(anlassOrig.datum).getUTCFullYear()+1);
     anlass.datum = datum;
     anlass.name = anlassOrig.name;
@@ -686,7 +686,7 @@ custom_checkbox(obj, common, value){
   async refreshData() {
 
     const url = "/Anlaesse/data";
-   // var dataItems;
+   // let dataItems;
 
     const promiseModule = fetch(url)
       .then(function(response) {
@@ -703,7 +703,7 @@ custom_checkbox(obj, common, value){
     // Populate the tree.
     $$("moduleAnlaesse-items").clearAll();
     $$("moduleAnlaesse-items").parse(itemsAsArray);
-    var sSelYear = $$("datumSelect").getValue();
+    let sSelYear = $$("datumSelect").getValue();
     if (sSelYear == "")
       sSelYear = wxAMC.parameter.get('CLUBJAHR');
 
@@ -737,7 +737,7 @@ custom_checkbox(obj, common, value){
     } 
 
     // Populate the day-at-a-glance screen.
-    var rows = [ ];
+    let rows = [ ];
 
     const promiseModule = fetch("/Anlaesse/getOverviewData")
       .then((response) => response.json())

@@ -364,13 +364,13 @@ class WXAMC {
 
   // **************************************** Module helper methods ****************************************
   async importLoadedFile() {
-    var f = $$("fisupload").files;
+    let f = $$("fisupload").files;
 
     f.data.each(function (file) {
-      var status = file.status; // upload status
-      var fname = file.name;    // file name
-      var sname = file.sname;   // storage name
-      var message = 'Upload: ' + status + ' for ' + fname + 'stored as ' + sname;
+      let status = file.status; // upload status
+      let fname = file.name;    // file name
+      let sname = file.sname;   // storage name
+      let message = 'Upload: ' + status + ' for ' + fname + 'stored as ' + sname;
       webix.message(message, 'Info');
       console.log(message, 'Info');
 
@@ -497,7 +497,7 @@ class WXAMC {
    * @param inFormIDs    An array of form IDs.
    */
   async saveHandler(inModuleName, inFormID) {
-    var itemData;
+    let itemData;
     // Merge all forms together.  Usually there's just one, but some modules may have more than one.
     if ($$(inFormID).isDirty()) {
       itemData = $$(inFormID).getValues();
@@ -513,7 +513,7 @@ class WXAMC {
     console.log("saveHandler: itemData: ", itemData);
     const url = "/" + inModuleName + "/data";
 
-    var smethond = (wxAMC.modules[inModuleName].editingID > 0 ? "PUT" : "POST");
+    let smethond = (wxAMC.modules[inModuleName].editingID > 0 ? "PUT" : "POST");
 
     fetch(url, {
       method: smethond, // *GET, POST, PUT, DELETE, etc.
@@ -615,7 +615,7 @@ class WXAMC {
    */
    writeAuswertung() {
 
-    var objSave = {};
+    let objSave = {};
     const url = "/Anlaesse/writeAuswertung";
     if ($$("moduleAuswertungendatumSelect"))
       objSave.year = $$("moduleAuswertungendatumSelect").getValue();
@@ -680,7 +680,7 @@ class WXAMC {
         // Delete confirmed.
         if (inResult) {
           const url = "/" + inModuleName + "/data/";
-          var data = $$(`module${inModuleName}-items`).getSelectedItem();
+          let data = $$(`module${inModuleName}-items`).getSelectedItem();
           fetch(url, {
             method: 'DELETE', // *GET, POST, PUT, DELETE, etc.
             mode: 'cors', // no-cors, *cors, same-origin
@@ -827,7 +827,7 @@ class WXAMC {
   } /* End doLogout */
 
   doLogin(cred) {
-    var user;
+    let user;
 
     if (cred === undefined || typeof cred == 'string') {
       user = $$("login-detailsform").getValues();
@@ -878,13 +878,13 @@ class WXAMC {
           webix.message("Welcome " + wxAMC.loggedUser, "Info");
           wxAMC.setHidden();
           if (window.PasswordCredential) {
-            var data = {
+            let data = {
               id: resp.email,
               userid: resp.userid,
               name: resp.name,
               password: resp.password
             }
-            var creds = new PasswordCredential(data);
+            let creds = new PasswordCredential(data);
             navigator.credentials.store(creds)
               .then(
                 closeWindow()
