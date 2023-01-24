@@ -32,10 +32,7 @@ passport.use(new LocalStrategy({
 ));
 
 function isValidPassword(password) {
-  if (password.length >= 8) {
-    return true;
-  }
-  return false;
+  return password.length >= 8;
 }
 
 //uses a regex to check if email is valid

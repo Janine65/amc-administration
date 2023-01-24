@@ -29,7 +29,8 @@ const logout = () => {
   try {
     console.log("Logging out");
     auth0.logout({
-      returnTo: window.location.origin
+      logoutParams: 
+      { returnTo: window.location.origin }
     });
   } catch (err) {
     console.log("Log out failed", err);
