@@ -102,7 +102,7 @@ module.exports = {
 			fs.copyFileSync(filename, path + receipt);
 			fs.chmod(path + receipt + filename, '0640', err => {
 				if (err) {
-					payload.message = "Error while changing the mode of the file - " + err.message
+					return res.json({type: "error", message: "Error while changing the mode of the file - " + err.message});
 				}
 			  });
 			
