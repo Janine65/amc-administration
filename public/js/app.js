@@ -28,10 +28,11 @@ const login = async (targetUrl) => {
 const logout = () => {
   try {
     console.log("Logging out");
-    auth0.logout({
-      logoutParams: 
-      { returnTo: window.location.origin }
-    });
+    auth0.logout(
+      function(err) {
+        if (err) { return next(err); }
+        res.redirect(window.location.origin);
+      });
   } catch (err) {
     console.log("Log out failed", err);
   }
