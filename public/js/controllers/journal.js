@@ -43,6 +43,16 @@ async function getAllAttachment(req, res) {
 		}
 	)
 		.then(data => {
+			data.forEach(rec => {
+				const pathname = global.documents + req.query.jahr + '/';
+				try {
+					fs.copyFileSync(pathname + rec.receipt, global.uploads + rec.receipt);
+					rec.receipt = global.public + rec.receipt
+				} catch (ex) {
+					console.log(pathname + rec.receipt + ': File not found');
+					rec.receipt = 'File not found: ' + rec.receipt
+				}
+			});
 			res.json(data);
 		})
 		.catch((e) => console.error(e));
@@ -140,7 +150,12 @@ async function addAttachment(req, res) {
 		let filename = global.uploads + element;
 
 		if (fs.existsSync(filename)) {
-			fs.copyFileSync(filename, path + receipt);
+			fs.copyFileSync(filename, );
+			fs.chmod(path + receipt + filename, '0640', err => {
+				if (err) {
+					payload.message = "Error while changing the mode of the file - " + err.message
+				}
+			  });
 			let newReceipt = Receipt.build({ receipt: receipt })
 			newReceipt.save({ fields: ['receipt'] })
 				.then(result => {

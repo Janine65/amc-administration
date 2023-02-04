@@ -731,8 +731,7 @@ module.exports = {
             case 2:
                 // Datenblatt gefüllt für Adressen
                 if (objSave.id == 0) {
-                    // für alle aktiven Mitglieder
-                    
+                    // für alle aktiven Mitglieder                    
                     const sqlquery = "select a.* from adressen a join (SELECT m.mitgliedid, count(m.id) as inmeister from meisterschaft m join anlaesse an on m.eventid = an.id and year(an.datum) = '" + objSave.year + "' group by m.mitgliedid having count(m.id) > 0) AS mm on a.id = mm.mitgliedid where a.austritt > now() order by a.name, a.vorname"
                     const dbAdressen = await sequelize.query(sqlquery, { type: QueryTypes.SELECT, logging: console.log, raw: false, model: Adressen })
 
@@ -1435,22 +1434,6 @@ function writeArray(sheet, arData, firstRow, fBudget = false, fBudgetVergleich =
  * @param {string} syear 
  */
 async function fillTemplate(sheet, id, syear) {
-    /*
-    const data = await Meisterschaft.findAll({
-        where: { "mitgliedid": id },
-        include: [{
-            as: 'linkedEvent',
-            model: 'anlaesse',
-            attributes: [],
-            where: sequelize.where(sequelize.fn('YEAR', sequelize.col("datum")), syear)
-        }],
-        order: ["meisterschaft.id"]
-    })
-        .catch(err => {
-            console.error(err);
-        });
-    */
-
     const sqlstring = "select m.* from meisterschaft as m join anlaesse as a on m.eventid = a.id and year(a.datum) = " + syear + " where m.mitgliedid = " + id + " order by m.id"
     const data = await sequelize.query(sqlstring, { type: QueryTypes.SELECT, logging: console.log, raw: false, model: Meisterschaft } )
 
@@ -1482,7 +1465,12 @@ async function fillTemplate(sheet, id, syear) {
                             } else {
                                 // setzte diagonale Linie - > Streichresultat                                
                                 sheet.getRow(row).eachCell({ includeEmpty: false }, function (formatCell, colNumber) {
-                                    formatCell.border = {
+                                    formatCell.style.fill = {
+                                        type: 'pattern',
+                                        pattern: 'solid',
+                                        bgColor: { argb: '96C8FB'}
+                                    };
+                                    formatCell.style.border = {
                                         diagonal: {
                                             up: true,
                                             down: true,

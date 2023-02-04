@@ -571,6 +571,8 @@ class WXAMC {
     else
       objSave.year = wxAMC.parameter.get('CLUBJAHR');
 
+    webix.message({ type: "Info", text: "Excelfile wird erstellt" })
+
     // create excel datasheet
     const promise = fetch(url, {
       method: "POST", // *GET, POST, PUT, DELETE, etc.
@@ -595,7 +597,7 @@ class WXAMC {
       if (data.type == "info") {
         webix.ajax().response("blob").get('./exports/' + data.filename, function(text, blob){
           webix.html.download(blob, data.filename);
-          webix.message(data.message, "Info");
+          webix.message(data.message + ": " + data.filename, "Info");
         });          
     } else {
         webix.message(data.message, "Error");

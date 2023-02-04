@@ -23,7 +23,7 @@
             "smtp": "smtp.zoho.com",
             "smtp_port": 465,
             "smtp_user": "info@automoto-sr.info",
-            "smtp_pwd": "U2FsdGVkX18yIspZA/tf0UZbBWNR1H8tJ8MMRHcO6xU=",
+            "smtp_pwd": "U2FsdGVkX1/koSFtdTQ2R3/1zNlorAXwnEMBx1yvZq4=",
             "email_from": "AutoMotoClub Swissair <info@automoto-sr.info>"    
         }
     },
