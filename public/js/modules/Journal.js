@@ -784,7 +784,7 @@ wxAMC.moduleClasses.Journal = class {
                 {
                   id: "journalAtt-addButton", view: "button", label: "Hinzufügen",
                   autowidth: true, type: "icon",
-                  icon: "webix_icon mdi mdi-new",
+                  icon: "webix_icon mdi mdi-plus",
                   click: this.add_attachment.bind(this)
                 },
                 {
@@ -843,12 +843,6 @@ wxAMC.moduleClasses.Journal = class {
               view: "form", id: "journalAtt-ViewForm",
               elements: [
                 { view: "text", label: "Journal", labelPosition: "top", name: "journaltext", readonly: true },
-                // {
-                //   view:"context",
-                //   body:{ content:"details" },
-                //   padding: 20,
-                //   master:"areaA"
-                // }
                 { view: "iframe", id: "pdfFilename" }
               ]
             },
@@ -916,24 +910,50 @@ wxAMC.moduleClasses.Journal = class {
           rows: [
             { /* Begin Receipt List */
             columns: [
-              { id: "id", header: "ID", autowidth: true, hidden: false },
-              { id: "receipt", header: "Beleg", autowidth: true, hidden: false },
-              { id: "bezeichnung", header: "Bezeichnung", fillspace: true, hidden: false },
-              { id: "updatedAt", header: "Hinzugefügt am", autowidth: true, hidden: false },
+              { id: "id", header: "ID", autowidth: true, hidden: true },
+              { id: "receipt", header: "Beleg", autowidth: true },
+              { id: "bezeichnung", header: "Bezeichnung", fillspace: true, editor: "text" },
+              { id: "updatedAt", header: "Hinzugefügt am", autowidth: true, format:webix.i18n.dateFormatStr },
             ],
             view: "datatable",
               id: "listReceiptList",
               select: true, autofit: true,
               resizeColumn: { headerOnly: true },
               scroll: true,
-              editable: false,
+              editable: true,
               on: {
                 onItemDblClick: function (selection) {
                   const data = this.getItem(selection.row);
                   wxAMC.modules['Journal'].display_receipt(data);
+                },
+                onAfterEditStop: function (state, editor, ignoreUpdate) {
+                  if (state.value != state.old && !ignoreUpdate) {
+                    console.log(editor);
+                    wxAMC.modules['Journal'].save_receipt(editor.row, state.value)
+                  }
                 }
               }
             }, /* End Receipt List */
+            {
+              view: "form", id: "receiptAdd-Form",
+              elements: [
+                {
+                    view: "uploader", value: 'Neue Belege', link: "receitptupload_list", apiOnly: true,
+                    upload: "/uploadFiles", accept: "application/pdf",
+                    multiple: true, autosend: false,
+                    name: "uploadFiles", id: "receiptupload"
+                  },
+                  {
+                    view: "list",
+                    id: "receitptupload_list",
+                    type: "uploader",
+                    autoheight: false,
+                    height: 100,
+                    scroll: true,
+                    borderless: true
+                  },/* End Journal Attachment From */
+              ]
+            },
             { /* Begin Receipt Toolbar */
               view: "toolbar",
               cols: [
@@ -946,11 +966,18 @@ wxAMC.moduleClasses.Journal = class {
                   }
                 },
                 {},
-                // {
-                //   view: "button", label: "Save", autowidth: true,
-                //   type: "icon", icon: "webix_icon mdi mdi-content-save",
-                //   click: this.saveReceipt.bind(this), disabled: (wxAMC.UserRole == 'admin' ? false : true)
-                // }
+                {
+                  id: "receipt-delButton", view: "button", label: "Löschen",
+                  autowidth: true, type: "icon",
+                  icon: "webix_icon mdi mdi-delete",
+                  click: this.delete_receipt.bind(this)
+                },              
+                {
+                  id: "receipt-sendButton", view: "button", label: "Senden",
+                  autowidth: true, type: "icon",
+                  icon: "webix_icon mdi mdi-email-send",
+                  click: this.senden_receipt.bind(this)
+                }              
               ]
             } /* End Receipt Toolbar */
           ]
@@ -968,7 +995,6 @@ wxAMC.moduleClasses.Journal = class {
     return
   } /* End activate(). */
 
-
   /**
    * Called whenever this module becomes inactive.
    */
@@ -983,6 +1009,7 @@ wxAMC.moduleClasses.Journal = class {
   show_attachment(data) {
     data.journaltext = data.date + " " + data.memo;
     $$("journalAtt-Form").setValues(data);
+    $$("journalatt_list").clearAll()
     
     if (wxAMC.UserRole == 'admin') {
       // show add attachment
@@ -1004,7 +1031,6 @@ wxAMC.moduleClasses.Journal = class {
       Promise.resolve(promiseObj)
         .then(function (res) {
           const itemsAsArray = wxAMC.objectAsArray(res);
-
           $$("journalatt_list").parse(itemsAsArray)
           
         })
@@ -1037,6 +1063,97 @@ wxAMC.moduleClasses.Journal = class {
     $$("journalAtt-View").show()
    }
 
+   save_receipt(id, bezeichnung) {
+    let data = { id: id, bezeichnung: bezeichnung };
+    // console.log(data);
+    const url = "/Journal/updReceipt";
+    let method = "PUT";
+    fetch(url, {
+      method: method, // *GET, POST, PUT, DELETE, etc.
+      mode: 'cors', // no-cors, *cors, same-origin
+      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+      credentials: 'same-origin', // include, *same-origin, omit
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      redirect: 'follow', // manual, *follow, error
+      referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+      body: JSON.stringify(data) // body data type must match "Content-Type" header
+    })
+      .then((response) => {
+        if (!response.ok) { // ***
+          webix.message({
+            type: "error",
+            text: "HTTP error " + response.status
+          }); // ***
+        }
+      })
+      .catch(e => webix.message({
+        type: "error",
+        text: e
+      }));
+ 
+  }
+
+  delete_receipt() {
+    const data = $$("listReceiptList").getSelectedItem();
+    const url = "/Journal/delReceipt";
+    let method = "POST";
+    fetch(url, {
+      method: method, // *GET, POST, PUT, DELETE, etc.
+      mode: 'cors', // no-cors, *cors, same-origin
+      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+      credentials: 'same-origin', // include, *same-origin, omit
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      redirect: 'follow', // manual, *follow, error
+      referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+      body: JSON.stringify(data) // body data type must match "Content-Type" header
+    })
+      .then((response) => {
+        if (!response.ok) { // ***
+          webix.message({
+            type: "error",
+            text: "HTTP error " + response.status
+          }); // ***
+        }
+        this.refreshReceiptList()
+      })
+      .catch(e => webix.message({
+        type: "error",
+        text: e
+      }));
+  }
+
+  /**
+   * senden_receipt
+   */
+  senden_receipt() {
+    $$("receiptupload").send(function () {
+      fetch('/Journal/addReceipt?jahr=' + $$("moduleJournal-dateSelect").getValue(), {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify($$("receiptAdd-Form").getValues())
+      })
+        .then(resp => {
+          if (!resp.ok) {
+            webix.message(resp.statusText, "error")
+            return null
+          }
+          if (resp.type == "error") {
+            webix.message(resp.message, "error")
+            return null
+          }
+          wxAMC.modules['Journal'].refreshReceiptList();
+          $$("receiptAdd-Form").clear();
+          return resp.json();
+        })
+        .catch(e => webix.message(e, "error", -1))
+    });
+  }
   /**
    * save_attachment
    */
@@ -1204,6 +1321,7 @@ wxAMC.moduleClasses.Journal = class {
   refreshReceiptList() {
     $$("listReceiptList").clearAll();
     $$("listReceiptList").load("/Journal/getAllAtt?jahr=" + $$("moduleJournal-dateSelect").getValue());    
+    $$("listReceiptList").sort('id')
   }
 
   showBudget() {
@@ -1218,7 +1336,6 @@ wxAMC.moduleClasses.Journal = class {
   }
 
   saveBudget() {
-    //TODO #39
     $$("listBudgetList").editStop();
     $$("listBudgetList").data.each(function (obj) {
 

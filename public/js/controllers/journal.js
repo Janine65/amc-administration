@@ -3,6 +3,7 @@ const { Op, Sequelize } = require("sequelize");
 const ExcelJS = require("exceljs");
 const fs = require("fs");
 const { v4: uuid } = require('uuid');
+const { list } = require("pdfkit");
 
 
 async function getData(req, res) {
@@ -126,6 +127,84 @@ async function updateData(req, res) {
 		.catch((e) => console.error(e));
 }
 
+async function addReceipt(req, res) {
+	const data = req.body;
+
+	if (data.uploadFiles == undefined) {
+		// nothing to do -> return
+		res.json({ status: "error", message: "No file to store in database" });
+		return;
+	}
+
+	const listUploadFiles = data.uploadFiles.split(',')
+	let sJahr = req.query.jahr;
+	const path = global.documents + sJahr + '/';
+	let payload = {
+		type: 'info',
+		message: '',
+		files: []
+	}
+
+	for (const element of listUploadFiles) {
+		const receipt = 'receipt/' + element
+
+		let filename = global.uploads + element;
+
+		if (fs.existsSync(filename)) {
+			let newReceipt = Receipt.build({ receipt: receipt, jahr: sJahr, bezeichnung: element })
+			await newReceipt.save({ fields: ['receipt', 'jahr', 'bezeichnung'] })
+				.then(async (result) => {
+					let newFilename = 'receipt/journal-' + result.id + '.pdf'
+					result.receipt = newFilename
+					await result.save({ fields: ['receipt'] })
+						.then(result2 => {
+							fs.copyFileSync(filename, path + newFilename);
+							payload.files.push(newFilename)
+							fs.chmod(path + newFilename, '0640', err => {
+								if (err) {
+									console.log(err)
+									payload.message += "Error while changing the mode of the file - " + err.message + "; "
+								}
+							});
+						})
+				})
+				.catch(e => {
+					console.log(e)
+					payload.message += "Error while saving new receipt " + element + "; "
+					payload.type = 'error'
+				})
+		} else {
+			payload.message += "Error while reading the file " + element + "; ";
+			payload.type = 'error'
+		}
+	};
+
+	res.json(payload);
+}
+
+async function updReceipt(req, res) {
+
+	Receipt.findByPk(req.body.id)
+		.then(rec => {
+			rec.bezeichnung = req.body.bezeichnung
+			rec.save({ fields: ['bezeichnung'] })
+				.then(resp => res.json(resp))
+				.catch(err => { console.log(err); payload.type = 'error'; payload.message = 'Konnte nicht gespeichert werden' })
+		})
+		.catch(err => { console.log(err); payload.type = 'error'; payload.message = 'Konnte nicht gefunden werden'; res.json(err); })
+
+}
+
+async function delReceipt(req, res) {
+	Receipt.findByPk(req.body.id)
+		.then(rec => {
+			rec.destroy()
+				.then(resp => res.json(resp))
+				.catch(err => { console.log(err); payload.type = 'error'; payload.message = 'Konnte nicht gelöscht werden'; res.json(err); })
+		})
+		.catch(err => { console.log(err); payload.type = 'error'; payload.message = 'Konnte nicht gefunden werden' })
+}
+
 async function addAttachment(req, res) {
 	const data = req.body;
 
@@ -139,36 +218,50 @@ async function addAttachment(req, res) {
 	let sJahr = new Date(data.date).getFullYear();
 	const path = global.documents + sJahr + '/';
 	let payload = {
-		status: 'error',
+		type: 'error',
 		message: '',
 		files: []
 	}
 
-	listUploadFiles.forEach(element => {
+	for (const element of listUploadFiles) {
 		const receipt = 'receipt/' + element
 
 		let filename = global.uploads + element;
 
 		if (fs.existsSync(filename)) {
-			fs.copyFileSync(filename, );
-			fs.chmod(path + receipt + filename, '0640', err => {
-				if (err) {
-					payload.message = "Error while changing the mode of the file - " + err.message
-				}
-			  });
-			let newReceipt = Receipt.build({ receipt: receipt })
-			newReceipt.save({ fields: ['receipt'] })
-				.then(result => {
-					let newJourRec = JournalReceipt.build({ journalid: data.id, receiptid: result.id })
-					newJourRec.save({ fields: ['journalid', 'receiptid'] })
-						.then(rec => payload.files.push(element))
-						.catch(e => payload.message += "Error while saving new journal_receipt " + element)
+			let newReceipt = Receipt.build({ receipt: receipt, jahr: sJahr, bezeichnung: element })
+			await newReceipt.save({ fields: ['receipt', 'jahr', 'bezeichnung'] })
+				.then(async (result) => {
+					let newFilename = 'receipt/journal-' + result.id + '.pdf'
+					result.receipt = newFilename
+					await result.save({ fields: ['receipt'] })
+						.then(result2 => {
+							fs.copyFileSync(filename, path + newFilename);
+							payload.files.push(newFilename)
+							fs.chmod(path + newFilename, '0640', err => {
+								if (err) {
+									console.log(err)
+									payload.message += "Error while changing the mode of the file - " + err.message + "; "
+								}
+							});
+							let journal = JournalReceipt.build({ journalid: data.id, receiptid: result2.id});
+							journal.save()
+							.then(jResp => {
+								console.log(jResp)
+							})
+							.catch(err => { console.log(err); payload.message += "Error while saving journal_receipt;"})
+						})
 				})
-				.catch(e => payload.message += "Error while saving new receipt " + element)
+				.catch(e => {
+					console.log(e)
+					payload.message += "Error while saving new receipt " + element + "; "
+					payload.type = 'error'
+				})
 		} else {
-			payload.message += "Error while reading the file " + element;
+			payload.message += "Error while reading the file " + element + "; ";
+			payload.type = 'error'
 		}
-	});
+	};
 
 	if (payload.message == '' && payload.files.length == listUploadFiles.length)
 		payload.status = 'ok'
@@ -346,6 +439,9 @@ module.exports = {
 	updateData: updateData,
 	getAllAttachment: getAllAttachment,
 	addAttachment: addAttachment,
+	addReceipt: addReceipt,
+	updReceipt: updReceipt,
+	delReceipt: delReceipt,
 	delAttachment: delAttachment,
 	getAccData: getAccData,
 	importJournal: importJournal

@@ -123,8 +123,9 @@ app.get('/user/register', userRouter.registerView);
 app.post('/user/register', userRouter.registerPost);
 app.post('/user/login', userRouter.loginUser);
 app.post('/user/logout', function (req, res) {
-  req.logout();
-  res.redirect('/');
+  req.logout((err) => {
+    res.redirect('/');
+  });
 });
 
 passport.serializeUser(function (user, done) {
@@ -224,6 +225,10 @@ app.delete('/Journal/data', journal.removeData);
 app.post('/Journal/import', journal.importJournal);
 app.get('/Journal/getAccData', journal.getAccData);
 app.post('/Journal/addAtt', journal.addAttachment);
+app.post('/Journal/addReceipt', journal.addReceipt);
+app.put('/Journal/updReceipt', journal.updReceipt);
+app.post('/Journal/delReceipt', journal.delReceipt);
+
 app.delete('/Journal/delAtt', journal.delAttachment);
 app.get('/Journal/getAtt', journal.getAttachment);
 app.get('/Journal/getAllAtt', journal.getAllAttachment);
