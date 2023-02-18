@@ -224,6 +224,7 @@ app.put('/Journal/data', upload.array(), journal.updateData);
 app.delete('/Journal/data', journal.removeData);
 app.post('/Journal/import', journal.importJournal);
 app.get('/Journal/getAccData', journal.getAccData);
+app.put('/Journal/addR2J', journal.addReceipt2Journal)
 app.post('/Journal/addAtt', journal.addAttachment);
 app.post('/Journal/addReceipt', journal.addReceipt);
 app.put('/Journal/updReceipt', journal.updReceipt);

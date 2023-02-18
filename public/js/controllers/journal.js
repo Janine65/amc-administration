@@ -40,7 +40,14 @@ async function getData(req, res) {
 async function getAllAttachment(req, res) {
 	Receipt.findAll(
 		{
-			where: { jahr: req.query.jahr }
+			where: { jahr: req.query.jahr },
+			attributes: {
+				include: [[Sequelize.fn('COUNT', Sequelize.col('receipt2journal.journalid')), 'cntjournal']]
+			},
+			include: [
+				{ model: JournalReceipt, as: 'receipt2journal', required: false, attributes: [] }
+			],
+			group: ['id','receipt','bezeichnung','updatedAt','jahr']
 		}
 	)
 		.then(data => {
@@ -66,10 +73,11 @@ async function getAttachment(req, res) {
 	Receipt.findAll(
 		{
 			attributes: [
-				'id', 'receipt'
+				'id', 'receipt', 'bezeichnung'
 			],
 			include: [
-				{ model: JournalReceipt, as: 'receipt2journal', required: true, attributes: [], where: { 'journalid': req.query.id } }
+				{ model: JournalReceipt, as: 'receipt2journal', required: true, attributes: [], where: { 'journalid': req.query.id }}
+				
 			]
 		}
 	)
@@ -205,16 +213,31 @@ async function delReceipt(req, res) {
 		.catch(err => { console.log(err); payload.type = 'error'; payload.message = 'Konnte nicht gefunden werden' })
 }
 
+async function addReceipt2Journal(req, res) {
+	const data = req.body;
+	const journalid = req.query.journalid
+
+	let payload = {
+		type: 'ok',
+		message: '',
+	}
+
+	data.forEach(async (rec) => {
+		let journ = JournalReceipt.build({'journalid': journalid, 'receiptid': rec.id});
+		await journ.save()
+			.catch(e => {
+				console.log(e)
+				payload.message += "Error while saving new journal2receipt " + rec.id + "; "
+				payload.type = 'error'
+			})			
+	})
+
+	res.json(payload);
+}
+
 async function addAttachment(req, res) {
 	const data = req.body;
 
-	if (data.uploadFiles == undefined) {
-		// nothing to do -> return
-		res.json({ type: "error", message: "No file to store in database" });
-		return;
-	}
-
-	const listUploadFiles = data.uploadFiles.split(',')
 	let sJahr = new Date(data.date).getFullYear();
 	const path = global.documents + sJahr + '/';
 	let payload = {
@@ -438,6 +461,7 @@ module.exports = {
 	addData: addData,
 	updateData: updateData,
 	getAllAttachment: getAllAttachment,
+	addReceipt2Journal: addReceipt2Journal,
 	addAttachment: addAttachment,
 	addReceipt: addReceipt,
 	updReceipt: updReceipt,
