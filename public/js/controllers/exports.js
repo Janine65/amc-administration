@@ -1,4 +1,4 @@
-const { Meisterschaft, Adressen, Kegelmeister, Clubmeister, Account, Budget, Journal, Anlaesse } = require("../db");
+const { Meisterschaft, Adressen, Kegelmeister, Clubmeister, Account, Budget, Journal, Anlaesse, Receipt, JournalReceipt } = require("../db");
 const {
     Op, QueryTypes
 } = require("sequelize");
@@ -274,42 +274,28 @@ module.exports = {
         // Schreibe Journal
         setCellValueFormat(sheet, 'B1', "Journal " + sjahr, false, '', { bold: true, size: iFontSizeHeader, name: 'Tahoma' });
 
-        const tHeaders = [{id: 'no', header: 'No.', align: 'right', width: 50}, 
-                        {id: 'date', header: 'Date', width: 100},
-                        {id: 'from', header: 'From', width: 30},
-                        {id: 'to', header: 'To', width: 30},
-                        {id: 'text', header: 'Booking Text', width: 250},
-                        {id: 'amount', header: 'Amount', align: 'right', width: 100},
-                        {id: 'receipt', header: 'Receipt', width: 150, link: '#', cache: false,
-                            renderer(tb, data, draw, column, pos) {
-                                if (draw) {
-                                    if (data.receipt == '')
-                                        return '';
-
-                                    tb.pdf.fillColor('blue');
-                                    tb.pdf.text(data.receipt, pos.x, pos.y, {
-                                        ...column,
-                                        link: data.receipt,
-                                        height: data._renderedContent.height,
-                                        widht: column.width
-                                    });
-                                    tb.pdf.fillColor('black');
-        
-                                } else {
-                                    return data.receipt;
-                                }                             
-                            }
-                        }];
+        const tHeaders = [{id: 'no', header: 'No.', valign: 'top', align: 'right', width: 50}, 
+                        {id: 'date', header: 'Date', valign: 'top', width: 100},
+                        {id: 'from', header: 'From', valign: 'top', width: 30},
+                        {id: 'to', header: 'To', valign: 'top', width: 30},
+                        {id: 'text', header: 'Booking Text', valign: 'top', width: 150},
+                        {id: 'amount', header: 'Amount', valign: 'top', align: 'right', width: 100},
+                        {id: 'receipt', header: 'Receipt', valign: 'top', width: 250}];
 
         setCellValueFormat(sheet, 'B3', "No", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        sheet.getCell('B3').alignment = { vertical: "top" };
         setCellValueFormat(sheet, 'C3', "Date", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        sheet.getCell('C3').alignment = { vertical: "top" };
         setCellValueFormat(sheet, 'D3', "From ", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        sheet.getCell('D3').alignment = { vertical: "top" };
         setCellValueFormat(sheet, 'E3', "To ", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        sheet.getCell('E3').alignment = { vertical: "top" };
         setCellValueFormat(sheet, 'F3', "Booking Text ", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        sheet.getCell('F3').alignment = { vertical: "top" };
         setCellValueFormat(sheet, 'G3', "Amount", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
-        sheet.getCell('G3').alignment = { horizontal: "right" };
-        if (fReceipt)
-            setCellValueFormat(sheet, 'H3', "Receipt", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        sheet.getCell('G3').alignment = { horizontal: "right", vertical: "top" };
+        setCellValueFormat(sheet, 'H3', "Receipt", true, '', { bold: true, size: iFontSizeTitel, name: 'Tahoma' });
+        sheet.getCell('H3').alignment = { vertical: "top" };
 
         const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
         let row = 4;
@@ -326,21 +312,39 @@ module.exports = {
 
             sheet.getRow(row).height = 22;
             setCellValueFormat(sheet, 'B' + row, element.journalno, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            sheet.getCell('B' + row).alignment = { vertical: "top" };
             setCellValueFormat(sheet, 'C' + row, dateFmt, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            sheet.getCell('C' + row).alignment = { vertical: "top" };
             setCellValueFormat(sheet, 'D' + row, element.fromAccount.order + " " + element.fromAccount.name, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            sheet.getCell('D' + row).alignment = { vertical: "top" };
             setCellValueFormat(sheet, 'E' + row, element.toAccount.order + " " + element.toAccount.name, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            sheet.getCell('E' + row).alignment = { vertical: "top" };
             setCellValueFormat(sheet, 'F' + row, element.memo, true, '', { size: iFontSizeRow, name: 'Tahoma' });
+            sheet.getCell('F' + row).alignment = { vertical: "top" };
             setCellValueFormat(sheet, 'G' + row, eval(element.amount * 1), true, '', { size: iFontSizeRow, name: 'Tahoma' });
             sheet.getCell('G' + row).numFmt = '#,##0.00;[Red]\-#,##0.00';
+            sheet.getCell('G' + row).alignment = { vertical: "top" };
+            sheet.getCell('H' + row).alignment = { vertical: "top", wrapText: true };
             let linkAdress = ""
-            if (fReceipt && element.receipt != null) {
-                linkAdress = element.receipt //.replace('/', '\\')
-                setCellValueFormat(sheet, 'H' + row, linkAdress, true, '', { size: iFontSizeRow, name: 'Tahoma' });
-                sheet.getCell('H' + row).value = { text: linkAdress, hyperlink: linkAdress };
-                rowRecord.receipt = linkAdress ;
-            } else if (fReceipt) {
-                setCellValueFormat(sheet, 'H' + row, '', true, '', { size: iFontSizeRow, name: 'Tahoma' });
-            }
+            await Receipt.findAll( {
+                logging: console.log,
+                include: [
+                    { model: JournalReceipt, as: 'receipt2journal', required: true, attributes: [], where: {'journalid': element.id} }
+                ],
+                order: ['bezeichnung']
+                }
+            )
+            .then(recLst => {
+                for (let indR = 0; indR < recLst.length; indR++) {
+                    if (indR == 0)
+                        linkAdress = recLst[indR].bezeichnung + ": " + recLst[indR].receipt
+                    else
+                    linkAdress += "\r\n" + recLst[indR].bezeichnung + ": " + recLst[indR].receipt
+                }
+                setCellValueFormat(sheet, 'H' + row, linkAdress, true, '', { size: iFontSizeRow, name: 'Tahoma' });                 
+            })
+            .catch(err => console.log(err))
+            rowRecord.receipt = linkAdress;
             tRows.push(rowRecord);
             row++;
 
@@ -352,8 +356,7 @@ module.exports = {
         sheet.getColumn('E').width = 35;
         sheet.getColumn('F').width = 50;
         sheet.getColumn('G').width = 18;
-        if (fReceipt)
-            sheet.getColumn('H').width = 50;
+        sheet.getColumn('H').width = 75;
 
         const filename = "Journal-" + sjahr;
         await workbook.xlsx.writeFile(global.exports + filename + ".xlsx")
@@ -384,7 +387,8 @@ module.exports = {
                 bottomMargin: 50,
                 topargin: 50,
                 leftMargin: 50,
-                rightMargin: 50
+                rightMargin: 50,
+                columnSpacing: 10
             });
 
             table

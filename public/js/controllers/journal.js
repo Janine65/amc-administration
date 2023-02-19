@@ -1,9 +1,7 @@
 const { Journal, Account, Receipt, JournalReceipt } = require("../db");
-const { Op, Sequelize } = require("sequelize");
+const { Op, Sequelize, QueryInterface } = require("sequelize");
 const ExcelJS = require("exceljs");
 const fs = require("fs");
-const { v4: uuid } = require('uuid');
-const { list } = require("pdfkit");
 
 
 async function getData(req, res) {
@@ -38,32 +36,70 @@ async function getData(req, res) {
 }
 
 async function getAllAttachment(req, res) {
-	Receipt.findAll(
-		{
-			where: { jahr: req.query.jahr },
-			attributes: {
-				include: [[Sequelize.fn('COUNT', Sequelize.col('receipt2journal.journalid')), 'cntjournal']]
-			},
-			include: [
-				{ model: JournalReceipt, as: 'receipt2journal', required: false, attributes: [] }
-			],
-			group: ['id','receipt','bezeichnung','updatedAt','jahr']
-		}
-	)
-		.then(data => {
-			data.forEach(rec => {
-				const pathname = global.documents + req.query.jahr + '/';
-				try {
-					fs.copyFileSync(pathname + rec.receipt, global.uploads + rec.receipt);
-					rec.receipt = global.public + rec.receipt
-				} catch (ex) {
-					console.log(pathname + rec.receipt + ': File not found');
-					rec.receipt = 'File not found: ' + rec.receipt
-				}
-			});
-			res.json(data);
-		})
-		.catch((e) => console.error(e));
+	if (req.query.journalid != null) {
+		Receipt.findAll(
+			{
+				logging: console.log,
+				where: { 
+					[Op.and]: [
+						{jahr: req.query.jahr}, 
+						Sequelize.literal("receipt.id not in (select receiptid from journal_receipt where journalid = " + req.query.journalid + ")")
+					]
+				},
+				attributes: {
+					include: [
+						[
+							Sequelize.literal("(SELECT COUNT(*) FROM journal_receipt as receipt2journal WHERE receiptid = receipt.id )"), 'cntjournal'
+						]
+					]
+				}				
+			}
+		)
+			.then(data => {
+				data.forEach(rec => {
+					const pathname = global.documents + req.query.jahr + '/';
+					try {
+						fs.copyFileSync(pathname + rec.receipt, global.uploads + rec.receipt);
+						rec.receipt = global.public + rec.receipt
+					} catch (ex) {
+						console.log(pathname + rec.receipt + ': File not found');
+						rec.receipt = 'File not found: ' + rec.receipt
+					}
+				});
+				res.json(data);
+			})
+			.catch((e) => console.error(e));
+	
+	} else {
+		Receipt.findAll(
+			{
+				logging: console.log,
+				where: { jahr: req.query.jahr },
+				attributes: {
+					include: [[Sequelize.fn('COUNT', Sequelize.col('receipt2journal.journalid')), 'cntjournal']]
+				},
+				include: [
+					{ model: JournalReceipt, as: 'receipt2journal', required: false, attributes: [] }
+				],
+				group: ['id','receipt','bezeichnung','updatedAt','jahr','createdAt']
+			}
+		)
+			.then(data => {
+				data.forEach(rec => {
+					const pathname = global.documents + req.query.jahr + '/';
+					try {
+						fs.copyFileSync(pathname + rec.receipt, global.uploads + rec.receipt);
+						rec.receipt = global.public + rec.receipt
+					} catch (ex) {
+						console.log(pathname + rec.receipt + ': File not found');
+						rec.receipt = 'File not found: ' + rec.receipt
+					}
+				});
+				res.json(data);
+			})
+			.catch((e) => console.error(e));
+	
+	}
 
 
 }
@@ -220,17 +256,17 @@ async function addReceipt2Journal(req, res) {
 	let payload = {
 		type: 'ok',
 		message: '',
+		data: null
 	}
 
+	let journAdd = []
 	data.forEach(async (rec) => {
-		let journ = JournalReceipt.build({'journalid': journalid, 'receiptid': rec.id});
-		await journ.save()
-			.catch(e => {
-				console.log(e)
-				payload.message += "Error while saving new journal2receipt " + rec.id + "; "
-				payload.type = 'error'
-			})			
+		journAdd.push({'journalid': journalid, 'receiptid': rec.id})
 	})
+
+	await JournalReceipt.bulkCreate(journAdd)
+		.then(rec => payload.data = rec)
+		.catch(err => {console.log(err); payload.type = 'error'; payload.message = 'Konnte nicht gelöscht werden'; res.json(err); });
 
 	res.json(payload);
 }

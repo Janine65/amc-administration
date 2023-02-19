@@ -873,17 +873,18 @@ wxAMC.moduleClasses.Journal = class {
                   click: this.add_attachment.bind(this)
                 },
                 {
+                  id: "journalAtt-deleteButton", view: "button", label: "Löschen",
+                  autowidth: true, type: "icon",
+                  icon: "webix_icon mdi mdi-delete",
+                  click: this.del_attachment.bind(this)
+                },
+                {width: 6},
+                {
                   id: "journalAtt-showButton", view: "button", label: "Anzeigen",
                   autowidth: true, type: "icon",
                   icon: "webix_icon mdi mdi-eye-outline",
                   click: this.display_attachment.bind(this)
                 },
-                {
-                  id: "journalAtt-deleteButton", view: "button", label: "Löschen",
-                  autowidth: true, type: "icon",
-                  icon: "webix_icon mdi mdi-delete",
-                  click: this.del_attachment.bind(this)
-                }
               ]
             }, /* End Journal Attachment toolbar */
           ]
@@ -1015,6 +1016,7 @@ wxAMC.moduleClasses.Journal = class {
     // TODO add_attachment form
     const dataJ = $$("journalAtt-Form").getValues()
     const dataR =  $$("listReceiptYearList").getSelectedItem(true)
+    let sJahr = $$("moduleJournal-dateSelect").getValue();
 
     if (dataR.length == 0) {
       webix.message({
@@ -1047,7 +1049,10 @@ wxAMC.moduleClasses.Journal = class {
         }
         $$("journalatt_list").clearAll();
         $$("journalatt_list").load('/Journal/getAtt?id=' + dataJ.id + '&jahr=' + sJahr);
-        $$("journalatt_list").sort('id')
+        $$("journalatt_list").sort('bezeichnung')
+        $$("listReceiptYearList").clearAll();
+        $$("listReceiptYearList").load("/Journal/getAllAtt?jahr=" + sJahr + "&journalid=" + dataJ.id);
+        $$("listReceiptYearList").sort('bezeichnung')
         wxAMC.modules['Journal'].refreshData();
         return resp.json();
       })
@@ -1065,11 +1070,11 @@ wxAMC.moduleClasses.Journal = class {
     if (data.receipt != "0") {
       $$("journalatt_list").clearAll();
       $$("journalatt_list").load('/Journal/getAtt?id=' + data.id + '&jahr=' + sJahr);
-      $$("journalatt_list").sort('id')
+      $$("journalatt_list").sort('bezeichnung')
 
       $$("listReceiptYearList").clearAll();
-      $$("listReceiptYearList").load("/Journal/getAllAtt?jahr=" + $$("moduleJournal-dateSelect").getValue());
-      $$("listReceiptYearList").sort('id')
+      $$("listReceiptYearList").load("/Journal/getAllAtt?jahr=" + sJahr + "&journalid=" + data.id);
+      $$("listReceiptYearList").sort('bezeichnung')
     }
     wxAMC.lastGui = $$("journalAtt-Detail");
     $$("journalAtt-Detail").show();
@@ -1225,6 +1230,8 @@ wxAMC.moduleClasses.Journal = class {
   del_attachment() {
     const data = $$("journalatt_list").getSelectedItem();
     const dataJ = $$("journalAtt-Form").getValues()
+    let sJahr = $$("moduleJournal-dateSelect").getValue();
+
     fetch('/Journal/delAtt', {
       method: "DELETE",
       headers: {
@@ -1241,7 +1248,12 @@ wxAMC.moduleClasses.Journal = class {
           webix.message(resp.message, "error")
           return null
         }
-        $$("moduleJournal-itemsCell").show();
+        $$("journalatt_list").clearAll();
+        $$("journalatt_list").load('/Journal/getAtt?id=' + dataJ.id + '&jahr=' + sJahr);
+        $$("journalatt_list").sort('bezeichnung')
+        $$("listReceiptYearList").clearAll();
+        $$("listReceiptYearList").load("/Journal/getAllAtt?jahr=" + sJahr + "&journalid=" + dataJ.id);
+        $$("listReceiptYearList").sort('bezeichnung')
         wxAMC.modules['Journal'].refreshData();
         return resp.json();
       })
