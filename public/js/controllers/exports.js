@@ -735,9 +735,16 @@ module.exports = {
             case 2:
                 // Datenblatt gefüllt für Adressen
                 if (objSave.id == 0) {
-                    // für alle aktiven Mitglieder                    
-                    const sqlquery = "select a.* from adressen a join (SELECT m.mitgliedid, count(m.id) as inmeister from meisterschaft m join anlaesse an on m.eventid = an.id and year(an.datum) = '" + objSave.year + "' group by m.mitgliedid having count(m.id) > 0) AS mm on a.id = mm.mitgliedid where a.austritt > now() order by a.name, a.vorname"
-                    const dbAdressen = await sequelize.query(sqlquery, { type: QueryTypes.SELECT, logging: console.log, raw: false, model: Adressen })
+                    // für alle aktiven Mitglieder
+                    const dbAdressen = await Adressen.findAll({
+                        where: { "austritt": { [Op.gt]: new Date() } },
+                        include: {
+                            model: Meisterschaft, required: true,
+                            attributes: [],
+                            where: Sequelize.where(Sequelize.fn('YEAR', Sequelize.col("datum")), objSave.year)
+                        },
+                        order: ["adressen.name", "vorname"]
+                    });
 
                     for (let index = 0; index < dbAdressen.length; index++) {
                         const adress = dbAdressen[index];
@@ -920,9 +927,9 @@ module.exports = {
             }
 
         }
-        let arrAmount = await Journal.findAll({
-            attributes: ["from_account", [sequelize.fn('SUM', sequelize.col("amount")), "amount"]],
-            where: sequelize.where(sequelize.fn('YEAR', sequelize.col("date")), sjahr),
+        var arrAmount = await Journal.findAll({
+            attributes: ["from_account", [Sequelize.fn('SUM', Sequelize.col("amount")), "amount"]],
+            where: Sequelize.where(Sequelize.fn('YEAR', Sequelize.col("date")), sjahr),
             group: ["from_account"]
         })
             .catch((e) => {
@@ -1212,8 +1219,8 @@ module.exports = {
         for (let index = 0; index < arData.length; index++) {
             const element = arData[index];
 
-            let sSheetName = element.order + " " + element.name.replace("/", "");
-            let sheet = workbook.addWorksheet(sSheetName.substring(0, 31), {
+            var sSheetName = element.order + " " + element.name.replace("/", "");
+            var sheet = workbook.addWorksheet(sSheetName.substr(0, 31), {
                 pageSetup: {
                     fitToPage: true,
                     fitToHeight: 1,
@@ -1251,8 +1258,8 @@ module.exports = {
             let iSaldo = 0.0;
             let iRow = 4;
 
-            let arJournal = await Journal.findAll({
-                where: [sequelize.where(sequelize.fn('YEAR', sequelize.col("date")), sJahr),
+            var arJournal = await Journal.findAll({
+                where: [Sequelize.where(Sequelize.fn('YEAR', Sequelize.col("date")), sJahr),
                 {
                     [Op.or]: [
                         { "from_account": element.id },
@@ -1594,6 +1601,7 @@ async function createTemplate(syear, sheet, inclPoints) {
     let row = sFirstRow - 1;
     setCellValueFormat(sheet, "A" + row, "Club", true, "", { bold: true, size: iFontSizeRow });
     setCellValueFormat(sheet, "B" + row, "Datum", true, "", { bold: true, size: iFontSizeRow });
+    sheet.getColumn("B").width = 11;
     setCellValueFormat(sheet, "C" + row, "Resultate", true, "C" + row + ":G" + row, { bold: true, size: iFontSizeRow });
     setCellValueFormat(sheet, "H" + row, "z Pkt.", true, "", { bold: true, size: iFontSizeRow });
     setCellValueFormat(sheet, "I" + row, "Total", true, "", { bold: true, size: iFontSizeRow });
