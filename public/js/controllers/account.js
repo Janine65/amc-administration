@@ -184,7 +184,7 @@ module.exports = {
 							arData.push(record);
 						}
 						for (let ind2 = 0; ind2 < data2.length; ind2++) {
-							record = {}
+							let record = {}
 							record.id = data2[ind2].toAccount.id
 							record.name = data2[ind2].toAccount.name
 							record.level = data2[ind2].toAccount.level
@@ -207,8 +207,8 @@ module.exports = {
 						}
 
 						for (let ind2 = 0; ind2 < arData.length; ind2++) {
-							found = arBudget.findIndex(element => element.acc.id == arData[ind2].id);
-							record = arData[ind2];
+							let found = arBudget.findIndex(element => element.acc.id == arData[ind2].id);
+							let record = arData[ind2];
 							if (found >= 0) {
 								const acc = arBudget[found];
 								record.budget = eval(acc.amount * 1);
@@ -221,7 +221,7 @@ module.exports = {
 						}
 
 						for (let ind2 = 0; ind2 < arBudget.length; ind2++) {
-							record = {};
+							let record = {};
 							record.id = arBudget[ind2].acc.id
 							record.name = arBudget[ind2].acc.name
 							record.level = arBudget[ind2].acc.level

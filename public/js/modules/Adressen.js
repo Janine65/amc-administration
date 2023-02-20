@@ -96,7 +96,7 @@ wxAMC.moduleClasses.Adressen = class {
                   if (id == "sam_mitglied" || id == "ehrenmitglied" || id == "vorstand" || id == "revisor" || id == "allianz") {
                     for(let i = 0; i<req.values.length; i++){
                       //console.info(req.values[i]);
-                      if (req.values[i].value == false) {
+                      if (!req.values[i].value) {
                         req.values[i].value = "Nein";
                         req.values[i].id = 0;
                       } else {
@@ -419,20 +419,6 @@ wxAMC.moduleClasses.Adressen = class {
 
   } /* End getUIConfig(). */
 
-
-  /**
-   * Called whenever this module becomes active.
-   */
-  activate() {
-  } /* End activate(). */
-
-
-  /**
-   * Called whenever this module becomes inactive.
-   */
-  deactivate() {
-
-  } /* End deactivate(). */
 
   /**
    * createBill

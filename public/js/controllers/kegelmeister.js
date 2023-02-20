@@ -125,7 +125,7 @@ module.exports = {
 		});
 		for (let ind = 0; ind < data.length; ind++) {
 			allMitgliedId.push(data[ind].mitgliedid)
-			meister = { jahr: req.query.jahr, mitgliedid: data[ind].mitgliedid, punkte: eval(data[ind].punkte * 1), anlaesse: 0, babeli: 0 }
+			let meister = { jahr: req.query.jahr, mitgliedid: data[ind].mitgliedid, punkte: eval(data[ind].punkte * 1), anlaesse: 0, babeli: 0 }
 			arMeister.push(meister);
 		}
 

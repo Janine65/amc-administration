@@ -187,7 +187,7 @@ custom_checkbox(obj, common, value){
                 { view : "text", name : "name", label : "Anlass", required : true,
                   invalidMessage: "Anlass ist notwendig"
                 },
-                { view:"combo", 
+                { view:"combo", required: true, invalidMessage: "Status muss gesetzt sein",
                 options:[{ id:"0", value:"Inaktiv" }, { id:"1", value:"Aktiv" }], 
                   name : "status", label : "Status"
                 },
@@ -384,13 +384,6 @@ custom_checkbox(obj, common, value){
   activate() {
      this.refreshData();
   } /* End activate(). */
-
-
-  /**
-   * Called whenever this module becomes inactive.
-   */
-  deactivate() {
-  } /* End deactivate(). */
 
 
   /**

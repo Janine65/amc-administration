@@ -60,7 +60,7 @@ module.exports = {
   removeData: function (req, res) {
     const data = req.body;
     if (data == undefined) {
-      throw "Record not correct";
+      throw Error("Record not correct");
     }
     console.info("delete: ", data);
     Anlaesse.findByPk(data.id)

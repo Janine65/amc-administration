@@ -169,6 +169,8 @@ wxAMC.moduleClasses.Auswertungen = class {
    * Called whenever this module becomes inactive.
    */
   deactivate() {
+    // TODO document why this method 'deactivate' is empty
+  
   } /* End deactivate(). */
 
   /**
@@ -242,6 +244,8 @@ wxAMC.moduleClasses.Auswertungen = class {
    * Service requests from day-at-a-glance to present data for this module.
    */
   async dayAtAGlance() {
+    // TODO document why this async method 'dayAtAGlance' is empty
+  
 
 
   } /* End dayAtAGlance(). */

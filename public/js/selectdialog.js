@@ -134,7 +134,6 @@ webix.protoUI({
 			obj.folder_id = this._folders.length ? this._folders[this._folders.length - 1]: 0;
 		});
 
-		dtable = tpl = null;
 	},
 	_showState:function(select_id){
 		this.getTemplate().setValues(this._folders);

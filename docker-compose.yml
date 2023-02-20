@@ -9,7 +9,7 @@ services:
     ports:
       - 5435:5432
     volumes:
-      - /Users/janine/backup/pgdata:/var/lib/postgresql/data
+      - /Users/janine/backup/pgdata:/let/lib/postgresql/data
 
   amcadmin:
     image: amcadministration

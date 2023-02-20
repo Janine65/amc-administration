@@ -36,12 +36,25 @@ function extendDefaultFields(defaults, session) {
 
 const app = express();
 
+const winston = require('winston')
+
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
+  //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  transports: [
+    new winston.transports.File({ filename: path.join('logs', 'error.log'), level: 'error', timestamp: true }),
+    new winston.transports.File({ filename: path.join('logs', 'info.log'), level: 'info', timestamp: true }),
+    new winston.transports.File({ filename: path.join('logs', 'combined.log'), timestamp: true }),
+  ],
+});
+
 (async() => {
   const conn = new Sequelize(global.gConfig.database, global.gConfig.db_user, global.cipher.decrypt(global.gConfig.db_pwd), {
     host: global.gConfig.dbhost, 
     port: global.gConfig.port,
     dialect: global.gConfig.dbtype,
-    logging: (...msg) => console.log(msg)
+    logging: (msg) => logger.info(msg),
   });
   global.sequelize = conn;
   
@@ -81,6 +94,7 @@ app.use("/", express.static(path.join(__dirname, '/public')));
 let expireDate = new Date();
 expireDate.setDate(expireDate.getDate() + 1);
 
+
 app.use(helmet());
 app.use(
   expresssession({
@@ -109,8 +123,9 @@ app.get('/user/register', userRouter.registerView);
 app.post('/user/register', userRouter.registerPost);
 app.post('/user/login', userRouter.loginUser);
 app.post('/user/logout', function (req, res) {
-  req.logout();
-  res.redirect('/');
+  req.logout((err) => {
+    res.redirect('/');
+  });
 });
 
 passport.serializeUser(function (user, done) {
@@ -209,9 +224,15 @@ app.put('/Journal/data', upload.array(), journal.updateData);
 app.delete('/Journal/data', journal.removeData);
 app.post('/Journal/import', journal.importJournal);
 app.get('/Journal/getAccData', journal.getAccData);
+app.put('/Journal/addR2J', journal.addReceipt2Journal)
 app.post('/Journal/addAtt', journal.addAttachment);
+app.post('/Journal/addReceipt', journal.addReceipt);
+app.put('/Journal/updReceipt', journal.updReceipt);
+app.post('/Journal/delReceipt', journal.delReceipt);
+
 app.delete('/Journal/delAtt', journal.delAttachment);
 app.get('/Journal/getAtt', journal.getAttachment);
+app.get('/Journal/getAllAtt', journal.getAllAttachment);
 app.get('/Journal/export', exportData.writeJournal);
 
 const budget = require("./public/js/controllers/budget");

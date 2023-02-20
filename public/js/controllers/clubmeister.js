@@ -61,7 +61,7 @@ module.exports = {
 			let lPunkte = data[ind].anzahl * 50
 				let ifound = arMeister.findIndex((element) => element.mitgliedid == data[ind].adressenid)
 				if (ifound > -1) {
-					meister = arMeister[ifound]
+					let meister = arMeister[ifound]
 					meister.werbungen = Number(data[ind].anzahl)
 					meister.punkte = meister.punkte + lPunkte
 					arMeister[ifound] = meister
@@ -77,9 +77,9 @@ module.exports = {
 			})
 
 			for (let ind = 0; ind < data.length; ind++) {
-				ifound = arMeister.findIndex((element) => element.mitgliedid == data[ind].id)
+				let ifound = arMeister.findIndex((element) => element.mitgliedid == data[ind].id)
 				if (ifound > -1) {
-					meister = arMeister[ifound]
+					let meister = arMeister[ifound]
 					meister.mnr = data[ind].mnr
 					meister.vorname = data[ind].vorname
 					meister.nachname = data[ind].name

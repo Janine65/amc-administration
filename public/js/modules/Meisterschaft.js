@@ -150,6 +150,8 @@ wxAMC.moduleClasses.Meisterschaft = class {
    * Called whenever this module becomes inactive.
    */
   deactivate() {
+    // TODO document why this method 'deactivate' is empty
+  
   } /* End deactivate(). */
 
   /**

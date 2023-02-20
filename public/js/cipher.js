@@ -16,3 +16,4 @@ class CIPHER {
 }
 
 global.cipher = new CIPHER();
+

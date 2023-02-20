@@ -266,6 +266,8 @@ wxAMC.moduleClasses.Users = class {
    * Called whenever this module becomes active.
    */
   activate() {
+    // TODO document why this method 'activate' is empty
+  
   } /* End activate(). */
 
 
@@ -273,6 +275,8 @@ wxAMC.moduleClasses.Users = class {
    * Called whenever this module becomes inactive.
    */
   deactivate() {
+    // TODO document why this method 'deactivate' is empty
+  
   } /* End deactivate(). */
 
 
@@ -366,7 +370,7 @@ wxAMC.moduleClasses.Users = class {
           return null;
         }
         return response.json();
-s      });
+      });
 
     Promise.resolve(promiseModuleM)
       .then((response) => {
@@ -433,6 +437,8 @@ s      });
    */
 
   async saveUsers() {
+    // TODO document why this async method 'saveUsers' is empty
+  
 
 
   } /* End saveUsers */

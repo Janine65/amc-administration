@@ -170,7 +170,7 @@ module.exports = {
 		});
         for (let ind2 = 0; ind2 < arPassiv2.length; ind2++) {
             const record = arPassiv2[ind2];
-			found = arPassiv.findIndex(acc => acc.account == record.account);
+			let found = arPassiv.findIndex(acc => acc.account == record.account);
 			if (found > -1) {
 				arPassiv[found].amount = record.amount - arPassiv[found].amount;
 			} else {
