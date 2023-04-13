@@ -33,7 +33,7 @@
         "database": "amcadmin",
         "db_user": "webuser",
         "db_pwd": "U2FsdGVkX1+uREut48vXcp9FVvrcmZcVefiR8vBlKiA=",
-        "port": "5435",
+        "port": "5439",
         "dbtype": "postgres",
         "defaultEmail" : "HansjoergDutler"
     }
